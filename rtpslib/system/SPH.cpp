@@ -1,28 +1,3 @@
-/****************************************************************************************
-* Real-Time Particle System - An OpenCL based Particle system developed to run on modern GPUs. Includes SPH fluid simulations.
-* version 1.0, September 14th 2011
-* 
-* Copyright (C) 2011 Ian Johnson, Andrew Young, Gordon Erlebacher, Myrna Merced, Evan Bollig
-* 
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* 
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-****************************************************************************************/
-
-
-
 #include <GL/glew.h>
 #include <math.h>
 #include <sstream>
@@ -31,7 +6,6 @@
 
 #include "System.h"
 #include "SPH.h"
-//#include "../domain/UniformGrid.h"
 #include "Domain.h"
 #include "IV.h"
 
@@ -815,60 +789,32 @@ namespace rtps
 			printf("pushParticles: exceeded max nb(%d) of particles allowed\n", max_num);
             return;
         }
-        //float rr = (rand() % 255)/255.0f;
-        //float4 color(rr, 0.0f, 1.0f - rr, 1.0f);
-        //printf("random: %f\n", rr);
-        //float4 color(1.0f,1.0f,1.0f,1.0f);
 
         std::vector<float4> cols(nn);
-        //printf("color: %f %f %f %f\n", color.x, color.y, color.z, color.w);
-
         std::fill(cols.begin(), cols.end(),color);
-        //float v = .5f;
-        //float v = 0.0f;
-        //float4 iv = float4(v, v, -v, 0.0f);
-        //float4 iv = float4(0, v, -.1, 0.0f);
-        //std::fill(vels.begin(), vels.end(),iv);
-
 
 #ifdef GPU
         glFinish();
         cl_position_u.acquire();
         cl_color_u.acquire();
 
-        //printf("about to prep 0\n");
-        //call_prep(0);
-        //printf("done with prep 0\n");
-
-		// Allocate max_num particles on the GPU. That wastes memory, but is useful. 
-		// There should be a way to update this during the simulation. 
         cl_position_u.copyToDevice(pos, num);
         cl_color_u.copyToDevice(cols, num);
         cl_velocity_u.copyToDevice(vels, num);
 
-        //sphp.num = num+nn;
         settings->SetSetting("Number of Particles", num+nn);
         updateSPHP();
 
-        //cl_position.acquire();
-        //cl_color_u.acquire();
-        //reprep the unsorted (packed) array to account for new particles
-        //might need to do it conditionally if particles are added or subtracted
-        // -- no longer needed: april, enjalot
-        //printf("about to prep\n");
-        //call_prep(1);
-        //printf("done with prep\n");
         cl_position_u.release();
         cl_color_u.release();
 #endif
-        num += nn;  //keep track of number of particles we use
+        num += nn;  
         renderer->setNum(num);
     }
 	//----------------------------------------------------------------------
     void SPH::render()
     {
         renderer->render_box(grid->getBndMin(), grid->getBndMax());
-        //renderer->render_table(grid->getBndMin(), grid->getBndMax());
         System::render();
     }
 	//----------------------------------------------------------------------
@@ -892,9 +838,7 @@ namespace rtps
                 renderer = new Render(pos_vbo,col_vbo,num,ps->cli, ps->settings);
                 break;
         }
-        //renderer->setParticleRadius(spacing*0.5);
         renderer->setParticleRadius(spacing);
-		//renderer->setRTPS(
     }
 	//----------------------------------------------------------------------
     void SPH::radix_sort()

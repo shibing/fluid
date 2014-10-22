@@ -731,16 +731,12 @@ void draw_collision_boxes()
 {
     glColor4f(0,0,1,.5);
 
-    //glDisable(GL_DEPTH_TEST);
-    //glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glBegin(GL_TRIANGLES);
-    //printf("num triangles %zd\n", triangles.size());
     for (int i=0; i < triangles.size(); i++)
     {
-        //for (int i=0; i < 20; i++) {
         Triangle& tria = triangles[i];
         glNormal3fv(&tria.normal.x);
         glVertex3f(tria.verts[0].x, tria.verts[0].y, tria.verts[0].z);
@@ -748,8 +744,5 @@ void draw_collision_boxes()
         glVertex3f(tria.verts[2].x, tria.verts[2].y, tria.verts[2].z);
     }
     glEnd();
-
     glDisable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
-    //glDepthMask(GL_TRUE);
 }

@@ -45,10 +45,9 @@ double farZ = 100.0;                                        //far clipping plane
 double screenZ = 10.0;                                     //screen projection plane
 double IOD = 0.5;                                          //intraocular distance
 
-float translate_x = -2.00f;
-float translate_y = -2.70f;
-float translate_z = 3.50f;
-
+float translate_x = .00f;
+float translate_y = .00f;
+float translate_z = -10.0f;
 float arm_translate_x = 0.;
 float arm_translate_y = 0.;
 float arm_translate_z = 0.;
@@ -130,7 +129,7 @@ int main(int argc, char** argv)
     GLboolean bGLEW = glewIsSupported("GL_VERSION_2_0 GL_ARB_pixel_buffer_object"); 
     printf("GLEW supported?: %d\n", bGLEW);
 
-    rtps::Domain* grid = new Domain(float4(0,0,0,0), float4(5, 5, 5, 0));
+    rtps::Domain* grid = new Domain(float4(-2.5,-2.5,-2.5,0), float4(2.5, 2.5, 2.5, 0));
 
 	rtps::RTPSettings* settings = new rtps::RTPSettings(rtps::RTPSettings::SPH, NUM_PARTICLES, DT, grid);
     settings->SetSetting("rtps_path", "./bin");
@@ -253,8 +252,9 @@ void appKeyboard(unsigned char key, int x, int y)
             }
         case 'r': //drop a rectangle
             {
-                min = float4(2.0, 2.0, 3.2, 1.0f);
-                max = float4(3.0, 3.0, 4.0, 1.0f);
+                nn = 2048;
+                min = float4(-0.5, -0.5, 0.7, 1.0f);
+                max = float4( 0.5, 0.5, 1.5, 1.0f);
                 ps->system->addBox(nn, min, max, false, color);
                 return;
             }
@@ -340,10 +340,10 @@ void appRender()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glRotatef(-90, 1.0, 0.0, 0.0);
-        glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 0.0, 1.0); //we switched around the axis so make this rotate_z
+        //glRotatef(-90, 1.0, 0.0, 0.0);
         glTranslatef(translate_x, translate_z, translate_y);
+        glRotatef(rotate_x, 1.0, 0.0, 0.0);
+        glRotatef(rotate_y, 0.0, 0.0, 1.0); 
         ps->render();
         draw_collision_boxes();
         

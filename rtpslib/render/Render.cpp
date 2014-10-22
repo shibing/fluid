@@ -1,26 +1,3 @@
-/****************************************************************************************
-* Real-Time Particle System - An OpenCL based Particle system developed to run on modern GPUs. Includes SPH fluid simulations.
-* version 1.0, September 14th 2011
-* 
-* Copyright (C) 2011 Ian Johnson, Andrew Young, Gordon Erlebacher, Myrna Merced, Evan Bollig
-* 
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* 
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-****************************************************************************************/
-
 
 #include <stdio.h>
 #include <string.h>
@@ -39,19 +16,12 @@ using namespace std;
 namespace rtps
 {
 
-    //----------------------------------------------------------------------
-    //Render::Render(GLuint pos, GLuint col, int n, CL* cli, RTPSettings& _settings) :
-    //settings(_settings)
-    //{
-    //}
-    //----------------------------------------------------------------------
     Render::Render(GLuint pos, GLuint col, int n, CL* cli, RTPSettings* _settings)
     {
         this->settings = _settings;
      
         shader_source_dir = settings->GetSettingAs<string>("rtps_path");
         shader_source_dir += "/shaders";
-        printf("SHADER SOURCE DIR\n", shader_source_dir.c_str());
 
         rtype = POINTS;
         pos_vbo = pos;
@@ -67,9 +37,6 @@ namespace rtps
         GLubyte col2[] = {255,255,255,255};
 
         generateCheckerBoardTex(col1,col2,8,640);
-        printf("GL VERSION %s\n", glGetString(GL_VERSION));
-        //blending = settings.GetSettingAs<bool>("Render: Blending");
-        //blending = settings->getUseAlphaBlending();
         blending = settings->GetSettingAs<bool>("render_use_alpha");
         setupTimers();
     }
@@ -88,23 +55,16 @@ namespace rtps
         {
             glDeleteTextures(1,&(i->second));
         }
-        //for(vector<GLuint>::iterator i=rbos.begin(); i!=rbos.end();i++)
-        //{
         if (rbos.size())
         {
             glDeleteRenderbuffersEXT(rbos.size() ,&rbos[0]);
         }
-        //}
-        //for(vector<GLuint>::iterator i=fbos.begin(); i!=fbos.end();i++)
-        //{
         if (fbos.size())
         {
             glDeleteFramebuffersEXT(fbos.size(),&fbos[0]);
         }
-        //}
     }
 
-    //----------------------------------------------------------------------
     void Render::drawArrays()
     {
         glBindBuffer(GL_ARRAY_BUFFER, col_vbo);
@@ -124,7 +84,6 @@ namespace rtps
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    //----------------------------------------------------------------------
     void Render::render()
     {
         timers["render"]->start();
@@ -132,11 +91,10 @@ namespace rtps
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
-		//printf("*** before renderPointCloud\n");
         glDepthMask(GL_TRUE);
 		glEnable(GL_LIGHTING);
 #ifdef CLOUD_COLLISION
-		renderPointCloud(); //GE
+		renderPointCloud(); 
 #endif
 		glDisable(GL_LIGHTING);
         glDepthMask(GL_FALSE);
@@ -144,25 +102,15 @@ namespace rtps
 
         if (blending)
         {
-            //glDisable(GL_DEPTH_TEST);
             glDepthMask(GL_FALSE);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
-        else
-        {
-            //glEnable(GL_DEPTH_TEST);
-        }
 
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-        // draws circles instead of squares
         glEnable(GL_POINT_SMOOTH); 
-        //TODO make the point size a setting
         glPointSize(5.0f);
 
         drawArrays();
-        //printf("done rendering, clean up\n");
 
         glDepthMask(GL_TRUE);
 
@@ -170,19 +118,12 @@ namespace rtps
 
         glPopClientAttrib();
         glPopAttrib();
-        //glDisable(GL_POINT_SMOOTH);
         if (blending)
         {
             glDisable(GL_BLEND);
         }
-        //glEnable(GL_LIGHTING);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-        //printf("done rendering\n");
         timers["render"]->end();
-
-        //make sure rendering timing is accurate
         glFinish();
     }
 
@@ -198,7 +139,6 @@ namespace rtps
         for (int i=0; i < cloud_num; i++) 
         {
             float4& f = (*cloud_positions)[i];
-            //printf("v: %f, %f, %f\n", (float) f.x, (float) f.y, (float) f.z);
             if (f.x < 0 || f.y < 0 || f.z < 0) continue;
             if (f.x > 5 || f.y > 5 || f.z > 5) continue;
             glVertex3f(f.x, f.y, f.z);
@@ -208,45 +148,32 @@ namespace rtps
 #endif
 
 #if 1
-// Something wrong with the faces when the arm is moving
 
     int nb_faces = cloud_faces->size();
 
     if (nb_faces > 0) 
     {
-        //printf("nb_faces= %d\n", nb_faces);
         glBegin(GL_QUADS);
             for (int i=0; i < nb_faces; i++) {
                 int4& vertices = (*cloud_faces)[i];
                 int4& normals = (*cloud_faces_normals)[i];
-                //vertices.print("v");
-                //normals.print("n");
-                //printf("ver: %d, %d, %d, %d\n", vertices.x, vertices.y, vertices.z, vertices.w);
                 float4& v1 = (*cloud_positions)[vertices.x];
                 float4& n1 = (*cloud_normals)[normals.x];
-                //v1.print("v1");
-                //n1.print("n1");
                 glNormal3f(n1.x, n1.y, n1.z);
                 glVertex3f(v1.x, v1.y, v1.z);
 
                 float4& v2 = (*cloud_positions)[vertices.y];
                 float4& n2 = (*cloud_normals)[normals.y];
-                //v2.print("v2");
-                //n2.print("n2");
                 glNormal3f(n2.x, n2.y, n2.z);
                 glVertex3f(v2.x, v2.y, v2.z);
 
                 float4& v3 = (*cloud_positions)[vertices.z];
                 float4& n3 = (*cloud_normals)[normals.z];
-                //v3.print("v3");
-                //n3.print("n3");
                 glNormal3f(n3.x, n3.y, n3.z);
                 glVertex3f(v3.x, v3.y, v3.z);
 
                 float4& v4 = (*cloud_positions)[vertices.w];
                 float4& n4 = (*cloud_normals)[normals.w];
-                //v4.print("v4");
-                //n4.print("n4");
                 glNormal3f(n4.x, n4.y, n4.z);
                 glVertex3f(v4.x, v4.y, v4.z);
             }
@@ -370,17 +297,13 @@ namespace rtps
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
         glUseProgram(glsl_program[SPHERE_SHADER]);
-        //float particle_radius = 0.125f * 0.5f;
         glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "pointScale"), ((float)window_width) / tanf(65. * (0.5f * 3.1415926535f/180.0f)));
 
-        //GE PUT particle_radius in the panel (as a test)
-        float radius_scale = settings->getRadiusScale(); //GE
-        //glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "pointRadius"), particle_radius );
-        glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "pointRadius"), particle_radius*radius_scale ); //GE
+        float radius_scale = settings->getRadiusScale(); 
+        glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "pointRadius"), particle_radius*radius_scale ); 
         glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "near"), near_depth );
         glUniform1f( glGetUniformLocation(glsl_program[SPHERE_SHADER], "far"), far_depth );
 
-        //glColor3f(1., 1., 1.);
 
         drawArrays();
 
@@ -396,7 +319,6 @@ namespace rtps
 
         glEnable(GL_DEPTH_TEST);
         glColor4f(.0f, 1.0f, .0f, 1.0f);
-        //draw grid
         glBegin(GL_LINES);
         //1st face
         glVertex3f(min.x, min.y, min.z);
@@ -436,8 +358,6 @@ namespace rtps
         glVertex3f(max.x, max.y, max.z);
 
         glEnd();
-        //glDisable(GL_DEPTH_TEST);
-
     }
 
     void Render::render_table(float4 min, float4 max)
@@ -445,21 +365,8 @@ namespace rtps
 
         glEnable(GL_DEPTH_TEST);
         glColor4f(0.0f, 0.4f, 0.0f, 1.0f);
-        //glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,0,0);
-        //glBindTexture(GL_TEXTURE_2D,gl_framebuffer_texs["normalColor"]);
-        //glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,gl_framebuffer_texs["normalColor"],0);
-        //glBindTexture(GL_TEXTURE_2D,gl_textures["checker_board"]);
-        //glBegin(GL_TRIANGLE_STRIP);
         glBegin(GL_QUADS);
         float4 scale = float4((0.25f)*(max.x-min.x),(0.25f)*(max.y-min.y),(0.25f)*(max.z-min.z),0.0f);
-        /*glTexCoord2f(0.f,0.f);
-        glVertex3f(min.x-scale.x, min.y-scale.y, min.z);
-        glTexCoord2f(1.f,0.f);
-        glVertex3f(max.x+scale.x, min.y-scale.y, min.z);
-        glTexCoord2f(1.f,1.f);
-        glVertex3f(max.x+scale.x, max.y+scale.y, min.z);
-        glTexCoord2f(0.f,1.f);
-        glVertex3f(min.x-scale.x, max.y+scale.y, min.z);*/
         glTexCoord2f(0.f,0.f);
         glVertex3f(-10000., -10000., min.z);
         glTexCoord2f(1.f,0.f);
@@ -470,7 +377,6 @@ namespace rtps
         glVertex3f(-10000., 10000., min.z);
         glEnd();
         glBindTexture(GL_TEXTURE_2D,0);
-        //glDisable(GL_DEPTH_TEST);
     }
 
 	//----------------------------------------------------------------------
@@ -512,16 +418,13 @@ namespace rtps
     }
 
     //----------------------------------------------------------------------
-    GLuint Render::compileShaders(const char* vertex_file, const char* fragment_file, const char* geometry_file, GLenum* geom_param, GLint* geom_value, int geom_param_len)
+    GLuint Render::compileShaders(const char* vertex_file, const char* fragment_file,
+            const char* geometry_file, GLenum* geom_param, GLint* geom_value, int geom_param_len)
     {
 
-        //this may not be the cleanest implementation
-        //#include "shaders.cpp"
 
         printf("vertex_file: %s\n", vertex_file);
         printf("fragment_file: %s\n", fragment_file);
-        //printf("vertex shader:\n%s\n", vertex_shader_source);
-        //printf("fragment shader:\n%s\n", fragment_shader_source);
         char *vertex_shader_source = NULL,*fragment_shader_source= NULL,*geometry_shader_source=NULL;
         int vert_size,frag_size,geom_size;
         if (vertex_file)
@@ -619,7 +522,6 @@ namespace rtps
 
         glLinkProgram(program);
 
-        // check if program linked
         GLint success = 0;
         glGetProgramiv(program, GL_LINK_STATUS, &success);
 
@@ -632,7 +534,6 @@ namespace rtps
             program = 0;
         }
 
-        //cleanup
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         if (geometry_shader)
@@ -648,18 +549,13 @@ namespace rtps
 
     int Render::setupTimers()
     {
-        //int print_freq = 20000;
-        //int print_freq = 100; //one second
         int time_offset = 5;
-
-        //timers[TI_RENDER]     = new GE::Time("render", time_offset, print_freq);
         timers["render"] = new EB::Timer("Render call", time_offset);
 		return 0;
     }
 
     void Render::printTimers()
     {
-        //timers[TI_RENDER]->print();
         timers.printAll();
     }
 
@@ -708,13 +604,7 @@ namespace rtps
     int Render::loadTexture(string texture_file, string texture_name)
     {
 
-        //std::string path(GLSL_SOURCE_DIR);
-        //path += "../../../sprites/boid.png";
-        //path += "../../../sprites/enjalot.jpg";
         printf("LOAD TEXTURE!!!!!!!!!!!!!!\n");
-        //printf("path: %s\n", path.c_str());
-
-        //Load an image with stb_image
         int w,h,channels;
         int force_channels = 0;
 
@@ -727,7 +617,6 @@ namespace rtps
             printf("WTF\n");
         }
 
-        //load as gl texture
         glGenTextures(1, &gl_textures[texture_name]);
         glBindTexture(GL_TEXTURE_2D, gl_textures[texture_name]);
 
@@ -737,7 +626,6 @@ namespace rtps
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         
-        //better way to do this?
         if(channels == 3)
         {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
@@ -751,7 +639,7 @@ namespace rtps
 
         glBindTexture(GL_TEXTURE_2D,0);
         free(im);
-        return 0; //success
+        return 0; 
     }
 
     void Render::deleteFramebufferTextures()
