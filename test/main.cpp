@@ -340,10 +340,9 @@ void appRender()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        //glRotatef(-90, 1.0, 0.0, 0.0);
-        glTranslatef(translate_x, translate_z, translate_y);
+        glTranslatef(translate_x, translate_y, translate_z);
         glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 0.0, 1.0); 
+        glRotatef(rotate_y, 0.0, 1.0, 0.0); 
         ps->render();
         draw_collision_boxes();
         
@@ -400,10 +399,6 @@ void appMotion(int x, int y)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// write 2d text using GLUT
-// The projection matrix must be set to orthogonal before call this function.
-///////////////////////////////////////////////////////////////////////////////
 void drawString(const char *str, int x, int y, float color[4], void *font)
 {
     glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT); // lighting and color mask
@@ -423,9 +418,6 @@ void drawString(const char *str, int x, int y, float color[4], void *font)
     glPopAttrib();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// display frame rates
-///////////////////////////////////////////////////////////////////////////////
 void showFPS(float fps, std::string* report)
 {
     static std::stringstream ss;

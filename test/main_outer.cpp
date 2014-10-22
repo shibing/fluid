@@ -446,9 +446,6 @@ void timerCB(int ms)
 
 void appRender()
 {
-
-    //ps->system->sprayHoses();
-
     glEnable(GL_DEPTH_TEST);
     if (stereo_enabled)
     {
@@ -470,21 +467,8 @@ void appRender()
         glTranslatef(translate_x, translate_z, translate_y);
         ps->render();
         draw_collision_boxes();
-        if(render_movie)
-        {
-            write_movie_frame("image");
-        }
-
     }
-
-    if(render_movie)
-    {
-        frame_counter++;
-    }
-    //showFPS(enjas->getFPS(), enjas->getReport());
     glutSwapBuffers();
-
-    //glDisable(GL_DEPTH_TEST);
 }
 
 void appDestroy()
