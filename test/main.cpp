@@ -76,8 +76,9 @@ void resizeWindow(int w, int h);
 
 void timerCB(int ms);
 
+void showInfo();
 void drawString(const char *str, int x, int y, float color[4], void *font);
-void showFPS(float fps, std::string *report);
+void showFPS(float fps);
 void draw_collision_boxes();
 
 void *font = GLUT_BITMAP_8_BY_13;
@@ -93,6 +94,7 @@ int hindex;
 
 static const int FRAME_COUNT = 5 ;
 float per_frame_times[FRAME_COUNT];
+static float fps = 0;
 
 #define clear_frame_time() \
     do { \
@@ -236,7 +238,6 @@ void appKeyboard(unsigned char key, int x, int y)
             ps->system->updateHose(hindex, center, velocity, 4, color);
             return;
 		}
-        case 'n':
             render_movie=!render_movie;
             break;
         case '`':
@@ -261,7 +262,7 @@ void appKeyboard(unsigned char key, int x, int y)
                 ps->system->loadTriangles(triangles);
                 return;
             }
-        case 'r': //drop a rectangle
+        case 'r': 
             {
                 nn = 2048;
                 min = float4(-0.5, -0.5, 0.7, 1.0f);
@@ -297,7 +298,6 @@ void appKeyboard(unsigned char key, int x, int y)
             arm_velocity_z  += 0.1;
             break;
         case 'A':
-			// move hand at constant velocity in x
             arm_translate_x += 0.1;
             arm_velocity_x  += 0.1;
             break;
@@ -339,10 +339,10 @@ void timerCB(int ms)
 void appRender()
 {
     static int i = 0;
-    i = i % FRAME_COUNT;
+    static int count = 0;
     struct timespec prev_time;
     struct timespec post_time;
-    clock_gettime(CLOCK_REALIME, &time);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &prev_time);
     glEnable(GL_DEPTH_TEST);
     if (stereo_enabled)
     {
@@ -363,12 +363,19 @@ void appRender()
         draw_collision_boxes();
         
     }
-    clock_gettime(CLOCK_REALTIME, &post_time);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &post_time);
 
-    float duration = (post_time.tv_nsec - prev_time.tv_nsec + post_time.tv.sec * 1e6 - prev_time.tv_sec * 1e6) * 1e-6;
-    time_per_frames[i++] = duration;
+    float duration = (post_time.tv_nsec - prev_time.tv_nsec + post_time.tv_sec * 1e9 - prev_time.tv_sec * 1e9) * 1e-9;
+    per_frame_times[i++] = duration;
+    i %= FRAME_COUNT;
+    ++count;
+    if(count >= FRAME_COUNT)
+        count = FRAME_COUNT;
     float all_time = 0;
-    for(
+    for(int j = 0; j < count; ++j)
+        all_time += per_frame_times[j];
+    fps = 1.0f / (all_time / count);
+    showInfo();
     glutSwapBuffers();
 
     glutSwapBuffers();
@@ -417,6 +424,37 @@ void appMotion(int x, int y)
     glutPostRedisplay();
 }
 
+template<typename T>
+void drawValue(const string& key, const T& value, int x, int y)
+{
+    float color[4] = {1, 1, 0, 1};
+    static std::stringstream ss;
+    ss.str("");
+    ss << std::fixed << std::setprecision(1);
+    ss << key << ": " << value << std::ends; 
+    ss << std::resetiosflags(std::ios_base::fixed | std::ios_base::floatfield);
+    drawString(ss.str().c_str(), x, y, color, font);
+}
+
+void showInfo()
+{ 
+    glPushMatrix();                    
+    glLoadIdentity();                   
+    glMatrixMode(GL_PROJECTION);        
+    glPushMatrix();                     
+    glLoadIdentity();                  
+    gluOrtho2D(0, window_width, 0, window_height);       
+    
+    drawValue("FPS", fps, 15, 700);
+    drawValue("particle num", ps->settings->GetSettingAs<int>("Maximum Number of Particles"), 15, 650);
+
+
+    glPopMatrix();                      
+    glMatrixMode(GL_MODELVIEW);         
+    glPopMatrix();                      
+
+
+}
 
 void drawString(const char *str, int x, int y, float color[4], void *font)
 {
@@ -437,31 +475,29 @@ void drawString(const char *str, int x, int y, float color[4], void *font)
     glPopAttrib();
 }
 
-void showFPS(float fps, std::string* report)
+void showFPS(float fps)
 {
     static std::stringstream ss;
 
-    glPushMatrix();                     // save current modelview matrix
-    glLoadIdentity();                   // reset modelview matrix
-    glMatrixMode(GL_PROJECTION);        // switch to projection matrix
-    glPushMatrix();                     // save current projection matrix
-    glLoadIdentity();                   // reset projection matrix
-    gluOrtho2D(0, 400, 0, 300);         // set to orthogonal projection
+    glPushMatrix();                    
+    glLoadIdentity();                   
+    glMatrixMode(GL_PROJECTION);        
+    glPushMatrix();                     
+    glLoadIdentity();                  
+    gluOrtho2D(0, 400, 0, 300);       
 
     float color[4] = {1, 1, 0, 1};
 
     // update fps every second
     ss.str("");
     ss << std::fixed << std::setprecision(1);
-    ss << fps << " FPS" << std::ends; // update fps string
+    ss << fps << " FPS" << std::ends; 
     ss << std::resetiosflags(std::ios_base::fixed | std::ios_base::floatfield);
     drawString(ss.str().c_str(), 15, 286, color, font);
-    drawString(report[0].c_str(), 15, 273, color, font);
-    drawString(report[1].c_str(), 15, 260, color, font);
 
-    glPopMatrix();                      // restore to previous projection matrix
-    glMatrixMode(GL_MODELVIEW);         // switch to modelview matrix
-    glPopMatrix();                      // restore to previous modelview matrix
+    glPopMatrix();                      
+    glMatrixMode(GL_MODELVIEW);         
+    glPopMatrix();                      
 }
 //----------------------------------------------------------------------
 void resizeWindow(int w, int h)
