@@ -91,6 +91,15 @@ rtps::RTPS* ps;
 float4 color = float4(.0, 0.7, 0.0, 1.);
 int hindex; 
 
+static const int FRAME_COUNT = 5 ;
+float per_frame_times[FRAME_COUNT];
+
+#define clear_frame_time() \
+    do { \
+        for(int i = 0; i < FRAME_COUNT; ++i) \
+            per_frame_times[i] = 0; \
+    }while(0)
+
 //================
 #include "materials_lights.h"
 
@@ -128,6 +137,8 @@ int main(int argc, char** argv)
     glewInit();
     GLboolean bGLEW = glewIsSupported("GL_VERSION_2_0 GL_ARB_pixel_buffer_object"); 
     printf("GLEW supported?: %d\n", bGLEW);
+
+    clear_frame_time();
 
     rtps::Domain* grid = new Domain(float4(-2.5,-2.5,-2.5,0), float4(2.5, 2.5, 2.5, 0));
 
@@ -327,6 +338,11 @@ void timerCB(int ms)
 
 void appRender()
 {
+    static int i = 0;
+    i = i % FRAME_COUNT;
+    struct timespec prev_time;
+    struct timespec post_time;
+    clock_gettime(CLOCK_REALIME, &time);
     glEnable(GL_DEPTH_TEST);
     if (stereo_enabled)
     {
@@ -347,11 +363,14 @@ void appRender()
         draw_collision_boxes();
         
     }
+    clock_gettime(CLOCK_REALTIME, &post_time);
 
-    if(render_movie)
-    {
-        frame_counter++;
-    }
+    float duration = (post_time.tv_nsec - prev_time.tv_nsec + post_time.tv.sec * 1e6 - prev_time.tv_sec * 1e6) * 1e-6;
+    time_per_frames[i++] = duration;
+    float all_time = 0;
+    for(
+    glutSwapBuffers();
+
     glutSwapBuffers();
 }
 
