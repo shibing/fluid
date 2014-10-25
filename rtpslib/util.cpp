@@ -93,13 +93,12 @@ void Utils::printDevArray(Buffer<float4>& cl_array, char* msg, int nb_el, int nb
 
     GLuint createVBO(const void* data, int dataSize, GLenum target, GLenum usage)
     {
-        GLuint id = 0;  // 0 is reserved, glGenBuffersARB() will return non-zero id if success
+        GLuint id = 0;  
 
         glGenBuffers(1, &id);                        // create a vbo
         glBindBuffer(target, id);                    // activate vbo id to use
         glBufferData(target, dataSize, data, usage); // upload data to video card
 
-        // check data size in VBO is same as input array, if not return 0 and delete VBO
         int bufferSize = 0;
         glGetBufferParameteriv(target, GL_BUFFER_SIZE, &bufferSize);
         if (dataSize != bufferSize)

@@ -1,10 +1,7 @@
 
 #include <GL/glew.h>
 #include "RTPS.h"
-#include "system/Simple.h"
 #include "system/SPH.h"
-#include "system/FLOCK.h"
-#include "system/OUTER.h"
 
 
 namespace rtps
@@ -45,44 +42,12 @@ namespace rtps
     void RTPS::Init()
     {
         glewInit();
-
-        system = NULL;
-
-        if (settings->system == RTPSettings::Simple)
-        {
-            printf("simple system\n");
-            system = new Simple(this, settings->max_particles);
-        }
-        else if (settings->system == RTPSettings::SPH)
-        {
-            printf("*** sph system 1  ***\n");
-			settings->setMaxOuterParticles(4096*4);
-            system = new SPH(this, settings->max_particles, settings->max_outer_particles);
-			printf("max: %d\n", settings->max_outer_particles);
-        }
-        else if (settings->system == RTPSettings::FLOCK)
-        {
-            printf("flock system\n");
-            system = new FLOCK(this, settings->max_particles);
-        }
-        else if (settings->system == RTPSettings::OUTER)
-        {
-            printf("*** outer system ***\n");
-            system_outer = new OUTER(this, settings->max_outer_particles);
-			printf("settings max particles: %d\n", settings->max_outer_particles);
-			//exit(1);
-            system = new SPH(this, settings->max_particles); //, settings->max_outer_particles);
-			settings->setMaxOuterParticles(10048);
-        }
-
-        printf("created system in RTPS\n");
+        settings->setMaxOuterParticles(4096*4);
+        system = new SPH(this, settings->max_particles, settings->max_outer_particles);
     }
 
     void RTPS::update()
     {
-        //eventually we will support more systems
-        //then we will want to iterate over them
-        //or have more complex behavior if they interact
         system->update();
     }
 

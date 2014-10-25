@@ -46,33 +46,11 @@ set (test_SOURCES
     main.cpp
     )
 
-set (test_outer_SOURCES
-    main_outer.cpp
-    )
-
-set (test_multi_SOURCES
-    main_multi.cpp
-    )
-
-
-set (test_simple_SOURCES
-    main_simple.cpp
-    )
-
-set (test_flock_SOURCES
-    main_flock.cpp
-    )
-
-
 
 ADD_DEFINITIONS(-g )
 
 INCLUDE_DIRECTORIES(${test_INCLUDES})
-ADD_EXECUTABLE(sph.x ${test_SOURCES})
-ADD_EXECUTABLE(outer.x ${test_outer_SOURCES})
-ADD_EXECUTABLE(multi.x ${test_multi_SOURCES})
-ADD_EXECUTABLE(simple.x ${test_simple_SOURCES})
-ADD_EXECUTABLE(flock.x ${test_flock_SOURCES})
+ADD_EXECUTABLE(sph ${test_SOURCES})
 
 message("current build dir:\n")
 message("${BASE_DIR}/rtps/build")
@@ -92,31 +70,9 @@ SET(LINK_LIBS
 )
 message(RTPS_EXPORTS "${rtps_EXPORTS}")
 
-TARGET_LINK_LIBRARIES (sph.x
+TARGET_LINK_LIBRARIES (sph
     ${LINK_LIBS}
 )
 
-TARGET_LINK_LIBRARIES (outer.x
-    ${LINK_LIBS}
-)
 
-TARGET_LINK_LIBRARIES (multi.x
-    ${LINK_LIBS}
-)
-
-TARGET_LINK_LIBRARIES (simple.x
-    ${LINK_LIBS}
-)
-
-TARGET_LINK_LIBRARIES (flock.x
-    ${LINK_LIBS}
-)
-#IF(WIN32)
-install (TARGETS sph.x DESTINATION ${rtpsuite_BINARY_DIR}/bin)
-install (TARGETS outer.x DESTINATION ${rtpsuite_BINARY_DIR}/bin)
-install (TARGETS multi.x DESTINATION ${rtpsuite_BINARY_DIR}/bin)
-install (TARGETS simple.x DESTINATION ${rtpsuite_BINARY_DIR}/bin)
-install (TARGETS flock.x DESTINATION ${rtpsuite_BINARY_DIR}/bin)
-#install (FILES MathFunctions.h DESTINATION include)
-
-#ENDIF(WIN32)
+install (TARGETS sph DESTINATION ${rtpsuite_BINARY_DIR}/bin)

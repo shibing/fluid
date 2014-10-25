@@ -11,32 +11,23 @@
 
 #include "common/Hose.h"
 
-
-
-//for random
 #include<time.h>
 
 namespace rtps
 {
     using namespace sph;
 
-	//----------------------------------------------------------------------
     SPH::SPH(RTPS *psfr, int n, int max_nb_in_cloud)
     {
-        //store the particle system framework
         ps = psfr;
         settings = ps->settings;
         max_num = n;
-		//printf("max_num= %d\n", max_num); exit(0);
         num = 0;
         nb_var = 10;
-
-		// I should be able to not specify this, but GPU restrictions ...
 
         resource_path = settings->GetSettingAs<string>("rtps_path");
         printf("resource path: %s\n", resource_path.c_str());
 
-        //seed random
         srand ( time(NULL) );
 
         grid = settings->grid;
@@ -48,45 +39,20 @@ namespace rtps
         calculate();
         updateSPHP();
 
-        //settings->printSettings();
-
         spacing = settings->GetSettingAs<float>("Spacing");
 
-        //SPH settings depend on number of particles used
-        //calculateSPHSettings();
-        //set up the grid
         setupDomain();
 
         integrator = LEAPFROG;
-        //integrator = EULER;
-
-
-        //*** end Initialization
 
         setupTimers();
 
-#ifdef CPU
-        printf("RUNNING ON THE CPU\n");
-#endif
-#ifdef GPU
-        printf("RUNNING ON THE GPU\n");
-
-        
-        //setup the sorted and unsorted arrays
         prepareSorted();
         setRenderer();
 
         ps->cli->addIncludeDir(sph_source_dir);
         ps->cli->addIncludeDir(common_source_dir);
 
-#ifdef CLOUD_COLLISION
-		// CLOUD INITIALIZATION
-		cloudInitialize();
-#endif
-
-
-
-        //should be more cross platform
         sph_source_dir = resource_path + "/" + std::string(SPH_CL_SOURCE_DIR);
         common_source_dir = resource_path + "/" + std::string(COMMON_CL_SOURCE_DIR);
 
@@ -101,28 +67,18 @@ namespace rtps
         collision_wall = CollisionWall(sph_source_dir, ps->cli, timers["cw_gpu"]);
         collision_tri = CollisionTriangle(sph_source_dir, ps->cli, timers["ct_gpu"], 2048); //TODO expose max_triangles as a parameter
 		
-
-        //could generalize this to other integration methods later (leap frog, RK4)
         if (integrator == LEAPFROG)
         {
-            //loadLeapFrog();
             leapfrog = LeapFrog(sph_source_dir, ps->cli, timers["leapfrog_gpu"]);
         }
         else if (integrator == EULER)
         {
-            //loadEuler();
             euler = Euler(sph_source_dir, ps->cli, timers["euler_gpu"]);
         }
 
-		// CLOUD Integrator
-		// ADD Cloud timers later. 
         string lt_file = settings->GetSettingAs<string>("lt_cl");
-        //lifetime = Lifetime(sph_source_dir, ps->cli, timers["lifetime_gpu"], lt_file);
-#endif
-
     }
 
-	//----------------------------------------------------------------------
     SPH::~SPH()
     {
         printf("SPH destructor\n");
@@ -149,53 +105,12 @@ namespace rtps
         }
     }
 
-	//----------------------------------------------------------------------
     void SPH::update()
     {
-		//printf("+++++++++++++ enter UPDATE()\n");
-        //call kernels
-        //TODO: add timings
-#ifdef CPU
-        updateCPU();
-#endif
-#ifdef GPU
-        updateGPU();
-#endif
-    }
-
-	//----------------------------------------------------------------------
-    void SPH::updateCPU()
-    {
-        cpuDensity();
-        cpuPressure();
-        cpuViscosity();
-        cpuXSPH();
-        cpuCollision_wall();
-
-        if (integrator == EULER)
-        {
-            cpuEuler();
-        }
-        else if (integrator == LEAPFROG)
-        {
-            cpuLeapFrog();
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, pos_vbo);
-        glBufferData(GL_ARRAY_BUFFER, num * sizeof(float4), &positions[0], GL_DYNAMIC_DRAW);
-    }
-
-	//----------------------------------------------------------------------
-    void SPH::updateGPU()
-    {
-		//printf("**** enter updateGPU, num= %d\n", num);
-
         timers["update"]->start();
         glFinish();
         if (settings->has_changed()) updateSPHP();
 
-        //settings->printSettings();
-
-        //int sub_intervals = 3;  //should be a setting
         int sub_intervals =  settings->GetSettingAs<float>("sub_intervals");
         //this should go in the loop but avoiding acquiring and releasing each sub
         //interval for all the other calls.
@@ -211,29 +126,19 @@ namespace rtps
 
         for (int i=0; i < sub_intervals; i++)
         {
-            //if(num >0) printf("before hash and sort\n");
             hash_and_sort();
 
-			//------------------
-            //printf("before cellindices, num= %d\n", num);
             timers["cellindices"]->start();
             int nc = cellindices.execute(   num,
                 cl_sort_hashes,
                 cl_sort_indices,
                 cl_cell_indices_start,
                 cl_cell_indices_end,
-                //cl_sphp,
                 cl_GridParams,
                 grid_params.nb_cells,
                 clf_debug,
                 cli_debug);
             timers["cellindices"]->stop();
-
-			//if (num > 0) exit(1); //GE
-
-       
-			//-----------------
-            //printf("*** enter fluid permute, num= %d\n", num);
             timers["permute"]->start();
             permute.execute(   num,
                 cl_position_u,
@@ -245,17 +150,12 @@ namespace rtps
                 cl_color_u,
                 cl_color_s,
                 cl_sort_indices,
-                //cl_sphp,
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
             timers["permute"]->stop();
-			//printf("exit after fluid permute\n");
-			//if (num > 0) exit(0);
  
-			// NUMBER OF CLOUD PARTICLES IS CONSTANT THROUGHOUT THE SIMULATION
 
-			//---------------------
             if (nc <= num && nc >= 0)
             {
                 //check if the number of particles has changed
@@ -274,15 +174,11 @@ namespace rtps
                 cl_position_s.copyToHost(deleted_pos, nc); //damn these will always be out of bounds here!
                 cl_velocity_s.copyToHost(deleted_vel, nc);
 
- 
-                num = nc;
                 settings->SetSetting("Number of Particles", num);
                 //sphp.num = num;
                 updateSPHP();
                 renderer->setNum(sphp.num);
 
-                //need to copy sorted arrays into unsorted arrays
-//**** PREP(2)
                 call_prep(2);
                 //printf("HOW MANY NOW? %d\n", num);
                 hash_and_sort();
@@ -296,14 +192,12 @@ namespace rtps
             //if(num >0) printf("density\n");
             timers["density"]->start();
             density.execute(   num,
-                //cl_vars_sorted,
                 cl_position_s,
                 cl_density_s,
                 cl_cell_indices_start,
                 cl_cell_indices_end,
                 cl_sphp,
                 cl_GridParamsScaled, // GE: Might have to fix this. Do not know. 
-                //cl_GridParams,
                 clf_debug,
                 cli_debug);
             timers["density"]->stop();
@@ -312,7 +206,6 @@ namespace rtps
             //if(num >0) printf("force\n");
             timers["force"]->start();
             force.execute(   num,
-                //cl_vars_sorted,
                 cl_position_s,
                 cl_density_s,
                 cl_veleval_s,
@@ -321,24 +214,13 @@ namespace rtps
                 cl_cell_indices_start,
                 cl_cell_indices_end,
                 cl_sphp,
-                //cl_GridParams,
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
-
             timers["force"]->stop();
-
             collision();
-
-#ifdef CLOUD_COLLISION
-			cloudUpdate();
-#endif
             integrate(); // includes boundary force
         }
-
-#ifdef CLOUD_COLLISION
-		cloudCleanup();
-#endif
 
         cl_position_u.release();
         cl_color_u.release();
@@ -349,29 +231,19 @@ namespace rtps
 	//----------------------------------------------------------------------
     void SPH::hash_and_sort()
     {
-        //printf("hash\n");
         timers["hash"]->start();
         hash.execute(   num,
-                //cl_vars_unsorted,
                 cl_position_u,
                 cl_sort_hashes,
                 cl_sort_indices,
-                //cl_sphp,
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
         timers["hash"]->stop();
 
-        //printf("bitonic_sort\n");
-        //defined in Sort.cpp
         timers["bitonic"]->start();
         bitonic_sort();
         timers["bitonic"]->stop();
-        //timers["radix"]->start();
-        //timers["bitonic"]->start();
-        //radix_sort();
-        //timers["bitonic"]->stop();
-        //timers["radix"]->stop();
     }
 
 	//----------------------------------------------------------------------
@@ -379,32 +251,24 @@ namespace rtps
     {
         //when implemented other collision routines can be chosen here
         timers["collision_wall"]->start();
-        //collide_wall();
         collision_wall.execute(num,
-                //cl_vars_sorted, 
                 cl_position_s,
                 cl_velocity_s,
                 cl_force_s,
                 cl_sphp,
-                //cl_GridParams,
                 cl_GridParamsScaled,
-                //debug
                 clf_debug,
                 cli_debug);
 
-        //k_collision_wall.execute(num, local_size);
         timers["collision_wall"]->stop();
 
         timers["collision_tri"]->start();
-        //collide_triangles();
         collision_tri.execute(num,
                 settings->dt,
-                //cl_vars_sorted, 
                 cl_position_s,
                 cl_velocity_s,
                 cl_force_s,
                 cl_sphp,
-                //debug
                 clf_debug,
                 cli_debug);
         timers["collision_tri"]->stop();
@@ -417,7 +281,6 @@ namespace rtps
 
         if (integrator == EULER)
         {
-            //euler();
             euler.execute(num,
                 settings->dt,
                 cl_position_u,
@@ -425,19 +288,13 @@ namespace rtps
                 cl_velocity_u,
                 cl_velocity_s,
                 cl_force_s,
-                //cl_vars_unsorted, 
-                //cl_vars_sorted, 
                 cl_sort_indices,
                 cl_sphp,
-                //debug
                 clf_debug,
                 cli_debug);
-
-
         }
         else if (integrator == LEAPFROG)
         {
-            //leapfrog();
              leapfrog.execute(num,
                 settings->dt,
                 cl_position_u,
@@ -447,25 +304,15 @@ namespace rtps
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
-                //cl_vars_unsorted, 
-                //cl_vars_sorted, 
                 cl_sort_indices,
                 cl_sphp,
-                //debug
                 clf_debug,
                 cli_debug);
         }
-
-		// Perhaps I am messed up by Courant condition if cloud point 
-		// velocities are too large? 
-
 		static int count=0;
-
     	timers["integrate"]->stop();
     }
 
-	// GE: WHY IS THIS NEEDED?
-	//----------------------------------------------------------------------
     void SPH::call_prep(int stage)
     {
 		// copy from sorted to unsorted arrays at the beginning of each 
@@ -483,7 +330,6 @@ namespace rtps
 	//----------------------------------------------------------------------
     int SPH::setupTimers()
     {
-        //int print_freq = 20000;
         int print_freq = 1000; //one second
         int time_offset = 5;
         timers["update"] = new EB::Timer("Update loop", time_offset);
@@ -508,8 +354,6 @@ namespace rtps
         timers["integrate"] = new EB::Timer("Integration function", time_offset);
         timers["leapfrog_gpu"] = new EB::Timer("LeapFrog Integration GPU kernel execution", time_offset);
         timers["euler_gpu"] = new EB::Timer("Euler Integration GPU kernel execution", time_offset);
-        //timers["lifetime_gpu"] = new EB::Timer("Lifetime GPU kernel execution", time_offset);
-        //timers["prep_gpu"] = new EB::Timer("Prep GPU kernel execution", time_offset);
 		return 0;
     }
 
@@ -520,15 +364,12 @@ namespace rtps
         timers.printAll();
         std::ostringstream oss; 
         oss << "sph_timer_log_" << std::setw( 7 ) << std::setfill( '0' ) <<  num; 
-        //printf("oss: %s\n", (oss.str()).c_str());
-
         timers.writeToFile(oss.str()); 
     }
 
 	//----------------------------------------------------------------------
     void SPH::prepareSorted()
     {
-//#include "sph/cl_src/cl_macros.h"
 
         positions.resize(max_num);
         colors.resize(max_num);
@@ -537,15 +378,7 @@ namespace rtps
         veleval.resize(max_num);
         densities.resize(max_num);
         xsphs.resize(max_num);
-
-        //for reading back different values from the kernel
         std::vector<float4> error_check(max_num);
-        
-        float4 pmax = grid_params.grid_max + grid_params.grid_size;
-        //std::fill(positions.begin(), positions.end(), pmax);
-
-        //float4 color = float4(0.0, 1.0, 0.0, 1.0f);
-        //std::fill(colors.begin(), colors.end(),color);
         std::fill(forces.begin(), forces.end(), float4(0.0f, 0.0f, 1.0f, 0.0f));
         std::fill(velocities.begin(), velocities.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::fill(veleval.begin(), veleval.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -554,13 +387,9 @@ namespace rtps
         std::fill(xsphs.begin(), xsphs.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::fill(error_check.begin(), error_check.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
 
-        // VBO creation, TODO: should be abstracted to another class
         managed = true;
-        printf("positions: %zd, %zd, %zd\n", positions.size(), sizeof(float4), positions.size()*sizeof(float4));
-        pos_vbo = createVBO(&positions[0], positions.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-        printf("pos vbo: %d\n", pos_vbo);
-        col_vbo = createVBO(&colors[0], colors.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-        printf("col vbo: %d\n", col_vbo);
+        pos_vbo = createVBO(0, positions.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+        col_vbo = createVBO(0, colors.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
         // end VBO creation
 
         //vbo buffers
@@ -578,22 +407,15 @@ namespace rtps
         cl_force_s = Buffer<float4>(ps->cli, forces);
         cl_xsph_s = Buffer<float4>(ps->cli, xsphs);
 
-        //cl_error_check= Buffer<float4>(ps->cli, error_check);
-
-        
-        //TODO make a helper constructor for buffer to make a cl_mem from a struct
-        //Setup Grid Parameter structs
         std::vector<GridParams> gparams(0);
         gparams.push_back(grid_params);
         cl_GridParams = Buffer<GridParams>(ps->cli, gparams);
 
-        //scaled Grid Parameters
         std::vector<GridParams> sgparams(0);
         sgparams.push_back(grid_params_scaled);
         cl_GridParamsScaled = Buffer<GridParams>(ps->cli, sgparams);
 
 
-        //setup debug arrays
         std::vector<float4> clfv(max_num);
         std::fill(clfv.begin(), clfv.end(),float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::vector<int4> cliv(max_num);
@@ -603,19 +425,11 @@ namespace rtps
 
 
         std::vector<unsigned int> keys(max_num);
-        //to get around limits of bitonic sort only handling powers of 2
-#include "limits.h"
+        #include "limits.h"
         std::fill(keys.begin(), keys.end(), INT_MAX);
         cl_sort_indices  = Buffer<unsigned int>(ps->cli, keys);
         cl_sort_hashes   = Buffer<unsigned int>(ps->cli, keys);
 
-        // for debugging. Store neighbors of indices
-        // change nb of neighbors in cl_macro.h as well
-        //cl_index_neigh = Buffer<int>(ps->cli, max_num*50);
-
-        // Size is the grid size + 1, the last index is used to signify how many particles are within bounds
-        // That is a problem since the number of
-        // occupied cells could be much less than the number of grid elements.
         printf("%d\n", grid_params.nb_cells);
         std::vector<unsigned int> gcells(grid_params.nb_cells+1);
         int minus = 0xffffffff;
@@ -623,21 +437,12 @@ namespace rtps
 
         cl_cell_indices_start = Buffer<unsigned int>(ps->cli, gcells);
         cl_cell_indices_end   = Buffer<unsigned int>(ps->cli, gcells);
-        //printf("gp.nb_points= %d\n", gp.nb_points); exit(0);
 
-        // For bitonic sort. Remove when bitonic sort no longer used
-        // Currently, there is an error in the Radix Sort (just run both
-        // sorts and compare outputs visually
         cl_sort_output_hashes = Buffer<unsigned int>(ps->cli, keys);
         cl_sort_output_indices = Buffer<unsigned int>(ps->cli, keys);
 
-		// Eventually, if I must sort every iteration, I can reuse these arrays. 
-		// Due to potentially, large grid, this is very expensive, and one could run 
-		// out of memory on CPU and GPU. 
-
 		printf("keys.size= %d\n", keys.size()); // 
 		printf("gcells.size= %d\n", gcells.size()); // 1729
-		//exit(1);
      }
 
 	//----------------------------------------------------------------------
@@ -650,23 +455,10 @@ namespace rtps
         grid_params.bnd_min  = grid->getBndMin();
         grid_params.bnd_max  = grid->getBndMax();
 
-        //grid_params.bnd_min = float4(1, 1, 1,0);
-        //grid_params.bnd_max =  float4(4, 4, 4, 0);
-
         grid_params.grid_res = grid->getRes();
         grid_params.grid_size = grid->getSize();
         grid_params.grid_delta = grid->getDelta();
         grid_params.nb_cells = (int) (grid_params.grid_res.x*grid_params.grid_res.y*grid_params.grid_res.z);
-
-        //printf("gp nb_cells: %d\n", grid_params.nb_cells);
-
-
-        /*
-        grid_params.grid_inv_delta.x = 1. / grid_params.grid_delta.x;
-        grid_params.grid_inv_delta.y = 1. / grid_params.grid_delta.y;
-        grid_params.grid_inv_delta.z = 1. / grid_params.grid_delta.z;
-        grid_params.grid_inv_delta.w = 1.;
-        */
 
         float ss = sphp.simulation_scale;
 
@@ -677,29 +469,14 @@ namespace rtps
         grid_params_scaled.grid_res = grid_params.grid_res;
         grid_params_scaled.grid_size = grid_params.grid_size * ss;
         grid_params_scaled.grid_delta = grid_params.grid_delta / ss;
-        //grid_params_scaled.nb_cells = (int) (grid_params_scaled.grid_res.x*grid_params_scaled.grid_res.y*grid_params_scaled.grid_res.z);
         grid_params_scaled.nb_cells = grid_params.nb_cells;
-        //grid_params_scaled.grid_inv_delta = grid_params.grid_inv_delta / ss;
-        //grid_params_scaled.grid_inv_delta.w = 1.0f;
-
-        grid_params.print();
-        grid_params_scaled.print();
     }
 
 	//----------------------------------------------------------------------
     int SPH::addBox(int nn, float4 min, float4 max, bool scaled, float4 color)
     {
         float scale = 1.0f;
-		#if 0
-        if (scaled)
-        {
-            scale = sphp.simulation_scale;
-        }
-		#endif
-		//printf("GEE inside addBox, before addRect, scale= %f\n", scale);
-		//printf("GEE inside addBox, sphp.simulation_scale= %f\n", sphp.simulation_scale);
-		//printf("GEE addBox spacing = %f\n", spacing);
-        vector<float4> rect = addRect(nn, min, max, spacing, scale);
+	     vector<float4> rect = addRect(nn, min, max, spacing, scale);
         float4 velo(0, 0, 0, 0);
         pushParticles(rect, velo, color);
         return rect.size();
@@ -730,19 +507,13 @@ namespace rtps
     }
     void SPH::updateHose(int index, float4 center, float4 velocity, float radius, float4 color)
     {
-        //we need to expose the vector of hoses somehow
-        //doesn't seem right to make user manage an index
-        //in sph we just use sph spacing
         radius *= spacing;
         hoses[index]->update(center, velocity, radius, spacing, color);
-        //printf("size of hoses: %d\n", hoses.size());
     }
     void SPH::refillHose(int index, int refill)
     {
         hoses[index]->refill(refill);
     }
-
-
 
     void SPH::sprayHoses()
     {
@@ -781,7 +552,6 @@ namespace rtps
 	//----------------------------------------------------------------------
     void SPH::pushParticles(vector<float4> pos, vector<float4> vels, float4 color)
     {
-        //cut = 1;
 
         int nn = pos.size();
         if (num + nn > max_num)
@@ -789,11 +559,9 @@ namespace rtps
 			printf("pushParticles: exceeded max nb(%d) of particles allowed\n", max_num);
             return;
         }
-
         std::vector<float4> cols(nn);
         std::fill(cols.begin(), cols.end(),color);
 
-#ifdef GPU
         glFinish();
         cl_position_u.acquire();
         cl_color_u.acquire();
@@ -807,7 +575,7 @@ namespace rtps
 
         cl_position_u.release();
         cl_color_u.release();
-#endif
+
         num += nn;  
         renderer->setNum(num);
     }
@@ -824,17 +592,14 @@ namespace rtps
         {
             case RTPSettings::SPRITE_RENDER:
                 renderer = new SpriteRender(pos_vbo,col_vbo,num,ps->cli, ps->settings);
-                //printf("spacing for radius %f\n", spacing);
                 break;
             case RTPSettings::SCREEN_SPACE_RENDER:
-                //renderer = new ScreenSpaceRender();
                 renderer = new SSFRender(pos_vbo,col_vbo,num,ps->cli, ps->settings);
                 break;
             case RTPSettings::RENDER:
                 renderer = new Render(pos_vbo,col_vbo,num,ps->cli, ps->settings);
                 break;
             default:
-                //should be an error
                 renderer = new Render(pos_vbo,col_vbo,num,ps->cli, ps->settings);
                 break;
         }
@@ -850,7 +615,6 @@ namespace rtps
             {   
                 snum = 1024;
             }   
-            //printf("sorting snum: %d", snum); 
             radix.sort(snum, &cl_sort_hashes, &cl_sort_indices);
         }   
         catch (cl::Error er) 
@@ -865,16 +629,9 @@ namespace rtps
         try
         {
             int dir = 1;        // dir: direction
-            //int batch = num;
-
             int arrayLength = nlpo2(num);
-            //printf("num: %d\n", num);
-            //printf("nlpo2(num): %d\n", arrayLength);
-            //int arrayLength = max_num;
-            //int batch = max_num / arrayLength;
             int batch = 1;
 
-            //printf("about to try sorting\n");
             bitonic.Sort(batch, 
                         arrayLength, 
                         dir,
@@ -891,86 +648,9 @@ namespace rtps
         }
 
         ps->cli->queue.finish();
-
-        /*
-        int nbc = 10;
-        std::vector<int> sh = cl_sort_hashes.copyToHost(nbc);
-        std::vector<int> eci = cl_cell_indices_end.copyToHost(nbc);
-    
-        for(int i = 0; i < nbc; i++)
-        {
-            printf("before[%d] %d eci: %d\n; ", i, sh[i], eci[i]);
-        }
-        printf("\n");
-        */
-
-
         cl_sort_hashes.copyFromBuffer(cl_sort_output_hashes, 0, 0, num);
         cl_sort_indices.copyFromBuffer(cl_sort_output_indices, 0, 0, num);
 
-        /*
-        scopy(num, cl_sort_output_hashes.getDevicePtr(), 
-              cl_sort_hashes.getDevicePtr());
-        scopy(num, cl_sort_output_indices.getDevicePtr(), 
-              cl_sort_indices.getDevicePtr());
-        */
-
         ps->cli->queue.finish();
-#if 0
-    
-        printf("********* Bitonic Sort Diagnostics **************\n");
-        int nbc = 20;
-        //sh = cl_sort_hashes.copyToHost(nbc);
-        //eci = cl_cell_indices_end.copyToHost(nbc);
-        std::vector<unsigned int> sh = cl_sort_hashes.copyToHost(nbc);
-        std::vector<unsigned int> si = cl_sort_indices.copyToHost(nbc);
-        //std::vector<int> eci = cl_cell_indices_end.copyToHost(nbc);
-
-    
-        for(int i = 0; i < nbc; i++)
-        {
-            //printf("after[%d] %d eci: %d\n; ", i, sh[i], eci[i]);
-            printf("sh[%d] %d si: %d\n ", i, sh[i], si[i]);
-        }
-
-#endif
-    }
-    
-#ifdef CLOUD_COLLISION
-	//----------------------------------------------------------------------
-	void SPH::cloudInitialize()
-	{
-		int max_nb_in_cloud = 8192;  // 1 << 13
-		//printf("sphp scale= %f\n", sphp.simulation_scale); exit(1);
-		cloud = new CLOUD(ps, sphp, &cl_GridParams, &cl_GridParamsScaled, 
-		   &grid_params, &grid_params_scaled, max_nb_in_cloud);
-
-		// I can define cl_sphp later since I am using pointers
-		cloud->setSPHP(&cl_sphp);
-		//printf("grid_params nb_cells= %d\n", grid_params.nb_cells); exit(1);
-		//cloud->setGridParams(&cl_GridParams, &grid_params);
-		cloud->setRenderer(renderer); // cloud arrays in cloud/ must be created
-	}
-	//----------------------------------------------------------------------
-	void SPH::cloudUpdate()
-	{
-            cloud->cloud_hash_and_sort();
-            cloud->cellindicesExecute();
-            cloud->permuteExecute();
-			if (num > 0) {
-				cloud->collision(cl_position_s, cl_velocity_s, cl_force_s, cl_sphp, num);
-;
-			}
-    		cloud->cloudVelocityExecute(); // before collision?
-			cloud->integrate();
-	}
-	//----------------------------------------------------------------------
-	void SPH::cloudCleanup()
-	{
-		// Cleanup afer iteration
-		;
-	}
-	//----------------------------------------------------------------------
-#endif
-
+}
 }; //end namespace

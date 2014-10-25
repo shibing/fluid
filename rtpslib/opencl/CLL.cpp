@@ -44,7 +44,6 @@ namespace rtps
         try
         {
             options += this->inc_dir;
-            printf("OPTIONS: %s\n", options.c_str());
             err = program.build(devices, options.c_str());
         }
         catch (cl::Error er)
@@ -53,9 +52,9 @@ namespace rtps
             printf("source= %s\n", kernel_source.c_str());
             printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
         }
-        std::cout << "Build Status: " << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices.front()) << std::endl;
+        /*std::cout << "Build Status: " << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices.front()) << std::endl;
         std::cout << "Build Options:\t" << program.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(devices.front()) << std::endl;
-        std::cout << "Build Log:\t " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices.front()) << std::endl;
+        std::cout << "Build Log:\t " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices.front()) << std::endl;*/
 
         return program;
     }
@@ -97,15 +96,10 @@ namespace rtps
     {
         std::vector<cl::Platform> platforms;
         err = cl::Platform::get(&platforms);
-        printf("cl::Platform::get(): %s\n", oclErrorString(err));
-        printf("platforms.size(): %zd\n", platforms.size());
 
         deviceUsed = 0;
         err = platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices);
-        printf("getDevices: %s\n", oclErrorString(err));
-        printf("devices.size(): %zd\n", devices.size());
         int t = devices.front().getInfo<CL_DEVICE_TYPE>();
-        printf("type: \n %d %d \n", t, CL_DEVICE_TYPE_GPU);
 
        cl_context_properties props[] = 
         {
@@ -133,12 +127,6 @@ namespace rtps
             printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
         }
     }
-
-
-
-
-
-
     //helper function from NVIDIA
     const char* oclErrorString(cl_int error)
     {

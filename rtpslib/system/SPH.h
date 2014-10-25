@@ -28,10 +28,8 @@ class OUTER;
 #include <Hash.h>
 #include <BitonicSort.h>
 #include <Radix.h>
-//#include <DataStructures.h>
 #include <CellIndices.h>
 #include <Permute.h> // contains CloudPermute
-//#include <CloudPermute.h> // contains CloudPermute
 #include <sph/Density.h>
 #include <sph/Force.h>
 #include <sph/Collision_wall.h>
@@ -42,12 +40,9 @@ class OUTER;
 #include <sph/LeapFrog.h>
 #include <sph/Lifetime.h>
 #include <sph/Euler.h>
-//#include <sph/CloudEuler.h>
 
-//#include "../util.h"
 #include <Hose.h>
 
-//#include <timege.h>
 #include <timer_eb.h>
 
 #ifdef WIN32
@@ -76,18 +71,14 @@ namespace rtps
 		void cloudUpdate();
 #endif
 
-		// GE
 		void setOUTER(OUTER* outer) {
 			this->outer = outer;
 		}
 
         void update();
-        //wrapper around IV.h addRect
         int addBox(int nn, float4 min, float4 max, bool scaled, float4 color=float4(1.0f, 0.0f, 0.0f, 1.0f));
-        //wrapper around IV.h addSphere
         void addBall(int nn, float4 center, float radius, bool scaled);
 
-        //wrapper around Hose.h 
         int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color=float4(1.0, 0.0, 0.0, 1.0f));
         void updateHose(int index, float4 center, float4 velocity, float radius, float4 color=float4(1.0, 0.0, 0.0, 1.0f));
         void refillHose(int index, int refill);
@@ -116,7 +107,6 @@ namespace rtps
         RTPS* ps;
         RTPSettings* settings;
 
-        //SPHSettings* sphsettings;
         SPHParams sphp;
         GridParams grid_params;
         GridParams grid_params_scaled;
@@ -137,10 +127,6 @@ namespace rtps
         void calculateSPHSettings();
         void setupDomain();
         void prepareSorted();
-        //void popParticles();
-
-        //This should be in OpenCL classes
-        //Kernel k_scopy;
 
         std::vector<float4> positions;
         std::vector<float4> colors;
@@ -164,21 +150,11 @@ namespace rtps
         Buffer<float4>      cl_force_s;
         Buffer<float4>      cl_xsph_s;
 
-        //Neighbor Search related arrays
-        //Buffer<float4>      	cl_vars_sorted;
-        //Buffer<float4>      	cl_vars_unsorted;
-        //Buffer<float4>      	cl_cells; // positions in Ian code
         Buffer<unsigned int>    cl_cell_indices_start;
         Buffer<unsigned int>    cl_cell_indices_end;
-        //Buffer<int>           cl_vars_sort_indices;
         Buffer<unsigned int>    cl_sort_hashes;
         Buffer<unsigned int>    cl_sort_indices;
-        //Buffer<unsigned int>  cl_unsort;
-        //Buffer<unsigned int>  cl_sort;
 
-        //Buffer<Triangle>    cl_triangles;
-
-        //Two arrays for bitonic sort (sort not done in place)
         //should be moved to within bitonic
         Buffer<unsigned int>         cl_sort_output_hashes;
         Buffer<unsigned int>         cl_sort_output_indices;
@@ -194,7 +170,6 @@ namespace rtps
         Buffer<float4>      clf_debug;  //just for debugging cl files
         Buffer<int4>        cli_debug;  //just for debugging cl files
 
-
         //CPU functions
         void cpuDensity();
         void cpuPressure();
@@ -205,14 +180,10 @@ namespace rtps
         void cpuEuler();
         void cpuLeapFrog();
 
-        void updateCPU();
-        void updateGPU();
-
         //calculate the various parameters that depend on max_num of particles
         void calculate();
         //copy the SPH parameter struct to the GPU
         void updateSPHP();
-		//void pushCloudParticles(vector<float4>& pos, vector<float4>& normals);
 
         //Nearest Neighbors search related functions
         //Prep prep;
@@ -221,7 +192,6 @@ namespace rtps
         //DataStructures datastructures;
         CellIndices cellindices;
         Permute permute;
-        //CloudPermute cloud_permute; // for generality, keep separate (GE)
         void hash_and_sort();
         void cloud_hash_and_sort();  // GE
         void bitonic_sort();
@@ -238,19 +208,11 @@ namespace rtps
         Euler euler;
         //CloudEuler cloud_euler;
 
-
         Lifetime lifetime;
-
 
         float Wpoly6(float4 r, float h);
         float Wspiky(float4 r, float h);
         float Wviscosity(float4 r, float h);
-
-        //OpenCL helper functions, should probably be part of the OpenCL classes
-        //void loadScopy();
-        //void scopy(int n, cl_mem xsrc, cl_mem ydst); 
-
-        //void sset_int(int n, int val, cl_mem xdst);
 
 		OUTER* outer;
 

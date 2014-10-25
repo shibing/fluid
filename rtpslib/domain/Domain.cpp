@@ -1,6 +1,5 @@
 
 #include <math.h>
-
 #include "Domain.h"
 
 namespace rtps

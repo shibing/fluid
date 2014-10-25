@@ -3,7 +3,6 @@
 #define RTPS_SYSTEM_H_INCLUDED
 
 #include "../domain/Domain.h"
-#include "ForceField.h"
 #include "../render/Render.h"
 #include "../render/SpriteRender.h"
 #include "../render/SSFRender.h"
@@ -91,9 +90,6 @@ namespace rtps
 
         };
 
-        virtual void addForceField(ForceField ff)
-        {
-        };
 
 
         virtual void printTimers()

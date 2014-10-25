@@ -24,18 +24,6 @@ int glutWindowHandle = 0;
 
 #define DTR 0.0174532925
 
-struct camera
-{
-    GLdouble leftfrustum;
-    GLdouble rightfrustum;
-    GLdouble bottomfrustum;
-    GLdouble topfrustum;
-    GLfloat modeltranslation;
-} leftCam, rightCam;
-
-bool stereo_enabled = false;
-bool render_movie = false;
-
 unsigned int frame_counter = 0;
 float depthZ = -10.0;                                      //depth of the object drawing
 double fovy = 65.;                                          //field of view in y-axis
@@ -62,8 +50,6 @@ float rotate_x = 0.0, rotate_y = 0.0;
 std::vector<Triangle> triangles;
 
 void init_gl();
-void render_stereo();
-void setFrustum();
 
 void appKeyboard(unsigned char key, int x, int y);
 void keyUp(unsigned char key, int x, int y);
@@ -76,12 +62,13 @@ void resizeWindow(int w, int h);
 
 void timerCB(int ms);
 
+static bool show_info = true;
 void showInfo();
+static bool show_help = true;
+void showHelp();
 void drawString(const char *str, int x, int y, float color[4], void *font);
-void showFPS(float fps);
 void draw_collision_boxes();
 
-void *font = GLUT_BITMAP_8_BY_13;
 
 rtps::RTPS* ps;
 
@@ -93,7 +80,7 @@ float4 color = float4(.0, 0.7, 0.0, 1.);
 int hindex; 
 
 static const int FRAME_COUNT = 5 ;
-float per_frame_times[FRAME_COUNT];
+static float per_frame_times[FRAME_COUNT];
 static float fps = 0;
 
 #define clear_frame_time() \
@@ -124,7 +111,7 @@ int main(int argc, char** argv)
 
     int max_num = rtps::nlpo2(NUM_PARTICLES);
     std::stringstream ss;
-    ss << "Real-Time Particle System: " << max_num << std::ends;
+    ss << "SPH Fluid" << std::ends;
     glutWindowHandle = glutCreateWindow(ss.str().c_str());
 
     glutDisplayFunc(appRender); //main rendering function
@@ -137,10 +124,6 @@ int main(int argc, char** argv)
     define_lights_and_materials();
 
     glewInit();
-    GLboolean bGLEW = glewIsSupported("GL_VERSION_2_0 GL_ARB_pixel_buffer_object"); 
-    printf("GLEW supported?: %d\n", bGLEW);
-
-    clear_frame_time();
 
     rtps::Domain* grid = new Domain(float4(-2.5,-2.5,-2.5,0), float4(2.5, 2.5, 2.5, 0));
 
@@ -151,7 +134,6 @@ int main(int argc, char** argv)
     settings->setRadiusScale(0.4);
     settings->setBlurScale(1.0);
     settings->setUseGLSL(1);
-
     settings->SetSetting("sub_intervals", 1);
     settings->SetSetting("render_texture", "firejet_blast.png");
     settings->SetSetting("render_frag_shader", "sprite_tex_frag.glsl");
@@ -162,17 +144,8 @@ int main(int argc, char** argv)
 
     ps = new rtps::RTPS(settings);
 
-    ps->settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
-    ps->settings->SetSetting("Gas Constant", 1.0f);
-    ps->settings->SetSetting("Viscosity", .001f);
-    ps->settings->SetSetting("Velocity Limit", 600.0f);
-    ps->settings->SetSetting("XSPH Factor", .15f);
-    ps->settings->SetSetting("Friction Kinetic", 0.0f);
-    ps->settings->SetSetting("Friction Static", 0.0f);
-    ps->settings->SetSetting("Boundary Stiffness", 20000.0f);
-    ps->settings->SetSetting("Boundary Dampening", 256.0f);
     init_gl();
-    printf("about to start main loop\n");
+    clear_frame_time();
     glutMainLoop();
     return 0;
 }
@@ -185,7 +158,7 @@ void init_gl()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(.2, .2, .6, 1.0);
+    glClearColor(.0, .0, .0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     ps->system->getRenderer()->setWindowDimensions(window_width,window_height);
@@ -210,6 +183,12 @@ void appKeyboard(unsigned char key, int x, int y)
         case 'p': //print timers
             ps->system->printTimers();
             return;
+        case 'i':
+            show_info = !show_info;
+            break;
+        case 'H':
+            show_help = !show_help;
+            break;
         case '\033': // escape quits
         case '\015': // Enter quits    
         case 'Q':    // Q quits
@@ -223,26 +202,19 @@ void appKeyboard(unsigned char key, int x, int y)
         case 'h':
         {
             //spray hose
-            printf("about to make hose\n");
             float4 center(1., 2., 2., 1.);
             float4 velocity(2., .5, 2., 0);
             hindex = ps->system->addHose(5000, center, velocity, 4, color);
             return;
 		}
-        case 'H':
+        case 'u':
         {
             //spray hose
-            printf("about to move hose\n");
             float4 center(.1, 2., 1., 1.);
             float4 velocity(2., -.5, -1., 0);
             ps->system->updateHose(hindex, center, velocity, 4, color);
             return;
 		}
-            render_movie=!render_movie;
-            break;
-        case '`':
-            stereo_enabled = !stereo_enabled;
-            break;
         case 't': //place a cube for collision
             {
                 nn = 512;
@@ -344,25 +316,18 @@ void appRender()
     struct timespec post_time;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &prev_time);
     glEnable(GL_DEPTH_TEST);
-    if (stereo_enabled)
-    {
-        render_stereo();
-    }
-    else
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(fovy, aspect, nearZ, farZ);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glTranslatef(translate_x, translate_y, translate_z);
-        glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 1.0, 0.0); 
-        ps->render();
-        draw_collision_boxes();
-        
-    }
+    glViewport(0, 0, window_width, window_height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(fovy, aspect, nearZ, farZ);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(translate_x, translate_y, translate_z);
+    glRotatef(rotate_x, 1.0, 0.0, 0.0);
+    glRotatef(rotate_y, 0.0, 1.0, 0.0); 
+    ps->render();
+    draw_collision_boxes();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &post_time);
 
     float duration = (post_time.tv_nsec - prev_time.tv_nsec + post_time.tv_sec * 1e9 - prev_time.tv_sec * 1e9) * 1e-9;
@@ -375,9 +340,10 @@ void appRender()
     for(int j = 0; j < count; ++j)
         all_time += per_frame_times[j];
     fps = 1.0f / (all_time / count);
-    showInfo();
-    glutSwapBuffers();
-
+    if(show_info)
+        showInfo();
+    if(show_help)
+        showHelp();
     glutSwapBuffers();
 }
 
@@ -422,83 +388,97 @@ void appMotion(int x, int y)
     mouse_old_x = x;
     mouse_old_y = y;
     glutPostRedisplay();
+} 
+
+void drawString(const char *str, int x, int y, float color[4], void *font)
+{
+    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT); 
+    glDisable(GL_LIGHTING);     
+    glDisable(GL_DEPTH_TEST);
+
+    glColor4fv(color);         
+    glRasterPos2i(x, y);      
+
+    while (*str)
+    {
+        glutBitmapCharacter(font, *str);
+        ++str;
+    }
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glPopAttrib();
 }
 
+
+
 template<typename T>
-void drawValue(const string& key, const T& value, int x, int y)
+void drawValue(const string& key, const T& value, int x, int y, void *font)
 {
     float color[4] = {1, 1, 0, 1};
     static std::stringstream ss;
     ss.str("");
-    ss << std::fixed << std::setprecision(1);
     ss << key << ": " << value << std::ends; 
-    ss << std::resetiosflags(std::ios_base::fixed | std::ios_base::floatfield);
     drawString(ss.str().c_str(), x, y, color, font);
 }
 
 void showInfo()
 { 
+    void *font = GLUT_BITMAP_8_BY_13;
     glPushMatrix();                    
     glLoadIdentity();                   
     glMatrixMode(GL_PROJECTION);        
     glPushMatrix();                     
     glLoadIdentity();                  
     gluOrtho2D(0, window_width, 0, window_height);       
+    glTranslatef(0, window_height, 0);
+    glScalef(1.0f, -1.0f, 1.0f);
+    int start_pos_x = 15;
+    int start_pos_y = 30; 
+    drawValue("FPS", fps, start_pos_x, start_pos_y,font);
+    drawValue("Maximum Number of Particles", ps->settings->GetSettingAs<int>("Maximum Number of Particles"), start_pos_x, start_pos_y + 20, font);
+
+    drawValue("Number of Particles", ps->settings->GetSettingAs<int>("Number of Particles"), start_pos_x, start_pos_y + 40, font); 
+
+    drawValue("Mass", ps->settings->GetSettingAs<float>("Mass"), start_pos_x, start_pos_y + 60, font);
+    drawValue("Smoothing Distance", ps->settings->GetSettingAs<float>("Smoothing Distance"), start_pos_x, start_pos_y + 80, font);
+
+    drawValue("Gas Constant(K)", ps->settings->GetSettingAs<int>("Gas Constant"), start_pos_x, start_pos_y + 100, font);
+
+    drawValue("Gravity", ps->settings->GetSettingAs<float>("Gravity"), start_pos_x, start_pos_y + 120, font);
+    drawValue("Viscosity", ps->settings->GetSettingAs<float>("Viscosity"), start_pos_x, start_pos_y + 140, font);
+    drawValue("Velocity Limit", ps->settings->GetSettingAs<float>("Velocity Limit"), start_pos_x, start_pos_y + 160,font);
     
-    drawValue("FPS", fps, 15, 700);
-    drawValue("particle num", ps->settings->GetSettingAs<int>("Maximum Number of Particles"), 15, 650);
-
-
     glPopMatrix();                      
     glMatrixMode(GL_MODELVIEW);         
     glPopMatrix();                      
-
-
 }
 
-void drawString(const char *str, int x, int y, float color[4], void *font)
+void showHelp()
 {
-    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT); // lighting and color mask
-    glDisable(GL_LIGHTING);     // need to disable lighting for proper text color
-
-    glColor4fv(color);          // set text color
-    glRasterPos2i(x, y);        // place text position
-
-    // loop all characters in the string
-    while (*str)
-    {
-        glutBitmapCharacter(font, *str);
-        ++str;
-    }
-
-    glEnable(GL_LIGHTING);
-    glPopAttrib();
-}
-
-void showFPS(float fps)
-{
-    static std::stringstream ss;
-
+    void *font = GLUT_BITMAP_8_BY_13;
+    float color[4] = {1, 1, 0, 1};
     glPushMatrix();                    
     glLoadIdentity();                   
     glMatrixMode(GL_PROJECTION);        
     glPushMatrix();                     
     glLoadIdentity();                  
-    gluOrtho2D(0, 400, 0, 300);       
-
-    float color[4] = {1, 1, 0, 1};
-
-    // update fps every second
-    ss.str("");
-    ss << std::fixed << std::setprecision(1);
-    ss << fps << " FPS" << std::ends; 
-    ss << std::resetiosflags(std::ios_base::fixed | std::ios_base::floatfield);
-    drawString(ss.str().c_str(), 15, 286, color, font);
-
+    gluOrtho2D(0, window_width, 0, window_height);       
+    glTranslatef(window_width, window_height, 0);
+    glScalef(-1.0f, -1.0f, 1.0f);
+    int start_pos_x = 260;
+    int start_pos_y = 30; 
+    drawString("Help Infomation:", start_pos_x, start_pos_y, color, font);
+    drawString("H: Show Help Information", start_pos_x, start_pos_y + 20, color, font);
+    drawString("r: Add a rect Water", start_pos_x, start_pos_y + 40, color, font);
+    drawString("i: Show system information", start_pos_x, start_pos_y + 60, color, font);
+    drawString("Q/q/ESC: Quit", start_pos_x, start_pos_y + 80, color, font);
+    drawString("e: Add dame break", start_pos_x, start_pos_y + 100, color, font);
     glPopMatrix();                      
     glMatrixMode(GL_MODELVIEW);         
     glPopMatrix();                      
+
 }
+
 //----------------------------------------------------------------------
 void resizeWindow(int w, int h)
 {
@@ -506,82 +486,11 @@ void resizeWindow(int w, int h)
     {
         h=1;
     }
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    ps->system->getRenderer()->setWindowDimensions(w,h);
+    aspect = w / (h * 1.0);
     window_width = w;
     window_height = h;
-    setFrustum();
+    ps->system->getRenderer()->setWindowDimensions(w,h);
     glutPostRedisplay();
-}
-
-void render_stereo()
-{
-
-    glDrawBuffer(GL_BACK_LEFT);                              //draw into back left buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();                                        //reset projection matrix
-    glFrustum(leftCam.leftfrustum, leftCam.rightfrustum,     //set left view frustum
-              leftCam.bottomfrustum, leftCam.topfrustum,
-              nearZ, farZ);
-    glTranslatef(leftCam.modeltranslation, 0.0, 0.0);        //translate to cancel parallax
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
-    {
-        glRotatef(-90, 1.0, 0.0, 0.0);
-        glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 0.0, 1.0); //we switched around the axis so make this rotate_z
-        glTranslatef(translate_x, translate_z, translate_y);
-        ps->render();
-        draw_collision_boxes();
-    }
-    glPopMatrix();
-    glDrawBuffer(GL_BACK_RIGHT);                             //draw into back right buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();                                        //reset projection matrix
-    glFrustum(rightCam.leftfrustum, rightCam.rightfrustum,   //set left view frustum
-              rightCam.bottomfrustum, rightCam.topfrustum,
-              nearZ, farZ);
-    glTranslatef(rightCam.modeltranslation, 0.0, 0.0);       //translate to cancel parallax
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glPushMatrix();
-    {
-        glRotatef(-90, 1.0, 0.0, 0.0);
-        glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 0.0, 1.0); //we switched around the axis so make this rotate_z
-        glTranslatef(translate_x, translate_z, translate_y);
-        ps->render();
-        draw_collision_boxes();
-    }
-    glPopMatrix();
-}
-
-
-void setFrustum(void)
-{
-    double top = nearZ*tan(DTR*fovy/2);                    //sets top of frustum based on fovy and near clipping plane
-    double right = aspect*top;                             //sets right of frustum based on aspect ratio
-    double frustumshift = (IOD/2)*nearZ/screenZ;
-
-    leftCam.topfrustum = top;
-    leftCam.bottomfrustum = -top;
-    leftCam.leftfrustum = -right + frustumshift;
-    leftCam.rightfrustum = right + frustumshift;
-    leftCam.modeltranslation = IOD/2;
-
-    rightCam.topfrustum = top;
-    rightCam.bottomfrustum = -top;
-    rightCam.leftfrustum = -right - frustumshift;
-    rightCam.rightfrustum = right - frustumshift;
-    rightCam.modeltranslation = -IOD/2;
 }
 
 void draw_collision_boxes()

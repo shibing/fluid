@@ -118,7 +118,6 @@ namespace rtps
 		int cloud_num;
 #endif
 
-
     protected:
         int loadTexture(std::string texture_file, std::string texture_name);
         GLuint compileShaders(const char* vertex_file, const char* fragment_file,
@@ -136,7 +135,6 @@ namespace rtps
         float near_depth;
         float far_depth;
         int num;
-
         RenderType rtype;
         bool blending;
         bool write_framebuffers;
@@ -145,25 +143,16 @@ namespace rtps
         std::vector<GLuint> rbos;
         Buffer<float>   cl_depth;
         Kernel  k_curvature_flow;
-
         RTPSettings* settings; 
-
         std::string shader_source_dir;
-
         int generateCheckerBoardTex(GLubyte* color1,GLubyte* color2,int num_squares, int length);
         int generateCircleTexture(GLubyte r, GLubyte g, GLubyte b, GLubyte alpha, int diameter);
-
         void convertDepthToRGB(const GLfloat* depth, GLuint size, GLubyte* rgb) const;
-
         float getParticleRadius()
         {
             return particle_radius;
         }
-
-		
     };  
-
-
 }
 
 #endif

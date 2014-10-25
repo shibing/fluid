@@ -423,8 +423,6 @@ namespace rtps
     {
 
 
-        printf("vertex_file: %s\n", vertex_file);
-        printf("fragment_file: %s\n", fragment_file);
         char *vertex_shader_source = NULL,*fragment_shader_source= NULL,*geometry_shader_source=NULL;
         int vert_size,frag_size,geom_size;
         if (vertex_file)

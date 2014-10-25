@@ -39,7 +39,6 @@ namespace rtps
             RENDER = 0, SPRITE_RENDER, SCREEN_SPACE_RENDER, SPHERE3D_RENDER
         };
 
-
         RTPSettings();
         RTPSettings(SysType system, int max_particles, float dt);
         RTPSettings(SysType system, int max_particles, float dt, Domain *grid);
@@ -50,7 +49,6 @@ namespace rtps
         //flock
         RTPSettings(SysType system, int max_particles, float dt, Domain* grid, float maxspeed, float mindist, float searchradius, float color[], float w_sep, float w_align, float w_coh);
 
-		// (GE) TEMPORARY WHILE WAITING FOR REFACTORING
 		void setMaxOuterParticles(int max_outer_particles) {
 			this->max_outer_particles = nlpo2(max_outer_particles);
 		}
