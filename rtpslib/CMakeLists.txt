@@ -6,7 +6,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 project(rtpslib C CXX)
 
-#change this later
 SET( CMAKE_MODULE_PATH ${RTPS_CMAKE_MODULE_PATH})
 message("cmake_module_path: ${CMAKE_MODULE_PATH}\n")
 
@@ -36,36 +35,19 @@ FIND_PACKAGE (GLEW)
 message("OPENCL INCLUDE: ${OPENCL_INCLUDE_DIR}\n")
 
 set (rtpslib_INCLUDES
-    #${GLUT_INCLUDE_DIR}
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_PATH}
-    #${BASE_DIR}/opencl10
     ${OPENCL_INCLUDE_DIR}
     ${rtpslib_SOURCE_DIR}
     ${rtpslib_SOURCE_DIR}/system
     ${rtpslib_SOURCE_DIR}/system/sph
-    #${rtpslib_SOURCE_DIR}/system/flock
-    #${rtpslib_SOURCE_DIR}/system/outer
     ${rtpslib_SOURCE_DIR}/system/common
     ${rtpslib_SOURCE_DIR}/render
     ${rtpslib_SOURCE_DIR}/render/util
     ${rtpslib_SOURCE_DIR}/domain
     ${rtpslib_SOURCE_DIR}/opencl
     ${rtpslib_SOURCE_DIR}/matrix_library
-    #${rtpslib_SOURCE_DIR}/opencl/bitonic_sort/src
 )    
-
-#IF(CLOUD_COLLISION)
-#    SET(cloud_sources 
-#    ${rtpslib_SOURCE_DIR}/system/Cloud.cpp
-#
-#    ${rtpslib_SOURCE_DIR}/system/sph/CloudVelocity
-#    ${rtpslib_SOURCE_DIR}/system/sph/CloudEuler
-#    ${rtpslib_SOURCE_DIR}/system/sph/Collision_cloud
-#    ${rtpslib_SOURCE_DIR}/system/common/CloudPermute
-#    )
-#ENDIF(CLOUD_COLLISION)
-
 
 #library source files (don't explicitly give file extension, inferred from source type)
 set (rtpslib_SOURCES
@@ -109,8 +91,6 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/system/sph/XSPH
     ####
 
-    # Added by GE
-    ${rtpslib_SOURCE_DIR}/system/boids
 
     )
 

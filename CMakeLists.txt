@@ -2,10 +2,9 @@ IF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	MESSAGE(FATAL_ERROR "CMake generation must always be out-of-source!
     Remove the CMakeCache.txt file and try again from another folder")
 ENDIF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 project(rtpsuite)
 
-#need to include FindOPENCL.cmake to
 SET( RTPS_CMAKE_MODULE_PATH
      ${rtpsuite_SOURCE_DIR}/cmake
 )
@@ -24,10 +23,8 @@ ENDIF(RTPS_INSTALL_DIR)
 
 message("rtps install dir: ${RTPS_INSTALL_DIR}")
 message("rtps install dir relative: ${RTPS_INSTALL_DIR_REL}")
-#INSTALL(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}${mydir})")
 INSTALL(CODE "FILE(MAKE_DIRECTORY ${RTPS_INSTALL_DIR})")
-#INSTALL(CODE "message(\"hmm: ${RTPS_INSTALL_DIR}\")")
 
 ADD_SUBDIRECTORY (${rtpsuite_SOURCE_DIR}/rtpslib)
-ADD_SUBDIRECTORY (${rtpsuite_SOURCE_DIR}/test)
+ADD_SUBDIRECTORY (${rtpsuite_SOURCE_DIR}/application)
 
