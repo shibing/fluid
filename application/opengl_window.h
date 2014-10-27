@@ -1,37 +1,33 @@
+#ifndef OPENGL_WINDOW_H
+#define OPENGL_WINDOW_H
 #include <QtGui/QWindow>
-#include <QtGui/QOpenGLFunctions>
 
-class QPainter;
 class QOpenGLContext;
-class QOpenGLPaintDevice;
+class AbstractScene;
 
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions
+class OpenGLWindow : public QWindow
 {
     Q_OBJECT
 public:
-    explicit OpenGLWindow(QWindow *parent = 0);
+    explicit OpenGLWindow(AbstractScene *scene,int width = 640*2, int height = 480 * 2, QScreen *screen = 0);
     ~OpenGLWindow();
 
-    virtual void render(QPainter *painter);
-    virtual void render();
-
-    virtual void initialize();
-
-    void setAnimating(bool animating);
+signals:
 
 public slots:
-    void renderLater();
-    void renderNow();
 
-protected:
-    bool event(QEvent *event);
-
-    void exposeEvent(QExposeEvent *event);
+protected slots:
+    void resizeGL();
+    void paintGL();
+    void updateScene();
 
 private:
-    bool m_update_pending;
-    bool m_animating;
+    void printContextInfos();
+    void initializeGL();
 
+private:
     QOpenGLContext *m_context;
-    QOpenGLPaintDevice *m_device;
+    AbstractScene *m_scene;
 };
+
+#endif

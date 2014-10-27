@@ -583,7 +583,8 @@ namespace rtps
     void SPH::render()
     {
         renderer->render_box(grid->getBndMin(), grid->getBndMax());
-        System::render();
+        renderer->render();
+        //System::render();
     }
 	//----------------------------------------------------------------------
     void SPH::setRenderer()

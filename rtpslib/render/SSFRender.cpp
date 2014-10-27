@@ -1,33 +1,3 @@
-/****************************************************************************************
-* Real-Time Particle System - An OpenCL based Particle system developed to run on modern GPUs. Includes SPH fluid simulations.
-* version 1.0, September 14th 2011
-* 
-* Copyright (C) 2011 Ian Johnson, Andrew Young, Gordon Erlebacher, Myrna Merced, Evan Bollig
-* 
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* 
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-****************************************************************************************/
-
-
-/*#include <GL/glew.h>
-#if defined __APPLE__ || defined(MACOSX)
-    #include <GLUT/glut.h>
-#else
-    #include <GL/glut.h>
-#endif*/
 #include <GL/glew.h>
 
 #include "SSFRender.h"
@@ -42,7 +12,6 @@ namespace rtps
         glGenFramebuffersEXT(1,&fbos[0]);
         smoothing = BILATERAL_GAUSSIAN_SHADER;
 
-        //particle_radius = 0.0125f*0.5f;
         particle_radius = 0.0125f*0.5f;
 
         createFramebufferTextures();
@@ -57,26 +26,6 @@ namespace rtps
         glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D,gl_framebuffer_texs["depth"],0);
         glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT,0);
 
-
-        //glFinish();
-        /*
-        cl_depth = Buffer<float>(cli,gl_tex["depth"],1);
-
-        //printf("OpenCL error is %s\n",oclErrorString(cli->err));
-        std::string path(GLSL_BIN_DIR);
-        path += "/curvature_flow.cl";
-        k_curvature_flow = Kernel(cli, path, "curvature_flow");
-
-        k_curvature_flow.setArg(0,cl_depth.getDevicePtr());
-        k_curvature_flow.setArg(1,window_width);
-        k_curvature_flow.setArg(2,window_height);
-        k_curvature_flow.setArg(3,40); 
-        */ 
-
-        //TODO: All theses shader loads should be pushed to other sub classes or to some sort of shader class
-        //string vert(GLSL_BIN_DIR);
-        //string frag(GLSL_BIN_DIR);
-        
         string vert = shader_source_dir;
         string frag = shader_source_dir;
         printf("vert: %s\n", shader_source_dir.c_str());
@@ -113,11 +62,6 @@ namespace rtps
     }
     void SSFRender::smoothDepth()
     {
-        /*glFinish();
-        cl_depth.acquire();
-        k_curvature_flow.execute(window_width*window_height,128);
-        cl_depth.release();
-        */
         if (smoothing == NO_SHADER)
         {
             return;
@@ -165,9 +109,6 @@ namespace rtps
 		//printf("*** before renderPointCloud\n");
         glDepthMask(GL_TRUE);
 		glEnable(GL_LIGHTING);
-#ifdef CLOUD_COLLISION
-		renderPointCloud(); //GE
-#endif
         glDepthMask(GL_FALSE);
 		glDisable(GL_LIGHTING);
 

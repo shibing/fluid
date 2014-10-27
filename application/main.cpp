@@ -22,8 +22,6 @@ int window_height = 480*2;
 int glutWindowHandle = 0;
 
 
-#define DTR 0.0174532925
-
 unsigned int frame_counter = 0;
 float depthZ = -10.0;                                      //depth of the object drawing
 double fovy = 65.;                                          //field of view in y-axis
@@ -123,10 +121,10 @@ int main(int argc, char** argv)
 
     define_lights_and_materials();
 
-    glewInit();
 
     rtps::Domain* grid = new Domain(float4(-2.5,-2.5,-2.5,0), float4(2.5, 2.5, 2.5, 0));
 
+    glewInit();
 	rtps::RTPSettings* settings = new rtps::RTPSettings(rtps::RTPSettings::SPH, NUM_PARTICLES, DT, grid);
     settings->SetSetting("rtps_path", "./bin");
 

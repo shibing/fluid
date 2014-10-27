@@ -14,13 +14,10 @@ message("BASE_DIR: ${BASE_DIR}")
 SET( CMAKE_MODULE_PATH
      ${BASE_DIR}/cmake
      )
-
-
 message("${CMAKE_MODULE_PATH}\n")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-
 
 FIND_PACKAGE (GLUT)
 FIND_PACKAGE (OpenGL)
@@ -28,6 +25,7 @@ FIND_PACKAGE (OPENCL)
 FIND_PACKAGE (GLEW)
 FIND_PACKAGE(Qt5Widgets)
 FIND_PACKAGE(Qt5Gui)
+FIND_PACKAGE(Qt5Core)
 
 set (APP_INCLUDES
     ${RTPS_DIR}
@@ -39,9 +37,11 @@ set (APP_INCLUDES
 
 set (APP_SOURCES
     opengl_window
-    main_qt.cpp
+    abstract_scene
+    basic_scene
+    #main_qt.cpp
+    main.cpp
     )
-
 
 ADD_DEFINITIONS(-g )
 
@@ -59,13 +59,12 @@ SET(LINK_LIBS
     ${OPENGL_LIBRARIES}
     ${OPENCL_LIBRARIES}
     ${GLEW_LIBRARY}
-    Qt5::Widgets
     Qt5::Gui
+    Qt5::Core
 )
 message(RTPS_EXPORTS "${rtps_EXPORTS}")
 
 TARGET_LINK_LIBRARIES (sph
     ${LINK_LIBS}
 )
-
 install (TARGETS sph DESTINATION ${rtpsuite_BINARY_DIR}/bin)

@@ -1,109 +1,78 @@
 #include "opengl_window.h"
-
-#include <QtCore/QCoreApplication>
+#include "abstract_scene.h"
 
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLPaintDevice>
-#include <QtGui/QPainter>
+#include <QTimer>
 
-OpenGLWindow::OpenGLWindow(QWindow *parent)
-    : QWindow(parent)
-    , m_update_pending(false)
-    , m_animating(false)
-    , m_context(0)
-    , m_device(0)
+OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen *screen):
+    QWindow(screen),
+    m_scene(scene)
 {
-    setSurfaceType(QWindow::OpenGLSurface);
+    setSurfaceType(OpenGLSurface);
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setMajorVersion(4);
+    format.setMinorVersion(3);
+    format.setSamples(4);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    
+    setFormat(format);
+    create();
+
+    m_context = new QOpenGLContext();
+    m_context->setFormat(format);
+    m_context->create();
+    
+    m_scene->setContext(m_context);
+
+    initializeGL();
+
+    resize(QSize(width, height));
+
+    connect(this, SIGNAL(widthChanged(int)), this, SLOT(resizeGL()));
+    connect(this, SIGNAL(heightChanged(int)), this, SLOT(resizeGL()));
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateScene()));
+
+    timer->start(16);
 }
 
 OpenGLWindow::~OpenGLWindow()
 {
-    delete m_device;
-}
-void OpenGLWindow::render(QPainter *painter)
-{
-    Q_UNUSED(painter);
 }
 
-void OpenGLWindow::initialize()
+void OpenGLWindow::initializeGL()
 {
-}
-
-void OpenGLWindow::render()
-{
-    if (!m_device)
-        m_device = new QOpenGLPaintDevice;
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    m_device->setSize(size());
-
-    QPainter painter(m_device);
-    render(&painter);
-}
-
-void OpenGLWindow::renderLater()
-{
-    if (!m_update_pending) {
-        m_update_pending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
-}
-
-bool OpenGLWindow::event(QEvent *event)
-{
-    switch (event->type()) {
-    case QEvent::UpdateRequest:
-        m_update_pending = false;
-        renderNow();
-        return true;
-    default:
-        return QWindow::event(event);
-    }
-}
-
-void OpenGLWindow::exposeEvent(QExposeEvent *event)
-{
-    Q_UNUSED(event);
-
-    if (isExposed())
-        renderNow();
-}
-
-void OpenGLWindow::renderNow()
-{
-    if (!isExposed())
-        return;
-
-    bool needsInitialize = false;
-
-    if (!m_context) {
-        m_context = new QOpenGLContext(this);
-        m_context->setFormat(requestedFormat());
-        m_context->create();
-
-        needsInitialize = true;
-    }
-
     m_context->makeCurrent(this);
-
-    if (needsInitialize) {
-        initializeOpenGLFunctions();
-        initialize();
-    }
-
-    render();
-
-    m_context->swapBuffers(this);
-
-    if (m_animating)
-        renderLater();
+    m_scene->initialize();
 }
 
-void OpenGLWindow::setAnimating(bool animating)
+void OpenGLWindow::paintGL()
 {
-    m_animating = animating;
-
-    if (animating)
-        renderLater();
+    if(!isExposed())
+        return;
+    m_context->makeCurrent(this);
+    m_scene->render();
+    m_context->swapBuffers(this);
 }
+
+void OpenGLWindow::resizeGL()
+{
+    m_context->makeCurrent(this);
+    m_scene->resize(width(), height());
+}
+
+void OpenGLWindow::updateScene()
+{
+    m_scene->update(0);
+    paintGL();
+}
+
+        
+
+
+
+
+
+

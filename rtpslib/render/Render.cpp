@@ -36,7 +36,7 @@ namespace rtps
         GLubyte col1[] = {0,0,0,255};
         GLubyte col2[] = {255,255,255,255};
 
-        generateCheckerBoardTex(col1,col2,8,640);
+        //generateCheckerBoardTex(col1,col2,8,640);
         blending = settings->GetSettingAs<bool>("render_use_alpha");
         setupTimers();
     }
@@ -93,12 +93,8 @@ namespace rtps
 
         glDepthMask(GL_TRUE);
 		glEnable(GL_LIGHTING);
-#ifdef CLOUD_COLLISION
-		renderPointCloud(); 
-#endif
 		glDisable(GL_LIGHTING);
         glDepthMask(GL_FALSE);
-
 
         if (blending)
         {
@@ -108,7 +104,7 @@ namespace rtps
         }
 
         glEnable(GL_POINT_SMOOTH); 
-        glPointSize(5.0f);
+        glPointSize(15.0f);
 
         drawArrays();
 
@@ -126,63 +122,6 @@ namespace rtps
         timers["render"]->end();
         glFinish();
     }
-
-#ifdef CLOUD_COLLISION
-	//----------------------------------------------------------------------
-	void Render::renderPointCloud()
-	{
-        glPointSize(0.1f);
-		int sz = cloud_positions->size();
-#if 1
-		glBegin(GL_POINTS);
-        glColor3f(.5, .5, .5);
-        for (int i=0; i < cloud_num; i++) 
-        {
-            float4& f = (*cloud_positions)[i];
-            if (f.x < 0 || f.y < 0 || f.z < 0) continue;
-            if (f.x > 5 || f.y > 5 || f.z > 5) continue;
-            glVertex3f(f.x, f.y, f.z);
-        }
-		glEnd();
-		//exit(0);
-#endif
-
-#if 1
-
-    int nb_faces = cloud_faces->size();
-
-    if (nb_faces > 0) 
-    {
-        glBegin(GL_QUADS);
-            for (int i=0; i < nb_faces; i++) {
-                int4& vertices = (*cloud_faces)[i];
-                int4& normals = (*cloud_faces_normals)[i];
-                float4& v1 = (*cloud_positions)[vertices.x];
-                float4& n1 = (*cloud_normals)[normals.x];
-                glNormal3f(n1.x, n1.y, n1.z);
-                glVertex3f(v1.x, v1.y, v1.z);
-
-                float4& v2 = (*cloud_positions)[vertices.y];
-                float4& n2 = (*cloud_normals)[normals.y];
-                glNormal3f(n2.x, n2.y, n2.z);
-                glVertex3f(v2.x, v2.y, v2.z);
-
-                float4& v3 = (*cloud_positions)[vertices.z];
-                float4& n3 = (*cloud_normals)[normals.z];
-                glNormal3f(n3.x, n3.y, n3.z);
-                glVertex3f(v3.x, v3.y, v3.z);
-
-                float4& v4 = (*cloud_positions)[vertices.w];
-                float4& n4 = (*cloud_normals)[normals.w];
-                glNormal3f(n4.x, n4.y, n4.z);
-                glVertex3f(v4.x, v4.y, v4.z);
-            }
-        glEnd();
-	}
-#endif
-}
-#endif  //CLOUD_COLLISION
-	//----------------------------------------------------------------------
 
     void Render::writeBuffersToDisk()
     {
@@ -292,6 +231,7 @@ namespace rtps
     void Render::renderPointsAsSpheres()
     {
 
+        printf("run this\n");
         glEnable(GL_POINT_SPRITE);
         glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
