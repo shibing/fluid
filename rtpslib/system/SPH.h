@@ -47,9 +47,9 @@
 namespace rtps
 {
     using namespace sph;
-    using namespace EB;
+    class RTPSettings;
 
-    class RTPS_EXPORT SPH : public System, protected QOpenGLFunctions_4_3_Core
+    class RTPS_EXPORT SPH : public System
     {
     public:
         SPH(RTPS *ps, int num, int nb_in_cloud=0);

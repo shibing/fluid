@@ -1,5 +1,6 @@
 
 #include <SPH.h>
+#include <RTPSettings.h>
 
 namespace rtps
 {

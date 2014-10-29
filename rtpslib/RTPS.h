@@ -44,6 +44,11 @@ namespace rtps
         Render * getRender() const { return m_render; }
         void setRender(Render *render) { m_render = render; }
 
+        System * getSystem() const { return system; }
+        void setSystem(System *system) { this->system = system; }
+
+
+
         RTPSettings *settings;
         
         CL *cli;

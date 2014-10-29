@@ -3,8 +3,7 @@
 #include <iomanip>
 #include <string>
 
-#include <GL/gl.h>
-
+#include <RTPSettings.h>
 #include <system/System.h>
 #include <system/SPH.h>
 #include "Domain.h"
@@ -27,7 +26,6 @@
             nb_var = 10;
 
             resource_path = settings->GetSettingAs<string>("rtps_path");
-            printf("resource path: %s\n", resource_path.c_str());
 
             srand ( time(NULL) );
 
@@ -84,14 +82,14 @@
         printf("SPH destructor\n");
         if (pos_vbo && managed)
         {
-            glBindBuffer(1, pos_vbo);
-            glDeleteBuffers(1, (GLuint*)&pos_vbo);
+            m_opengl_funcs->glBindBuffer(1, pos_vbo);
+            m_opengl_funcs->glDeleteBuffers(1, (GLuint*)&pos_vbo);
             pos_vbo = 0;
         }
         if (col_vbo && managed)
         {
-            glBindBuffer(1, col_vbo);
-            glDeleteBuffers(1, (GLuint*)&col_vbo);
+            m_opengl_funcs->glBindBuffer(1, col_vbo);
+            m_opengl_funcs->glDeleteBuffers(1, (GLuint*)&col_vbo);
             col_vbo = 0;
         }
 
@@ -385,8 +383,6 @@
         std::fill(error_check.begin(), error_check.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
 
         managed = true;
-        //pos_vbo = createVBO(0, positions.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-        //col_vbo = createVBO(0, colors.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
         m_pos_vbo.create();
         m_pos_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
@@ -431,12 +427,10 @@
 
 
         std::vector<unsigned int> keys(max_num);
-        #include "limits.h"
         std::fill(keys.begin(), keys.end(), INT_MAX);
         cl_sort_indices  = Buffer<unsigned int>(ps->cli, keys);
         cl_sort_hashes   = Buffer<unsigned int>(ps->cli, keys);
 
-        printf("%d\n", grid_params.nb_cells);
         std::vector<unsigned int> gcells(grid_params.nb_cells+1);
         int minus = 0xffffffff;
         std::fill(gcells.begin(), gcells.end(), 666);
@@ -482,7 +476,7 @@
     int SPH::addBox(int nn, float4 min, float4 max, bool scaled, float4 color)
     {
         float scale = 1.0f;
-	     vector<float4> rect = addRect(nn, min, max, spacing, scale);
+	    vector<float4> rect = addRect(nn, min, max, spacing, scale);
         float4 velo(0, 0, 0, 0);
         pushParticles(rect, velo, color);
         return rect.size();
@@ -491,10 +485,7 @@
     void SPH::addBall(int nn, float4 center, float radius, bool scaled)
     {
         float scale = 1.0f;
-        if (scaled)
-        {
-            scale = sphp.simulation_scale;
-        }
+        if (scaled) scale = sphp.simulation_scale;
         vector<float4> sphere = addSphere(nn, center, radius, spacing, scale);
         float4 velo(0, 0, 0, 0);
         pushParticles(sphere,velo);
@@ -503,13 +494,10 @@
 	//----------------------------------------------------------------------
     int SPH::addHose(int total_n, float4 center, float4 velocity, float radius, float4 color)
     {
-        //in sph we just use sph spacing
         radius *= spacing;
         Hose *hose = new Hose(ps, total_n, center, velocity, radius, spacing, color);
         hoses.push_back(hose);
-        //return the index
-        return hoses.size()-1;
-        //printf("size of hoses: %d\n", hoses.size());
+        return hoses.size() - 1;
     }
     void SPH::updateHose(int index, float4 center, float4 velocity, float radius, float4 color)
     {
@@ -576,7 +564,7 @@
         cl_color_u.copyToDevice(cols, num);
         cl_velocity_u.copyToDevice(vels, num);
 
-        settings->SetSetting("Number of Particles", num+nn);
+        settings->SetSetting("Number of Particles", num + nn);
         updateSPHP();
 
         cl_position_u.release();

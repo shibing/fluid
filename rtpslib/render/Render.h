@@ -9,12 +9,11 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QOpenGLFunctions_4_3_Core>
 #include <QOpenGLFunctions>
 
-#include "RTPSettings.h"
+#include <timer_eb.h>
+
 #include "../structs.h"
-#include "../timer_eb.h"
 #include "../opencl/CLL.h"
 #include "../opencl/Kernel.h"
 #include "../opencl/Buffer.h"
@@ -28,13 +27,17 @@
     #define RTPS_EXPORT
 #endif
 
+
+class QOpenGLFunctions_4_3_Core;
 namespace rtps
 {
+
+    class RTPSettings;
 
     class RTPS_EXPORT Render : protected QOpenGLFunctions
     {
     public:
-        Render(GLuint pos_vbo, GLuint vel_vbo, int num, CL *cli, RTPSettings* _settings=0);
+        Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* _settings=0);
         ~Render();
 
         enum RenderType
@@ -58,12 +61,17 @@ namespace rtps
         {
             num = nn;
         }
+
+        void setOpenGLFunctions(QOpenGLFunctions_4_3_Core*funcs) { m_opengl_funcs = funcs; }
+        QOpenGLFunctions_4_3_Core * getOpenGLFunctions() const { return m_opengl_funcs; }
+        
         void setDepthSmoothing(ShaderType shade)
         {
             smoothing = shade;
         }
 
         void initBoxBuffer();
+        void initParticleBuffer();
         void initShaderProgram();
 
         void setParticleRadius(float pradius);
@@ -78,9 +86,7 @@ namespace rtps
         void fullscreenQuad();
 
         void renderBox();
-        void render_box(float4 min, float4 max); 
         void render_table(float4 min, float4 max); 
-
 
         void writeBuffersToDisk();
         void writeFramebufferTextures();
@@ -110,11 +116,19 @@ namespace rtps
         GLuint pos_vbo;
         GLuint col_vbo;
 
+        QOpenGLVertexArrayObject m_particle_vao;
+        QOpenGLBuffer m_pos_vbo;
+        QOpenGLBuffer m_col_vbo;
+
         QOpenGLVertexArrayObject m_box_vao;
         QOpenGLBuffer m_box_vbo;
         QOpenGLBuffer m_box_index;
 
         QOpenGLShaderProgram m_basic_program;
+        QOpenGLShaderProgram m_particle_program;
+
+
+        QOpenGLFunctions_4_3_Core *m_opengl_funcs;
 
         CL *cli;
         float particle_radius;

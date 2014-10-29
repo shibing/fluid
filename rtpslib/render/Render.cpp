@@ -1,8 +1,10 @@
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <QOpenGLFunctions_4_3_Core>
+#include <cstring>
+#include <cstdlib>
 #include <cassert>
+
+#include <RTPSettings.h>
 
 #include "Render.h"
 #include "util.h"
@@ -16,10 +18,10 @@ using namespace std;
 namespace rtps
 {
 
-    Render::Render(GLuint pos, GLuint col, int n, CL* cli, RTPSettings* _settings) :
-        num(n),
-        pos_vbo(pos),
-        col_vbo(col),
+    Render::Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL* cli, RTPSettings* _settings) :
+        num(0),
+        m_pos_vbo(pos_vbo),
+        m_col_vbo(col_vbo),
         m_box_vbo(QOpenGLBuffer::VertexBuffer),
         m_box_index(QOpenGLBuffer::IndexBuffer)
     {
@@ -27,8 +29,6 @@ namespace rtps
      
         shader_source_dir = settings->GetSettingAs<string>("rtps_path");
         shader_source_dir += "/shaders";
-
-        initializeOpenGLFunctions();
 
         initShaderProgram();
         initBoxBuffer();
@@ -122,11 +122,26 @@ namespace rtps
         m_box_vao.release();
     }
 
+    void Render::initParticleBuffer()
+    {
+        m_particle_vao.create();
+        m_particle_vao.bind();
+        m_pos_vbo.bind();
+        m_particle_program.enableAttributeArray(0);
+        m_particle_program.setAttributeBuffer(0, GL_FLOAT, 0, 4);
+        m_particle_vao.release();
+    }
+
     void Render::initShaderProgram()
     {
        assert( m_basic_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/basic.vert").c_str()));
         assert( m_basic_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/basic.frag").c_str()));
         assert(m_basic_program.link());
+
+assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/basic.vert").c_str()));
+        assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/basic.frag").c_str()));
+        assert(m_particle_program.link());
+
     }
 
     void Render::drawArrays()
@@ -148,44 +163,77 @@ namespace rtps
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 
+    void Render::renderBox()
+    {
+        QMatrix4x4 matrix;
+        matrix.perspective(60.f, window_width/(window_height * 1.0f), 0.1f, 100.0f);
+        matrix.translate(0, 0, -10);
+
+        m_basic_program.bind();
+        GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
+        m_basic_program.setUniformValue(uniform_matrix, matrix);
+        m_box_vao.bind();
+        m_opengl_funcs->glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        m_basic_program.release();
+    }
+
     void Render::render()
     {
-        timers["render"]->start();
+        m_opengl_funcs->glEnable(GL_POINT_SMOOTH);
+        m_opengl_funcs->glPointSize(5.0f);
 
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+        QMatrix4x4 matrix;
+        matrix.perspective(60.f, window_width/(window_height * 1.0f), 0.1f, 100.0f);
+        matrix.translate(0, 0, -10);
 
-        glDepthMask(GL_TRUE);
-		glEnable(GL_LIGHTING);
-		glDisable(GL_LIGHTING);
-        glDepthMask(GL_FALSE);
+        m_particle_program.bind();
+        GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
+        m_particle_program.setUniformValue(uniform_matrix, matrix);
+        m_particle_vao.bind();
+        m_opengl_funcs->glDrawArrays(GL_POINTS, 0, num);
+        m_opengl_funcs->glFinish(); 
 
-        if (blending)
-        {
-            glDepthMask(GL_FALSE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-
-        glEnable(GL_POINT_SMOOTH); 
-        glPointSize(15.0f);
-
-        drawArrays();
-
-        glDepthMask(GL_TRUE);
-
-        glDisable(GL_LIGHTING);
-
-        glPopClientAttrib();
-        glPopAttrib();
-        if (blending)
-        {
-            glDisable(GL_BLEND);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        timers["render"]->end();
-        glFinish();
+        m_particle_program.release();
     }
+
+    //void Render::render()
+    //{
+    //    timers["render"]->start();
+
+    //    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    //    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+    //    glDepthMask(GL_TRUE);
+	//	glEnable(GL_LIGHTING);
+	//	glDisable(GL_LIGHTING);
+    //    glDepthMask(GL_FALSE);
+
+    //    if (blending)
+    //    {
+    //        glDepthMask(GL_FALSE);
+    //        glEnable(GL_BLEND);
+    //        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //    }
+
+    //    glEnable(GL_POINT_SMOOTH); 
+    //    glPointSize(15.0f);
+
+    //    drawArrays();
+
+    //    glDepthMask(GL_TRUE);
+
+    //    glDisable(GL_LIGHTING);
+
+    //    glPopClientAttrib();
+    //    glPopAttrib();
+    //    if (blending)
+    //    {
+    //        glDisable(GL_BLEND);
+    //    }
+    //    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //    timers["render"]->end();
+    //    glFinish();
+    //}
 
     void Render::writeBuffersToDisk()
     {
@@ -318,67 +366,7 @@ namespace rtps
 	//----------------------------------------------------------------------
 
 
-    void Render::renderBox()
-    {
-        QMatrix4x4 matrix;
-        matrix.perspective(60.f, window_width/(window_height * 1.0f), 0.1f, 100.0f);
-        matrix.translate(0, 0, -10);
-
-        m_basic_program.bind();
-        GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
-        m_basic_program.setUniformValue(uniform_matrix, matrix);
-        m_box_vao.bind();
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-        m_basic_program.release();
-    }
-
-    void Render::render_box(float4 min, float4 max)
-    {
-
-        glEnable(GL_DEPTH_TEST);
-        glColor4f(.0f, 1.0f, .0f, 1.0f);
-        glBegin(GL_LINES);
-        //1st face
-        glVertex3f(min.x, min.y, min.z);
-        glVertex3f(min.x, min.y, max.z);
-
-        glVertex3f(min.x, max.y, min.z);
-        glVertex3f(min.x, max.y, max.z);
-
-        glVertex3f(min.x, min.y, min.z);
-        glVertex3f(min.x, max.y, min.z);
-
-        glVertex3f(min.x, min.y, max.z);
-        glVertex3f(min.x, max.y, max.z);
-        //2nd face
-        glVertex3f(max.x, min.y, min.z);
-        glVertex3f(max.x, min.y, max.z);
-
-        glVertex3f(max.x, max.y, min.z);
-        glVertex3f(max.x, max.y, max.z);
-
-        glVertex3f(max.x, min.y, min.z);
-        glVertex3f(max.x, max.y, min.z);
-
-        glVertex3f(max.x, min.y, max.z);
-        glVertex3f(max.x, max.y, max.z);
-        //connections
-        glVertex3f(min.x, min.y, min.z);
-        glVertex3f(max.x, min.y, min.z);
-
-        glVertex3f(min.x, max.y, min.z);
-        glVertex3f(max.x, max.y, min.z);
-
-        glVertex3f(min.x, min.y, max.z);
-        glVertex3f(max.x, min.y, max.z);
-
-        glVertex3f(min.x, max.y, max.z);
-        glVertex3f(max.x, max.y, max.z);
-
-        glEnd();
-    }
-
-    void Render::render_table(float4 min, float4 max)
+        void Render::render_table(float4 min, float4 max)
     {
 
         glEnable(GL_DEPTH_TEST);
@@ -394,7 +382,7 @@ namespace rtps
         glTexCoord2f(0.f,1.f);
         glVertex3f(-10000., 10000., min.z);
         glEnd();
-        glBindTexture(GL_TEXTURE_2D,0);
+        m_opengl_funcs->glBindTexture(GL_TEXTURE_2D,0);
     }
 
 	//----------------------------------------------------------------------

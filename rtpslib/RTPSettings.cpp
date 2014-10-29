@@ -1,5 +1,5 @@
 
-#include "RTPSettings.h"
+#include <RTPSettings.h>
 namespace rtps
 {
     unsigned int nlpo2(register unsigned int x)

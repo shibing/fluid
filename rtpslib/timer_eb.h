@@ -41,9 +41,7 @@ private:
 	int offset;
 
 public:
-	// nbCalls: how many calls before resetting the clock
-	// if nbCalls not -1, print time after nbCalls calls
-	// offset: how many calls to ignore
+
 	Timer();
 	Timer(const char* name, int offset=0, int nbCalls=-1);
 	Timer(const Timer&);

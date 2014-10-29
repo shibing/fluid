@@ -2,6 +2,8 @@
 #include "abstract_scene.h"
 
 #include <QtGui/QOpenGLContext>
+#include <QOpenGLVersionFunctions>
+#include <QtGui/QOpenGLFunctions_4_3_Core>
 #include <QTimer>
 
 QOpenGLContext *context;
@@ -10,6 +12,8 @@ OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen 
     QWindow(screen),
     m_scene(scene)
 {
+    m_scene->setWindow(this);
+
     setSurfaceType(OpenGLSurface);
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
@@ -28,8 +32,9 @@ OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen 
     m_scene->setContext(m_context);
     context = m_context;
 
-
-    scene->setWindow(this);
+    m_context->makeCurrent(this);
+    m_opengl_funcs = m_context->versionFunctions<QOpenGLFunctions_4_3_Core>();
+    m_opengl_funcs->initializeOpenGLFunctions();
 
     initializeGL();
 

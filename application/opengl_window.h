@@ -2,6 +2,7 @@
 #define OPENGL_WINDOW_H
 #include <QtGui/QWindow>
 
+class QOpenGLFunctions_4_3_Core;
 class QOpenGLContext;
 class AbstractScene;
 
@@ -11,6 +12,8 @@ class OpenGLWindow : public QWindow
 public:
     explicit OpenGLWindow(AbstractScene *scene,int width = 640 * 2, int height = 480 * 2, QScreen *screen = 0);
     ~OpenGLWindow();
+
+    QOpenGLFunctions_4_3_Core * getOpenGLFunctions() { return m_opengl_funcs; }
 
 signals:
 
@@ -27,6 +30,7 @@ private:
 
 private:
     QOpenGLContext *m_context;
+    QOpenGLFunctions_4_3_Core *m_opengl_funcs;
     AbstractScene *m_scene;
 };
 

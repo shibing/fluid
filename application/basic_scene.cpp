@@ -19,7 +19,6 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-
     Domain *domain = new Domain(float4(-2.5, -2.5, -2.5, 1), float4(2.5, 2.5, 2.5, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
@@ -35,6 +34,12 @@ void BasicScene::initialize()
     settings->SetSetting("lt_increment", -.00);
     settings->SetSetting("lt_cl", "lifetime.cl");
     ps = new RTPS(settings);
+    ps->getRender()->setOpenGLFunctions(m_window->getOpenGLFunctions());
+    ps->getSystem()->setOpenGLFunctions(m_window->getOpenGLFunctions());
+
+    float4 min = float4(-0.5, -0.5, 0.7, 1.0);
+    float4 max = float4(0.5,   0.5, 1.5, 1.0);
+    ps->system->addBox(2048, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
 }
 
 void BasicScene::update(float t)

@@ -2,13 +2,15 @@
 #ifndef RTPS_SYSTEM_H_INCLUDED
 #define RTPS_SYSTEM_H_INCLUDED
 
+#include <render/Render.h>
+
 #include "../domain/Domain.h"
-#include "../render/Render.h"
 #include "../render/SpriteRender.h"
 #include "../render/SSFRender.h"
 #include "../render/Sphere3DRender.h"
 
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions_4_3_Core>
 
 #ifdef WIN32
     #if defined(rtps_EXPORTS)
@@ -23,6 +25,8 @@
 
 namespace rtps
 {
+
+    class Domain;
 
     class RTPS_EXPORT System
     {
@@ -42,17 +46,20 @@ namespace rtps
         {
             return num;
         }
+
+        void setOpenGLFunctions(QOpenGLFunctions_4_3_Core *funcs) { m_opengl_funcs = funcs; }
+
         virtual void setNum(int nn)
         {
             num = nn;
         };
-        virtual GLuint getPosVBO()
+        virtual QOpenGLBuffer getPosVBO()
         {
-            return pos_vbo;
+            return m_pos_vbo;
         }
-        virtual GLuint getColVBO()
+        virtual QOpenGLBuffer getColVBO()
         {
-            return col_vbo;
+            return m_col_vbo;
         }
 
         virtual int addBox(int nn, float4 min, float4 max, bool scaled, float4 color=float4(1., 0., 0., 1.))
@@ -81,7 +88,6 @@ namespace rtps
         {
         };
 
-
         virtual void loadTriangles(std::vector<Triangle> &triangles)
         {
 
@@ -97,6 +103,9 @@ namespace rtps
 
         GLuint pos_vbo;
         GLuint col_vbo;
+
+        
+        QOpenGLFunctions_4_3_Core *m_opengl_funcs;
 
         QOpenGLBuffer m_pos_vbo;
         QOpenGLBuffer m_col_vbo;
