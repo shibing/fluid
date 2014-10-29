@@ -1,12 +1,11 @@
 #include "basic_scene.h"
-#include "opengl_window.h"
+
 
 #include <RTPS.h>
-#include <RTPSettings.h>
-#include <system/System.h>
 
 #include <QObject>
 #include <QOpenGLContext>
+
 
 using namespace rtps;
 
@@ -20,9 +19,8 @@ BasicScene::BasicScene()
 void BasicScene::initialize()
 {
 
-    Domain *domain = new Domain(float4(-2.5, -2.5, -2.5, 1), float4(2.5, 2.5, 2.5, 1));
+    Domain *domain = new Domain(float4(-2.5, -2.5, -2.5, 0), float4(2.5, 2.5, 2.5, 0));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
-    settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);
     settings->setRadiusScale(0.4);
     settings->setBlurScale(1.0);
@@ -44,18 +42,13 @@ void BasicScene::update(float t)
 
 void BasicScene::render()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, m_window->width(), m_window->height());
-    ps->getRender()->setWindowDimensions(m_window->width(), m_window->height());
-    ps->render();
+    glClear(GL_COLOR_BUFFER_BIT);
+
 }
 
 void BasicScene::resize(int width, int height)
 {
-     window_width = width;
-     window_height = height;
+     glViewport(0, 0, width, height);
 }
 
 

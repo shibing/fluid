@@ -1,8 +1,9 @@
 
-#include <GL/glew.h>
-#include "RTPS.h"
-#include "system/SPH.h"
-
+#include <render/Render.h>
+#include <RTPSettings.h>
+#include <RTPS.h>
+#include <CLL.h>
+#include <system/SPH.h>
 
 namespace rtps
 {
@@ -11,7 +12,7 @@ namespace rtps
     {
         cli = new CL();
         cl_managed = true;
-        Init();
+        init();
     }
 
     RTPS::RTPS(RTPSettings *s)
@@ -19,7 +20,7 @@ namespace rtps
         cli = new CL();
         cl_managed = true;
         settings = s;
-        Init();
+        init();
     }
 
     RTPS::RTPS(RTPSettings *s, CL* _cli)
@@ -27,7 +28,7 @@ namespace rtps
         cli = _cli;
         cl_managed = false;
         settings = s;
-        Init();
+        init();
     }
 
     RTPS::~RTPS()
@@ -39,11 +40,11 @@ namespace rtps
         }
     }
 
-    void RTPS::Init()
+    void RTPS::init()
     {
-        glewInit();
         settings->setMaxOuterParticles(4096*4);
         system = new SPH(this, settings->max_particles, settings->max_outer_particles);
+        m_render = new Render(system->getPosVBO(), system->getColVBO(), settings->max_particles, cli, settings);
     }
 
     void RTPS::update()
@@ -53,12 +54,12 @@ namespace rtps
 
     void RTPS::render()
     {
-        system->render();
+        m_render->renderBox();
     }
 
     void RTPS::printTimers()
     {
-            system->printTimers();
+        system->printTimers();
     }
 };
 

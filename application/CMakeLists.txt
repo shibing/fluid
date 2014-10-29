@@ -39,8 +39,8 @@ set (APP_SOURCES
     opengl_window
     abstract_scene
     basic_scene
-    #main_qt.cpp
-    main.cpp
+    main_qt.cpp
+    #main.cpp
     )
 
 ADD_DEFINITIONS(-g )

@@ -16,7 +16,7 @@
 namespace rtps
 {
     //Struct which gets passed to OpenCL routines
-	typedef struct SPHParams
+	struct __attribute__((aligned(16)))  SPHParams
     {
         float mass;
         float rest_distance;
@@ -76,8 +76,7 @@ namespace rtps
             printf("simulation_scale: %f\n", simulation_scale);
             printf("--------------------\n");
         }
-    } SPHParams
-	__attribute__((aligned(16)));
+    };
     enum Integrator
     {
         EULER, LEAPFROG

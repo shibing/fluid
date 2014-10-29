@@ -2,12 +2,9 @@
 #ifndef RTPS_SPH_H_INCLUDED
 #define RTPS_SPH_H_INCLUDED
 
-#ifdef WIN32
-#define _USE_MATH_DEFINES
 #include <cmath>
-#endif
-
 #include <string>
+#include <QOpenGLFunctions_4_3_Core>
 
 #include <RTPS.h>
 #include <System.h>
@@ -19,11 +16,6 @@
 
 #include <util.h>
 
-#ifdef CLOUD_COLLISION
-#include "Cloud.h"
-#endif
-
-class OUTER;
 
 #include <Hash.h>
 #include <BitonicSort.h>
@@ -34,9 +26,6 @@ class OUTER;
 #include <sph/Force.h>
 #include <sph/Collision_wall.h>
 #include <sph/Collision_triangle.h>
-#ifdef CLOUD_COLLISION
-    #include <sph/Collision_cloud.h>
-#endif
 #include <sph/LeapFrog.h>
 #include <sph/Lifetime.h>
 #include <sph/Euler.h>
@@ -58,22 +47,13 @@ class OUTER;
 namespace rtps
 {
     using namespace sph;
+    using namespace EB;
 
-    class RTPS_EXPORT SPH : public System
+    class RTPS_EXPORT SPH : public System, protected QOpenGLFunctions_4_3_Core
     {
     public:
         SPH(RTPS *ps, int num, int nb_in_cloud=0);
         ~SPH();
-
-#ifdef CLOUD_COLLISION
-		void cloudCleanup();
-		void cloudInitialize();
-		void cloudUpdate();
-#endif
-
-		void setOUTER(OUTER* outer) {
-			this->outer = outer;
-		}
 
         void update();
         int addBox(int nn, float4 min, float4 max, bool scaled, float4 color=float4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -84,7 +64,6 @@ namespace rtps
         void refillHose(int index, int refill);
         void sprayHoses();
 
-        virtual void render();
 
         void loadTriangles(std::vector<Triangle> &triangles);
 
@@ -100,10 +79,7 @@ namespace rtps
         std::vector<float4> getDeletedPos();
         std::vector<float4> getDeletedVel();
 
-    protected:
-        virtual void setRenderer();
     private:
-        //the particle system framework
         RTPS* ps;
         RTPSettings* settings;
 
@@ -214,17 +190,7 @@ namespace rtps
         float Wspiky(float4 r, float h);
         float Wviscosity(float4 r, float h);
 
-		OUTER* outer;
-
 		Utils u;
-
-#ifdef CLOUD_COLLISION
-		CLOUD* cloud;
-		int nb_in_cloud; // nb of points in cloud
-
-		void printDevArray(Buffer<float4>& cl_cloud_position, char* msg, int nb_el, int nb_print);
-#endif
-
     };
 
 

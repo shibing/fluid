@@ -1,11 +1,12 @@
-#include <GL/glew.h>
 #include <math.h>
 #include <sstream>
 #include <iomanip>
 #include <string>
 
-#include "System.h"
-#include "SPH.h"
+#include <GL/gl.h>
+
+#include <system/System.h>
+#include <system/SPH.h>
 #include "Domain.h"
 #include "IV.h"
 
@@ -13,70 +14,69 @@
 
 #include<time.h>
 
-namespace rtps
-{
-    using namespace sph;
-
-    SPH::SPH(RTPS *psfr, int n, int max_nb_in_cloud)
+    namespace rtps
     {
-        ps = psfr;
-        settings = ps->settings;
-        max_num = n;
-        num = 0;
-        nb_var = 10;
+        using namespace sph;
 
-        resource_path = settings->GetSettingAs<string>("rtps_path");
-        printf("resource path: %s\n", resource_path.c_str());
-
-        srand ( time(NULL) );
-
-        grid = settings->grid;
-
-        std::vector<SPHParams> vparams(0);
-        vparams.push_back(sphp);
-        cl_sphp = Buffer<SPHParams>(ps->cli, vparams);
-
-        calculate();
-        updateSPHP();
-
-        spacing = settings->GetSettingAs<float>("Spacing");
-
-        setupDomain();
-
-        integrator = LEAPFROG;
-
-        setupTimers();
-
-        prepareSorted();
-        setRenderer();
-
-        ps->cli->addIncludeDir(sph_source_dir);
-        ps->cli->addIncludeDir(common_source_dir);
-
-        sph_source_dir = resource_path + "/" + std::string(SPH_CL_SOURCE_DIR);
-        common_source_dir = resource_path + "/" + std::string(COMMON_CL_SOURCE_DIR);
-
-        hash = Hash(common_source_dir, ps->cli, timers["hash_gpu"]);
-        bitonic = Bitonic<unsigned int>(common_source_dir, ps->cli );
-        radix = Radix<unsigned int>(common_source_dir, ps->cli, max_num, 128);
-        cellindices = CellIndices(common_source_dir, ps->cli, timers["ci_gpu"] );
-        permute = Permute( common_source_dir, ps->cli, timers["perm_gpu"] );
-
-        density = Density(sph_source_dir, ps->cli, timers["density_gpu"]);
-        force = Force(sph_source_dir, ps->cli, timers["force_gpu"]);
-        collision_wall = CollisionWall(sph_source_dir, ps->cli, timers["cw_gpu"]);
-        collision_tri = CollisionTriangle(sph_source_dir, ps->cli, timers["ct_gpu"], 2048); //TODO expose max_triangles as a parameter
-		
-        if (integrator == LEAPFROG)
+        SPH::SPH(RTPS *psfr, int n, int max_nb_in_cloud)
         {
-            leapfrog = LeapFrog(sph_source_dir, ps->cli, timers["leapfrog_gpu"]);
-        }
-        else if (integrator == EULER)
-        {
-            euler = Euler(sph_source_dir, ps->cli, timers["euler_gpu"]);
-        }
+            ps = psfr;
+            settings = ps->settings;
+            max_num = n;
+            num = 0;
+            nb_var = 10;
 
-        string lt_file = settings->GetSettingAs<string>("lt_cl");
+            resource_path = settings->GetSettingAs<string>("rtps_path");
+            printf("resource path: %s\n", resource_path.c_str());
+
+            srand ( time(NULL) );
+
+            grid = settings->grid;
+
+            std::vector<SPHParams> vparams(0);
+            vparams.push_back(sphp);
+            cl_sphp = Buffer<SPHParams>(ps->cli, vparams);
+
+            calculate();
+            updateSPHP();
+
+            spacing = settings->GetSettingAs<float>("Spacing");
+
+            setupDomain();
+
+            integrator = LEAPFROG;
+
+            setupTimers();
+
+            prepareSorted();
+
+            ps->cli->addIncludeDir(sph_source_dir);
+            ps->cli->addIncludeDir(common_source_dir);
+
+            sph_source_dir = resource_path + "/" + std::string(SPH_CL_SOURCE_DIR);
+            common_source_dir = resource_path + "/" + std::string(COMMON_CL_SOURCE_DIR);
+
+            hash = Hash(common_source_dir, ps->cli, timers["hash_gpu"]);
+            bitonic = Bitonic<unsigned int>(common_source_dir, ps->cli );
+            radix = Radix<unsigned int>(common_source_dir, ps->cli, max_num, 128);
+            cellindices = CellIndices(common_source_dir, ps->cli, timers["ci_gpu"] );
+            permute = Permute( common_source_dir, ps->cli, timers["perm_gpu"] );
+
+            density = Density(sph_source_dir, ps->cli, timers["density_gpu"]);
+            force = Force(sph_source_dir, ps->cli, timers["force_gpu"]);
+            collision_wall = CollisionWall(sph_source_dir, ps->cli, timers["cw_gpu"]);
+            collision_tri = CollisionTriangle(sph_source_dir, ps->cli, timers["ct_gpu"], 2048); //TODO expose max_triangles as a parameter
+            
+            if (integrator == LEAPFROG)
+            {
+                leapfrog = LeapFrog(sph_source_dir, ps->cli, timers["leapfrog_gpu"]);
+            }
+            else if (integrator == EULER)
+            {
+                euler = Euler(sph_source_dir, ps->cli, timers["euler_gpu"]);
+            }
+
+            string lt_file = settings->GetSettingAs<string>("lt_cl");
     }
 
     SPH::~SPH()
@@ -175,12 +175,9 @@ namespace rtps
                 cl_velocity_s.copyToHost(deleted_vel, nc);
 
                 settings->SetSetting("Number of Particles", num);
-                //sphp.num = num;
                 updateSPHP();
-                renderer->setNum(sphp.num);
 
                 call_prep(2);
-                //printf("HOW MANY NOW? %d\n", num);
                 hash_and_sort();
                                 //we've changed num and copied sorted to unsorted. skip this iteration and do next one
                 //this doesn't work because sorted force etc. are having an effect?
@@ -388,14 +385,23 @@ namespace rtps
         std::fill(error_check.begin(), error_check.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
 
         managed = true;
-        pos_vbo = createVBO(0, positions.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-        col_vbo = createVBO(0, colors.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-        // end VBO creation
+        //pos_vbo = createVBO(0, positions.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+        //col_vbo = createVBO(0, colors.size()*sizeof(float4), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+
+        m_pos_vbo.create();
+        m_pos_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+        m_pos_vbo.bind();
+        m_pos_vbo.allocate(0, max_num * sizeof(float4));
+
+        m_col_vbo.create();
+        m_col_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+        m_col_vbo.bind();
+        m_col_vbo.allocate(0, max_num * sizeof(float4));
 
         //vbo buffers
-        cl_position_u = Buffer<float4>(ps->cli, pos_vbo);
+        cl_position_u = Buffer<float4>(ps->cli, m_pos_vbo.bufferId());
         cl_position_s = Buffer<float4>(ps->cli, positions);
-        cl_color_u = Buffer<float4>(ps->cli, col_vbo);
+        cl_color_u = Buffer<float4>(ps->cli, m_col_vbo.bufferId());
         cl_color_s = Buffer<float4>(ps->cli, colors);
 
         //pure opencl buffers: these are deprecated
@@ -577,36 +583,8 @@ namespace rtps
         cl_color_u.release();
 
         num += nn;  
-        renderer->setNum(num);
     }
-	//----------------------------------------------------------------------
-    void SPH::render()
-    {
-        renderer->render_box(grid->getBndMin(), grid->getBndMax());
-        renderer->render();
-        //System::render();
-    }
-	//----------------------------------------------------------------------
-    void SPH::setRenderer()
-    {
-        switch(ps->settings->getRenderType())
-        {
-            case RTPSettings::SPRITE_RENDER:
-                renderer = new SpriteRender(pos_vbo,col_vbo,num,ps->cli, ps->settings);
-                break;
-            case RTPSettings::SCREEN_SPACE_RENDER:
-                renderer = new SSFRender(pos_vbo,col_vbo,num,ps->cli, ps->settings);
-                break;
-            case RTPSettings::RENDER:
-                renderer = new Render(pos_vbo,col_vbo,num,ps->cli, ps->settings);
-                break;
-            default:
-                renderer = new Render(pos_vbo,col_vbo,num,ps->cli, ps->settings);
-                break;
-        }
-        renderer->setParticleRadius(spacing);
-    }
-	//----------------------------------------------------------------------
+
     void SPH::radix_sort()
     {
     try 

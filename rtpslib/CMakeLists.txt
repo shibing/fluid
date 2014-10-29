@@ -31,6 +31,8 @@ ADD_DEFINITIONS(-DGLSL_SOURCE_DIR="render")
 FIND_PACKAGE (OpenGL)
 FIND_PACKAGE (OPENCL)
 FIND_PACKAGE (GLEW)
+FIND_PACKAGE (Qt5Gui)
+FIND_PACKAGE (Qt5Core)
 
 message("OPENCL INCLUDE: ${OPENCL_INCLUDE_DIR}\n")
 
@@ -60,9 +62,9 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/rtps_common
 
     ${rtpslib_SOURCE_DIR}/render/Render
-    ${rtpslib_SOURCE_DIR}/render/SpriteRender
-    ${rtpslib_SOURCE_DIR}/render/SSFRender
-    ${rtpslib_SOURCE_DIR}/render/Sphere3DRender
+    #${rtpslib_SOURCE_DIR}/render/SpriteRender
+    #${rtpslib_SOURCE_DIR}/render/SSFRender
+    #${rtpslib_SOURCE_DIR}/render/Sphere3DRender
     ${rtpslib_SOURCE_DIR}/render/util/stb_image.c
     ${rtpslib_SOURCE_DIR}/render/util/stb_image_write.h
 
@@ -90,8 +92,6 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/system/sph/Viscosity
     ${rtpslib_SOURCE_DIR}/system/sph/XSPH
     ####
-
-
     )
 
 SET(rtpslib_SOURCES ${rtpslib_SOURCES}
@@ -105,29 +105,8 @@ TARGET_LINK_LIBRARIES (rtps
    ${OPENGL_LIBRARIES}
    ${OPENCL_LIBRARIES}
    ${GLEW_LIBRARY}
+   Qt5::Gui
 )
-
-
-#Doxygen
-#find_package(Doxygen REQUIRED)
-find_package(Doxygen)
-set(DOXYGEN_INPUT   ${rtpslib_SOURCE_DIR}/doc/doxyfile)
-set(DOXYGEN_OUTPUT  ${rtpslib_BINARY_DIR}/html/index.html)
-file(MAKE_DIRECTORY ${rtpslib_BINARY_DIR}/html)
-
-configure_file(
-  ${rtpslib_SOURCE_DIR}/doc/doxyfile
-  ${DOXYGEN_INPUT} @ONLY
-)
-
-add_custom_command(
-  OUTPUT  ${DOXYGEN_OUTPUT}
-  COMMAND ${DOXYGEN} ${DOXYGEN_INPUT}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${DOXYGEN_INPUT}
-)
-
-add_custom_target(doc DEPENDS ${DOXYGEN_OUTPUT})
 
 ADD_SUBDIRECTORY(system/common)
 ADD_SUBDIRECTORY(system/sph)

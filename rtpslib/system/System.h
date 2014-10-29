@@ -8,6 +8,8 @@
 #include "../render/SSFRender.h"
 #include "../render/Sphere3DRender.h"
 
+#include <QOpenGLBuffer>
+
 #ifdef WIN32
     #if defined(rtps_EXPORTS)
         #define RTPS_EXPORT __declspec(dllexport)
@@ -18,18 +20,18 @@
     #define RTPS_EXPORT
 #endif
 
-#include<stdio.h>
+
 namespace rtps
 {
 
     class RTPS_EXPORT System
     {
     public:
+        System(): m_pos_vbo(QOpenGLBuffer::VertexBuffer), m_col_vbo(QOpenGLBuffer::VertexBuffer) { }
         virtual void update() = 0;
 
         virtual ~System()
         {
-            delete renderer;
         }
 
         virtual Domain* getGrid()
@@ -51,11 +53,6 @@ namespace rtps
         virtual GLuint getColVBO()
         {
             return col_vbo;
-        }
-
-        virtual void render()
-        {
-            renderer->render();
         }
 
         virtual int addBox(int nn, float4 min, float4 max, bool scaled, float4 color=float4(1., 0., 0., 1.))
@@ -89,18 +86,10 @@ namespace rtps
         {
 
         };
-
-
-
         virtual void printTimers()
         {
-            renderer->printTimers();
+            //renderer->printTimers();
         };
-
-        virtual Render* getRenderer()
-        {
-            return renderer;
-        }
 
     protected:
         int num;  
@@ -108,11 +97,13 @@ namespace rtps
 
         GLuint pos_vbo;
         GLuint col_vbo;
+
+        QOpenGLBuffer m_pos_vbo;
+        QOpenGLBuffer m_col_vbo;
+
         bool managed;
 
         Domain* grid;
-
-        Render* renderer;
 
         std::string resource_path;
         std::string common_source_dir;

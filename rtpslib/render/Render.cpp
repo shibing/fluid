@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include <GL/glew.h>
+#include <cassert>
 
 #include "Render.h"
 #include "util.h"
@@ -13,30 +12,36 @@
 
 using namespace std;
 
+
 namespace rtps
 {
 
-    Render::Render(GLuint pos, GLuint col, int n, CL* cli, RTPSettings* _settings)
+    Render::Render(GLuint pos, GLuint col, int n, CL* cli, RTPSettings* _settings) :
+        num(n),
+        pos_vbo(pos),
+        col_vbo(col),
+        m_box_vbo(QOpenGLBuffer::VertexBuffer),
+        m_box_index(QOpenGLBuffer::IndexBuffer)
     {
         this->settings = _settings;
      
         shader_source_dir = settings->GetSettingAs<string>("rtps_path");
         shader_source_dir += "/shaders";
 
+        initializeOpenGLFunctions();
+
+        initShaderProgram();
+        initBoxBuffer();
+
         rtype = POINTS;
-        pos_vbo = pos;
-        col_vbo = col;
         this->cli=cli;
-        num = n;
-        window_height=600;
-        window_width=800;
+
         near_depth=0.;
         far_depth=1.;
         write_framebuffers = false;
         GLubyte col1[] = {0,0,0,255};
         GLubyte col2[] = {255,255,255,255};
 
-        //generateCheckerBoardTex(col1,col2,8,640);
         blending = settings->GetSettingAs<bool>("render_use_alpha");
         setupTimers();
     }
@@ -57,12 +62,71 @@ namespace rtps
         }
         if (rbos.size())
         {
-            glDeleteRenderbuffersEXT(rbos.size() ,&rbos[0]);
+            glDeleteRenderbuffers(rbos.size() ,&rbos[0]);
         }
         if (fbos.size())
         {
-            glDeleteFramebuffersEXT(fbos.size(),&fbos[0]);
+            glDeleteFramebuffers(fbos.size(),&fbos[0]);
         }
+    }
+
+    void Render::initBoxBuffer()
+    {
+        float4 min = settings->grid->getBndMin();
+        float4 max = settings->grid->getBndMax();
+
+        static float position_buf[] = { 
+            min.x, min.y, min.z,
+            min.x, min.y, max.z,
+            max.x, min.y, max.z,
+            max.x, min.y, min.z,
+
+            min.x, max.y, min.z,
+            min.x, max.y, max.z,
+            max.x, max.y, max.z,
+            max.x, max.y, min.z,
+        };
+
+        static unsigned int index_buf[] = {
+            0, 1,
+            1, 2,
+            2, 3,
+            3, 0,
+
+            0, 4,
+            1, 5,
+            2, 6,
+            3, 7,
+
+            4, 5,
+            5, 6,
+            6, 7,
+            7, 4
+        };
+
+        m_box_vao.create();
+        m_box_vao.bind();
+
+        m_box_vbo.create();
+        m_box_vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+        m_box_vbo.bind();
+        m_box_vbo.allocate(&position_buf[0], sizeof(position_buf));
+        m_basic_program.enableAttributeArray(0);
+        m_basic_program.setAttributeBuffer(0, GL_FLOAT, 0, 3);
+        
+        m_box_index.create();
+        m_box_index.setUsagePattern(QOpenGLBuffer::StaticDraw);
+        m_box_index.bind();
+        m_box_index.allocate(&index_buf[0], sizeof(index_buf));
+
+        m_box_vao.release();
+    }
+
+    void Render::initShaderProgram()
+    {
+       assert( m_basic_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/basic.vert").c_str()));
+        assert( m_basic_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/basic.frag").c_str()));
+        assert(m_basic_program.link());
     }
 
     void Render::drawArrays()
@@ -160,10 +224,9 @@ namespace rtps
         }
     }
 
-    int Render::writeTexture( GLuint tex, const char* filename) const
+    int Render::writeTexture(GLuint tex, const char* filename) 
     {
-        printf("writing %s texture to disc.\n",filename);
-        glBindTexture(GL_TEXTURE_2D,tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
         GLubyte* image = new GLubyte[window_width*window_height*4];
         if (!strcmp(filename,"depth.png") || !strcmp(filename,"depth2.png"))
         {
@@ -253,6 +316,21 @@ namespace rtps
         glDisable(GL_POINT_SPRITE);
     }
 	//----------------------------------------------------------------------
+
+
+    void Render::renderBox()
+    {
+        QMatrix4x4 matrix;
+        matrix.perspective(60.f, window_width/(window_height * 1.0f), 0.1f, 100.0f);
+        matrix.translate(0, 0, -10);
+
+        m_basic_program.bind();
+        GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
+        m_basic_program.setUniformValue(uniform_matrix, matrix);
+        m_box_vao.bind();
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        m_basic_program.release();
+    }
 
     void Render::render_box(float4 min, float4 max)
     {
@@ -454,7 +532,7 @@ namespace rtps
             glAttachShader(program, geometry_shader);
             for (int i = 0;i < geom_param_len; i++)
             {
-                glProgramParameteriEXT(program,geom_param[i],geom_value[i]);
+               //glProgramParameteri(program,geom_param[i],geom_value[i]);
             }
         }
 

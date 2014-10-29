@@ -1,14 +1,7 @@
 #ifndef _TIME_EB_H_
 #define _TIME_EB_H_
 
-
-#ifdef WIN32
-#include <Windows.h>
-#include "gtod_windows.h"
-#include <time.h>
-#else
 #include <sys/time.h>
-#endif
 
 #ifdef WIN32
     #if defined(rtps_EXPORTS)
@@ -34,9 +27,8 @@ public:
 	static std::vector<Timer*> timeList;
 
 private:
-#if 1
 	struct timeval t_start, t_end;
-#endif
+
 	double elapsed;
 	float t;
 	clock_t t1;

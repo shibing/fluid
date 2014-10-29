@@ -4,7 +4,13 @@
 
 #include <map>
 #include <GL/glu.h>
- #include <GL/gl.h>
+#include <GL/gl.h>
+
+#include <QOpenGLBuffer>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLFunctions>
 
 #include "RTPSettings.h"
 #include "../structs.h"
@@ -25,7 +31,7 @@
 namespace rtps
 {
 
-    class RTPS_EXPORT Render
+    class RTPS_EXPORT Render : protected QOpenGLFunctions
     {
     public:
         Render(GLuint pos_vbo, GLuint vel_vbo, int num, CL *cli, RTPSettings* _settings=0);
@@ -56,6 +62,10 @@ namespace rtps
         {
             smoothing = shade;
         }
+
+        void initBoxBuffer();
+        void initShaderProgram();
+
         void setParticleRadius(float pradius);
 
         void drawArrays();
@@ -67,13 +77,14 @@ namespace rtps
         void perspectiveProjection();
         void fullscreenQuad();
 
+        void renderBox();
         void render_box(float4 min, float4 max); 
         void render_table(float4 min, float4 max); 
 
 
         void writeBuffersToDisk();
         void writeFramebufferTextures();
-        int writeTexture(GLuint tex, const char* filename) const;
+        int writeTexture(GLuint tex, const char* filename);
 
         enum
         {
@@ -98,6 +109,13 @@ namespace rtps
         GLuint window_height,window_width;
         GLuint pos_vbo;
         GLuint col_vbo;
+
+        QOpenGLVertexArrayObject m_box_vao;
+        QOpenGLBuffer m_box_vbo;
+        QOpenGLBuffer m_box_index;
+
+        QOpenGLShaderProgram m_basic_program;
+
         CL *cli;
         float particle_radius;
         float near_depth;

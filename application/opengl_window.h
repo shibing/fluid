@@ -9,7 +9,7 @@ class OpenGLWindow : public QWindow
 {
     Q_OBJECT
 public:
-    explicit OpenGLWindow(AbstractScene *scene,int width = 640*2, int height = 480 * 2, QScreen *screen = 0);
+    explicit OpenGLWindow(AbstractScene *scene,int width = 640 * 2, int height = 480 * 2, QScreen *screen = 0);
     ~OpenGLWindow();
 
 signals:

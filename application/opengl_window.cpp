@@ -4,6 +4,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QTimer>
 
+QOpenGLContext *context;
+
 OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen *screen):
     QWindow(screen),
     m_scene(scene)
@@ -24,6 +26,10 @@ OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen 
     m_context->create();
     
     m_scene->setContext(m_context);
+    context = m_context;
+
+
+    scene->setWindow(this);
 
     initializeGL();
 

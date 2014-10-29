@@ -4,15 +4,7 @@
 
 #include <vector>
 
-//System API
-#include "system/System.h"
-
-//OpenCL API
-#include "opencl/CLL.h"
-
 #include "domain/IV.h"
-
-#include "RTPSettings.h"
 
 #include "structs.h"
 
@@ -28,8 +20,14 @@
     #define RTPS_EXPORT
 #endif
 
+
+
 namespace rtps
 {
+    class System;
+    class CL;
+    class RTPSettings;
+    class Render;
 
     class RTPS_EXPORT RTPS
     
@@ -41,7 +39,10 @@ namespace rtps
 
         ~RTPS();
 
-        void Init();
+        void init();
+
+        Render * getRender() const { return m_render; }
+        void setRender(Render *render) { m_render = render; }
 
         RTPSettings *settings;
         
@@ -56,6 +57,7 @@ namespace rtps
         void printTimers();
 
     private:
+        Render *m_render;
         bool cl_managed;
         
     };
