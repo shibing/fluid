@@ -11,7 +11,7 @@
 using namespace rtps;
 
 BasicScene::BasicScene()
-    :max_num(10000) ,
+    :max_num(100000) ,
      dt(0.003)
 {
     max_num = nlpo2(max_num);
