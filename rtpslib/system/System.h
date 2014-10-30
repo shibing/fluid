@@ -5,9 +5,9 @@
 #include <render/Render.h>
 
 #include "../domain/Domain.h"
-#include "../render/SpriteRender.h"
-#include "../render/SSFRender.h"
-#include "../render/Sphere3DRender.h"
+//#include "../render/SpriteRender.h"
+//#include "../render/SSFRender.h"
+//#include "../render/Sphere3DRender.h"
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions_4_3_Core>
@@ -25,7 +25,6 @@
 
 namespace rtps
 {
-
     class Domain;
 
     class RTPS_EXPORT System

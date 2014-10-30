@@ -25,6 +25,7 @@
             num = 0;
             nb_var = 10;
 
+
             resource_path = settings->GetSettingAs<string>("rtps_path");
 
             srand ( time(NULL) );

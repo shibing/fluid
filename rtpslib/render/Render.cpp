@@ -32,6 +32,7 @@ namespace rtps
 
         initShaderProgram();
         initBoxBuffer();
+        initParticleBuffer();
 
         rtype = POINTS;
         this->cli=cli;
