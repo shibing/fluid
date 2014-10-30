@@ -187,12 +187,14 @@ assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shade
         matrix.translate(0, 0, -10);
 
         m_particle_program.bind();
+        m_particle_vao.bind();
+
         GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
         m_particle_program.setUniformValue(uniform_matrix, matrix);
-        m_particle_vao.bind();
         m_opengl_funcs->glDrawArrays(GL_POINTS, 0, num);
         m_opengl_funcs->glFinish(); 
 
+        m_particle_vao.release();
         m_particle_program.release();
     }
 
