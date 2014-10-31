@@ -139,8 +139,8 @@ namespace rtps
         assert( m_basic_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/basic.frag").c_str()));
         assert(m_basic_program.link());
 
-assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/basic.vert").c_str()));
-        assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/basic.frag").c_str()));
+assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/point.vert").c_str()));
+        assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/point.frag").c_str()));
         assert(m_particle_program.link());
 
     }
@@ -180,7 +180,6 @@ assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shade
 
     void Render::render()
     {
-        m_opengl_funcs->glEnable(GL_POINT_SMOOTH);
         m_opengl_funcs->glPointSize(5.0f);
 
         QMatrix4x4 matrix;

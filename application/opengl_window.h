@@ -15,6 +15,9 @@ public:
 
     QOpenGLFunctions_4_3_Core * getOpenGLFunctions() { return m_opengl_funcs; }
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *event);
+
 signals:
 
 public slots:

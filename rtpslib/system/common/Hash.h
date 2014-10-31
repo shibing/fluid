@@ -8,11 +8,6 @@
 #include <Buffer.h>
 #include <opencl/Kernel.h>
 
-namespace EB
-{
-        class Timer;
-}
-
 namespace rtps
 {
 
@@ -22,8 +17,8 @@ namespace rtps
     class Hash
     {
         public:
-            Hash() { cli = NULL; timer = NULL; };
-            Hash(std::string path, CL* cli, EB::Timer* timer);
+            Hash() { cli = NULL; }
+            Hash(std::string path, CL* cli);
             void execute(int num,
                         Buffer<float4>& pos_u, 
                         //output
@@ -38,7 +33,6 @@ namespace rtps
         private:
             CL* cli;
             Kernel k_hash;
-            EB::Timer* timer;
     };
 }
 

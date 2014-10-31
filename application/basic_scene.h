@@ -3,11 +3,12 @@
 
 #include "abstract_scene.h"
 
-
 #include <QOpenGLShader>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
+
+class QKeyEvent;
 
 namespace rtps {
 class Domain;
@@ -25,16 +26,18 @@ public:
     virtual void update(float t = 0);
     virtual void render();
     virtual void resize(int width, int height);
+    virtual bool keyPress(QKeyEvent * event) ;
+
+    void renderOverlay();
 
 private:
     int max_num;
-    int dt;
+    float dt;
     int window_width;
     int window_height;
     rtps::Domain *domain;
     rtps::RTPSettings *settings;
     rtps::RTPS *ps;
-    
 };
 
 #endif // BASICUSAGESCENE_H

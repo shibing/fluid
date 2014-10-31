@@ -5,14 +5,13 @@
 
 namespace rtps
 {
-    Euler::Euler(std::string path, CL* cli_, EB::Timer* timer_)
+    Euler::Euler(std::string path, CL* cli_)
     {
         cli = cli_;
-        timer = timer_;
  
-        printf("create euler kernel\n");
         path += "/euler.cl";
         k_euler = Kernel(cli, path, "euler");
+        std::cout << "Load Euler kernel" << std::endl;
     } 
     
     void Euler::execute(int num,
@@ -89,7 +88,6 @@ namespace rtps
             velocities[i] = v;
             positions[i] = p;
         }
-        //printf("v.z %f p.z %f \n", velocities[0].z, positions[0].z);
     }
 
 }

@@ -6,10 +6,10 @@
 #include <RTPSettings.h>
 #include <system/System.h>
 #include <system/SPH.h>
-#include "Domain.h"
-#include "IV.h"
+#include <domain/Domain.h>
+#include <domain/IV.h>
 
-#include "common/Hose.h"
+#include <system/common/Hose.h>
 
 #include<time.h>
 
@@ -24,7 +24,6 @@
             max_num = n;
             num = 0;
             nb_var = 10;
-
 
             resource_path = settings->GetSettingAs<string>("rtps_path");
 
@@ -45,8 +44,6 @@
 
             integrator = LEAPFROG;
 
-            setupTimers();
-
             prepareSorted();
 
             ps->cli->addIncludeDir(sph_source_dir);
@@ -55,24 +52,24 @@
             sph_source_dir = resource_path + "/" + std::string(SPH_CL_SOURCE_DIR);
             common_source_dir = resource_path + "/" + std::string(COMMON_CL_SOURCE_DIR);
 
-            hash = Hash(common_source_dir, ps->cli, timers["hash_gpu"]);
+            hash = Hash(common_source_dir, ps->cli);
             bitonic = Bitonic<unsigned int>(common_source_dir, ps->cli );
             radix = Radix<unsigned int>(common_source_dir, ps->cli, max_num, 128);
-            cellindices = CellIndices(common_source_dir, ps->cli, timers["ci_gpu"] );
-            permute = Permute( common_source_dir, ps->cli, timers["perm_gpu"] );
+            cellindices = CellIndices(common_source_dir, ps->cli);
+            permute = Permute( common_source_dir, ps->cli);
 
-            density = Density(sph_source_dir, ps->cli, timers["density_gpu"]);
-            force = Force(sph_source_dir, ps->cli, timers["force_gpu"]);
-            collision_wall = CollisionWall(sph_source_dir, ps->cli, timers["cw_gpu"]);
-            collision_tri = CollisionTriangle(sph_source_dir, ps->cli, timers["ct_gpu"], 2048); //TODO expose max_triangles as a parameter
+            density = Density(sph_source_dir, ps->cli);
+            force = Force(sph_source_dir, ps->cli);
+            collision_wall = CollisionWall(sph_source_dir, ps->cli);
+            collision_tri = CollisionTriangle(sph_source_dir, ps->cli, 2048); //TODO expose max_triangles as a parameter
             
             if (integrator == LEAPFROG)
             {
-                leapfrog = LeapFrog(sph_source_dir, ps->cli, timers["leapfrog_gpu"]);
+                leapfrog = LeapFrog(sph_source_dir, ps->cli);
             }
             else if (integrator == EULER)
             {
-                euler = Euler(sph_source_dir, ps->cli, timers["euler_gpu"]);
+                euler = Euler(sph_source_dir, ps->cli);
             }
 
             string lt_file = settings->GetSettingAs<string>("lt_cl");
@@ -106,19 +103,14 @@
 
     void SPH::update()
     {
-        timers["update"]->start();
         glFinish();
         if (settings->has_changed()) updateSPHP();
 
         int sub_intervals =  settings->GetSettingAs<float>("sub_intervals");
-        //this should go in the loop but avoiding acquiring and releasing each sub
-        //interval for all the other calls.
-        //this does end up acquire/release everytime sprayHoses calls pushparticles
-        //should just do try/except?
+
+        //NOTE: release and acquire opencl buffer
         for (int i=0; i < sub_intervals; i++)
-        {
             sprayHoses();
-        }
 
         cl_position_u.acquire();
         cl_color_u.acquire();
@@ -127,8 +119,7 @@
         {
             hash_and_sort();
 
-            timers["cellindices"]->start();
-            int nc = cellindices.execute(   num,
+            int nc = cellindices.execute(num,
                 cl_sort_hashes,
                 cl_sort_indices,
                 cl_cell_indices_start,
@@ -137,9 +128,8 @@
                 grid_params.nb_cells,
                 clf_debug,
                 cli_debug);
-            timers["cellindices"]->stop();
-            timers["permute"]->start();
-            permute.execute(   num,
+            
+            permute.execute(num,
                 cl_position_u,
                 cl_position_s,
                 cl_velocity_u,
@@ -152,8 +142,6 @@
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
-            timers["permute"]->stop();
- 
 
             if (nc <= num && nc >= 0)
             {
@@ -164,8 +152,6 @@
                 //
                 //if so we need to copy sorted into unsorted
                 //and redo hash_and_sort
-                printf("SOME PARTICLES WERE DELETED!\n");
-                printf("nc: %d num: %d\n", nc, num);
 
                 deleted_pos.resize(num-nc);
                 deleted_vel.resize(num-nc);
@@ -178,29 +164,19 @@
 
                 call_prep(2);
                 hash_and_sort();
-                                //we've changed num and copied sorted to unsorted. skip this iteration and do next one
-                //this doesn't work because sorted force etc. are having an effect?
                 //continue; 
             }
 
-
-			//-------------------------------------
-            //if(num >0) printf("density\n");
-            timers["density"]->start();
-            density.execute(   num,
+            density.execute(num,
                 cl_position_s,
                 cl_density_s,
                 cl_cell_indices_start,
                 cl_cell_indices_end,
                 cl_sphp,
-                cl_GridParamsScaled, // GE: Might have to fix this. Do not know. 
+                cl_GridParamsScaled, // Might have to fix this. Do not know. 
                 clf_debug,
                 cli_debug);
-            timers["density"]->stop();
-            
-			//-------------------------------------
-            //if(num >0) printf("force\n");
-            timers["force"]->start();
+
             force.execute(   num,
                 cl_position_s,
                 cl_density_s,
@@ -213,21 +189,17 @@
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
-            timers["force"]->stop();
             collision();
             integrate(); // includes boundary force
         }
 
         cl_position_u.release();
         cl_color_u.release();
-
-        timers["update"]->stop();
     }
 
 	//----------------------------------------------------------------------
     void SPH::hash_and_sort()
     {
-        timers["hash"]->start();
         hash.execute(   num,
                 cl_position_u,
                 cl_sort_hashes,
@@ -235,18 +207,14 @@
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
-        timers["hash"]->stop();
 
-        timers["bitonic"]->start();
         bitonic_sort();
-        timers["bitonic"]->stop();
     }
 
 	//----------------------------------------------------------------------
     void SPH::collision()
     {
         //when implemented other collision routines can be chosen here
-        timers["collision_wall"]->start();
         collision_wall.execute(num,
                 cl_position_s,
                 cl_velocity_s,
@@ -256,9 +224,7 @@
                 clf_debug,
                 cli_debug);
 
-        timers["collision_wall"]->stop();
 
-        timers["collision_tri"]->start();
         collision_tri.execute(num,
                 settings->dt,
                 cl_position_s,
@@ -267,13 +233,11 @@
                 cl_sphp,
                 clf_debug,
                 cli_debug);
-        timers["collision_tri"]->stop();
     }
 	//----------------------------------------------------------------------
 
     void SPH::integrate()
     {
-        timers["integrate"]->start();
 
         if (integrator == EULER)
         {
@@ -306,7 +270,6 @@
                 cli_debug);
         }
 		static int count=0;
-    	timers["integrate"]->stop();
     }
 
     void SPH::call_prep(int stage)
@@ -323,47 +286,6 @@
             cl_color_u.copyFromBuffer(cl_color_s, 0, 0, num);
     }
 
-	//----------------------------------------------------------------------
-    int SPH::setupTimers()
-    {
-        int print_freq = 1000; //one second
-        int time_offset = 5;
-        timers["update"] = new EB::Timer("Update loop", time_offset);
-        timers["hash"] = new EB::Timer("Hash function", time_offset);
-        timers["hash_gpu"] = new EB::Timer("Hash GPU kernel execution", time_offset);
-        timers["cellindices"] = new EB::Timer("CellIndices function", time_offset);
-        timers["ci_gpu"] = new EB::Timer("CellIndices GPU kernel execution", time_offset);
-        timers["permute"] = new EB::Timer("Permute function", time_offset);
-        timers["cloud_permute"] = new EB::Timer("CloudPermute function", time_offset);
-        timers["perm_gpu"] = new EB::Timer("Permute GPU kernel execution", time_offset);
-        timers["ds_gpu"] = new EB::Timer("DataStructures GPU kernel execution", time_offset);
-        timers["bitonic"] = new EB::Timer("Bitonic Sort function", time_offset);
-        timers["density"] = new EB::Timer("Density function", time_offset);
-        timers["density_gpu"] = new EB::Timer("Density GPU kernel execution", time_offset);
-        timers["force"] = new EB::Timer("Force function", time_offset);
-        timers["force_gpu"] = new EB::Timer("Force GPU kernel execution", time_offset);
-        timers["collision_wall"] = new EB::Timer("Collision wall function", time_offset);
-        timers["cw_gpu"] = new EB::Timer("Collision Wall GPU kernel execution", time_offset);
-        timers["collision_tri"] = new EB::Timer("Collision triangles function", time_offset);
-        timers["ct_gpu"] = new EB::Timer("Collision Triangle GPU kernel execution", time_offset);
-        timers["collision_cloud"] = new EB::Timer("Collision cloud function", time_offset);
-        timers["integrate"] = new EB::Timer("Integration function", time_offset);
-        timers["leapfrog_gpu"] = new EB::Timer("LeapFrog Integration GPU kernel execution", time_offset);
-        timers["euler_gpu"] = new EB::Timer("Euler Integration GPU kernel execution", time_offset);
-		return 0;
-    }
-
-	//----------------------------------------------------------------------
-    void SPH::printTimers()
-    {
-        printf("Number of Particles: %d\n", num);
-        timers.printAll();
-        std::ostringstream oss; 
-        oss << "sph_timer_log_" << std::setw( 7 ) << std::setfill( '0' ) <<  num; 
-        timers.writeToFile(oss.str()); 
-    }
-
-	//----------------------------------------------------------------------
     void SPH::prepareSorted()
     {
 
@@ -525,7 +447,6 @@
     void SPH::testDelete()
     {
 
-        //cut = 1;
         std::vector<float4> poss(40);
         float4 posx(100.,100.,100.,1.);
         std::fill(poss.begin(), poss.end(),posx);
@@ -536,7 +457,7 @@
         ps->cli->queue.finish();
     }
 	//----------------------------------------------------------------------
-    void SPH::pushParticles(vector<float4> pos, float4 velo, float4 color)
+    void SPH::pushParticles(const vector<float4> &pos, float4 velo, float4 color)
     {
         int nn = pos.size();
         std::vector<float4> vels(nn);
@@ -545,7 +466,7 @@
 
     }
 	//----------------------------------------------------------------------
-    void SPH::pushParticles(vector<float4> pos, vector<float4> vels, float4 color)
+    void SPH::pushParticles(const vector<float4>& pos, const vector<float4>& vels, float4 color)
     {
 
         int nn = pos.size();

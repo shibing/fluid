@@ -7,19 +7,13 @@
 #include <RTPS.h>
 #include <Buffer.h>
 
-
-namespace EB
-{
-    class Timer;
-}
-
 namespace rtps
 {
     class CellIndices 
     {
         public:
-            CellIndices() { cli = NULL; timer = NULL; };
-            CellIndices(std::string path, CL* cli, EB::Timer* timer);
+            CellIndices() { cli = NULL; }
+            CellIndices(std::string path, CL* cli);
             int execute(int num,
                     Buffer<unsigned int>& hashes,
                     Buffer<unsigned int>& indices,
@@ -36,7 +30,6 @@ namespace rtps
         private:
             CL* cli;
             Kernel k_cellindices;
-            EB::Timer* timer;
     };
 }
 

@@ -2,18 +2,20 @@
 
 #include <SPH.h>
 #include <math.h>
+#include <iostream>
 
 namespace rtps
 {
-    Density::Density(std::string path, CL* cli_, EB::Timer* timer_)
+    Density::Density(std::string path, CL* cli_ )
     {
         cli = cli_;
-        timer = timer_;
      
         try
         {
             path = path + "/density.cl";
             k_density = Kernel(cli, path, "density_update");
+            std::cout << "Load Density kernel" << std::endl;
+
         }
         catch (cl::Error er)
         {
@@ -52,9 +54,6 @@ namespace rtps
         try
         {
             float gputime = k_density.execute(num, local);
-            if(gputime > 0)
-                timer->set(gputime);
-
         }
 
         catch (cl::Error er)

@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include <system/SPH.h>
 #include <RTPSettings.h>
 
@@ -7,14 +7,12 @@ namespace rtps
 namespace sph
 {
 
-    LeapFrog::LeapFrog(std::string path, CL* cli_, EB::Timer* timer_)
+    LeapFrog::LeapFrog(std::string path, CL* cli_ )
     {
         cli = cli_;
-        timer = timer_;
- 
-        printf("create leapfrog kernel\n");
         path += "/leapfrog.cl";
         k_leapfrog = Kernel(cli, path, "leapfrog");
+        std::cout << "Load leap forg kernel" << std::endl;
 
     } 
     void LeapFrog::execute(int num,
@@ -37,8 +35,6 @@ namespace sph
     {
 
         int iargs = 0;
-        //k_leapfrog.setArg(iargs++, uvars.getDevicePtr());
-        //k_leapfrog.setArg(iargs++, svars.getDevicePtr());
         k_leapfrog.setArg(iargs++, pos_u.getDevicePtr());
         k_leapfrog.setArg(iargs++, pos_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, vel_u.getDevicePtr());
@@ -47,58 +43,14 @@ namespace sph
         k_leapfrog.setArg(iargs++, force_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, xsph_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, indices.getDevicePtr());
-        //leapfrog.setArg(iargs++, color.getDevicePtr());
         k_leapfrog.setArg(iargs++, sphp.getDevicePtr());
         k_leapfrog.setArg(iargs++, dt); //time step
 
         int local_size = 128;
         float gputime = k_leapfrog.execute(num, local_size);
-        if(gputime > 0)
-            timer->set(gputime);
+    } 
 
-
-} //namespace sph
-
-#if 0
-#define DENS 0
-#define POS 1
-#define VEL 2
-
-        printf("************ LeapFrog **************\n");
-            int nbc = num+5;
-            std::vector<float4> poss(nbc);
-            std::vector<float4> uposs(nbc);
-            std::vector<float4> dens(nbc);
-
-            //cl_vars_sorted.copyToHost(dens, DENS*sphp.max_num);
-            cl_vars_sorted.copyToHost(poss, POS*sphp.max_num);
-            cl_vars_unsorted.copyToHost(uposs, POS*sphp.max_num);
-
-            for (int i=0; i < nbc; i++)
-            //for (int i=0; i < 10; i++) 
-            {
-                poss[i] = poss[i] / sphp.simulation_scale;
-                //printf("-----\n");
-                //printf("clf_debug: %f, %f, %f, %f\n", clf[i].x, clf[i].y, clf[i].z, clf[i].w);
-                printf("pos sorted: %f, %f, %f, %f\n", poss[i].x, poss[i].y, poss[i].z, poss[i].w);
-                printf("pos unsorted: %f, %f, %f, %f\n", uposs[i].x, uposs[i].y, uposs[i].z, uposs[i].w);
-                //printf("dens sorted: %f, %f, %f, %f\n", dens[i].x, dens[i].y, dens[i].z, dens[i].w);
-            }
-
-#endif
-
-        /*
-         * enables us to cut off after a couple iterations
-         * by setting cut = 1 from some other function
-        if(cut >= 1)
-        {
-            if (cut == 2) {exit(0);}
-            cut++;
-        }
-        */
-
-
-    }
+}
 
     void SPH::cpuLeapFrog()
     {

@@ -1,3 +1,4 @@
+#include <iostream>
 
 #include <Hash.h>
 #include <render/Render.h>
@@ -9,13 +10,12 @@
 namespace rtps
 {
 
-    Hash::Hash(std::string path, CL* cli_, EB::Timer* timer_)
+    Hash::Hash(std::string path, CL* cli_)
     {
         cli = cli_;
-        timer = timer_;
-        printf("create hash kernel\n");
         path = path + "/hash.cl";
         k_hash = Kernel(cli, path, "hash");
+        std::cout << "Load hash kernel" << std::endl;
     }
 
     void Hash::execute(int num,
@@ -42,13 +42,8 @@ namespace rtps
         k_hash.setArg(args++, cli_debug.getDevicePtr());
 
 		
-        float gputime;
         int ctaSize = 128; // work group size
-        gputime = k_hash.execute(num, ctaSize);
-
-        if(gputime > 0)
-            timer->set(gputime);
-
+        float gputime = k_hash.execute(num, ctaSize);
    }
 
     //----------------------------------------------------------------------

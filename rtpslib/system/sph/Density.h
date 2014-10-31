@@ -5,7 +5,7 @@
 
 #include <CLL.h>
 #include <Buffer.h>
-#include <../SPHSettings.h>
+#include <system/SPHSettings.h>
 
 
 namespace rtps
@@ -13,8 +13,8 @@ namespace rtps
     class Density
     {
         public:
-            Density() { cli = NULL; timer = NULL; };
-            Density(std::string path, CL* cli, EB::Timer* timer);
+            Density() { cli = NULL; }
+            Density(std::string path, CL* cli);
             void execute(int num,
                     //input
                     //Buffer<float4>& svars, 
@@ -33,7 +33,6 @@ namespace rtps
         private:
             CL* cli;
             Kernel k_density;
-            EB::Timer* timer;
     };
 }
 

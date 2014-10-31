@@ -4,6 +4,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QOpenGLVersionFunctions>
 #include <QtGui/QOpenGLFunctions_4_3_Core>
+#include <QKeyEvent>
 #include <QTimer>
 
 QOpenGLContext *context;
@@ -51,6 +52,13 @@ OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen 
 
 OpenGLWindow::~OpenGLWindow()
 {
+
+}
+
+void OpenGLWindow::keyPressEvent(QKeyEvent *event)
+{
+    if(!m_scene->keyPress(event))
+        QWindow::keyPressEvent(event);
 }
 
 void OpenGLWindow::initializeGL()

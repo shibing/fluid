@@ -2,8 +2,10 @@
 #define ABSTRACT_SCENE_H
 
 class QOpenGLContext;
+class QKeyEvent; 
 
 class OpenGLWindow;
+
 class AbstractScene
 {
 public:
@@ -20,6 +22,7 @@ public:
     virtual void update(float dt = 0)  = 0;
     virtual void render() = 0;
     virtual void resize(int width, int height) = 0;
+    virtual bool keyPress(QKeyEvent * event) = 0 ;
 
 protected:
     OpenGLWindow *m_window;

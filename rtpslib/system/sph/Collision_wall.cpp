@@ -1,40 +1,14 @@
-/****************************************************************************************
-* Real-Time Particle System - An OpenCL based Particle system developed to run on modern GPUs. Includes SPH fluid simulations.
-* version 1.0, September 14th 2011
-* 
-* Copyright (C) 2011 Ian Johnson, Andrew Young, Gordon Erlebacher, Myrna Merced, Evan Bollig
-* 
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* 
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-****************************************************************************************/
 
-
-#include "../SPH.h"
-
+#include <system/SPH.h>
 namespace rtps
 {
 
-    CollisionWall::CollisionWall(std::string path, CL* cli_, EB::Timer* timer_)
+    CollisionWall::CollisionWall(std::string path, CL* cli_)
     {
         cli = cli_;
-        timer = timer_;
-        printf("create collision wall kernel\n");
         path += "/collision_wall.cl";
         k_collision_wall = Kernel(cli, path, "collision_wall");
-
+        std::cout << "Load Collision Wall kernel" << std::endl;
     } 
     void CollisionWall::execute(int num,
             //input
@@ -60,16 +34,8 @@ namespace rtps
 
         int local_size = 128;
         float gputime = k_collision_wall.execute(num, local_size);
-        if(gputime > 0)
-            timer->set(gputime);
-
-
     }
 
-
-    //************* CPU functions
-
-    //from Krog '10
     float4 calculateRepulsionForce(float4 normal, float4 vel, float boundary_stiffness, float boundary_dampening, float boundary_distance)
     {
         vel.w = 0.0f;
@@ -242,9 +208,7 @@ namespace rtps
 
             }
 
-
             //TODO add friction forces
-
             forces[i].x += r_f.x + f_f.x;
             forces[i].y += r_f.y + f_f.y;
             forces[i].z += r_f.z + f_f.z;

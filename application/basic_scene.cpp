@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QOpenGLContext>
+#include <QKeyEvent>
 
 using namespace rtps;
 
@@ -37,14 +38,12 @@ void BasicScene::initialize()
     ps->getRender()->setOpenGLFunctions(m_window->getOpenGLFunctions());
     ps->getSystem()->setOpenGLFunctions(m_window->getOpenGLFunctions());
 
-    float4 min = float4(-0.5, -0.5, 0.7, 1.0);
-    float4 max = float4(0.5,   0.5, 1.5, 1.0);
-    ps->system->addBox(2048, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
 }
 
 void BasicScene::update(float t)
 {
     Q_UNUSED(t);
+    ps->update();
 }
 
 void BasicScene::render()
@@ -63,4 +62,24 @@ void BasicScene::resize(int width, int height)
      window_height = height;
 }
 
+bool BasicScene::keyPress(QKeyEvent *event)
+{
+    int n = 2048;
+    float4 min;  
+    float4 max;
+    switch(event->key()) {
+        case Qt::Key_R: 
+            min = float4(-0.5, -0.5, 0.7, 1.0);
+            max = float4( 0.5,  0.5, 1.5, 1.0);
+            ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
+            return true;
+        default:
+            return false;
+    }
+}
 
+void BasicScene::renderOverlay()
+{
+    glDisable(GL_DEPTH_TEST);
+
+}

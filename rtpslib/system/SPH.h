@@ -70,11 +70,8 @@ namespace rtps
         void testDelete();
         int cut; //for debugging DEBUG
 
-        EB::TimerList timers;
-        int setupTimers();
-        void printTimers();
-        void pushParticles(vector<float4> pos, float4 velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
-        void pushParticles(vector<float4> pos, vector<float4> velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
+        void pushParticles(const vector<float4>& pos, float4 velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
+        void pushParticles(const vector<float4>& pos, const vector<float4>& velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
 
         std::vector<float4> getDeletedPos();
         std::vector<float4> getDeletedVel();

@@ -19,8 +19,8 @@ namespace rtps
     class Permute 
     {
         public:
-            Permute() { cli = NULL; timer = NULL; };
-            Permute(std::string path, CL* cli, EB::Timer* timer);
+            Permute() { cli = NULL; }
+            Permute(std::string path, CL* cli);
             void execute(int num,
                     //input
                     Buffer<float4>& pos_u,
@@ -42,7 +42,6 @@ namespace rtps
         private:
             CL* cli;
             Kernel k_permute;
-            EB::Timer* timer;
     };
 }
 

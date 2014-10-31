@@ -15,8 +15,8 @@ namespace sph
     class LeapFrog
     {
         public:
-            LeapFrog() { cli = NULL; timer = NULL; };
-            LeapFrog(std::string path, CL* cli, EB::Timer* timer);
+            LeapFrog() { cli = NULL; }
+            LeapFrog(std::string path, CL* cli);
             void execute(int num,
                         float dt,
                         //input
@@ -39,7 +39,6 @@ namespace sph
         private:
             CL* cli;
             Kernel k_leapfrog;
-            EB::Timer* timer;
     };
 
 }
