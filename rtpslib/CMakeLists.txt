@@ -51,7 +51,6 @@ set (rtpslib_INCLUDES
     ${rtpslib_SOURCE_DIR}/matrix_library
 )    
 
-#library source files (don't explicitly give file extension, inferred from source type)
 set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/RTPS
     ${rtpslib_SOURCE_DIR}/RTPSettings
@@ -67,6 +66,8 @@ set (rtpslib_SOURCES
     #${rtpslib_SOURCE_DIR}/render/Sphere3DRender
     ${rtpslib_SOURCE_DIR}/render/util/stb_image.c
     ${rtpslib_SOURCE_DIR}/render/util/stb_image_write.h
+    ${rtpslib_SOURCE_DIR}/render/text
+
 
     ${rtpslib_SOURCE_DIR}/domain/Domain
     ${rtpslib_SOURCE_DIR}/domain/IV
@@ -113,7 +114,11 @@ ADD_SUBDIRECTORY(system/sph)
 
 MAKE_DIRECTORY(${rtpslib_BINARY_DIR}/shaders)
 FILE(COPY ${rtpslib_SOURCE_DIR}/render/shaders/ DESTINATION ${rtpslib_BINARY_DIR}/shaders/)
+FILE(COPY ${rtpslib_SOURCE_DIR}/render/textures/ DESTINATION ${rtpslib_BINARY_DIR}/textures/)
 
-install (TARGETS rtps DESTINATION ${rtpsuite_BINARY_DIR}/bin)
+INSTALL (TARGETS rtps DESTINATION ${rtpsuite_BINARY_DIR}/bin)
 INSTALL(CODE "FILE(MAKE_DIRECTORY ${RTPS_INSTALL_DIR}/shaders)")
-install (DIRECTORY ${rtpslib_BINARY_DIR}/shaders/ DESTINATION ${RTPS_INSTALL_DIR}/shaders/)
+INSTALL(CODE "FILE(MAKE_DIRECTORY ${RTPS_INSTALL_DIR}/textures)")
+
+INSTALL (DIRECTORY ${rtpslib_BINARY_DIR}/shaders/ DESTINATION ${RTPS_INSTALL_DIR}/shaders/)
+INSTALL (DIRECTORY ${rtpslib_BINARY_DIR}/textures/ DESTINATION ${RTPS_INSTALL_DIR}/textures/)

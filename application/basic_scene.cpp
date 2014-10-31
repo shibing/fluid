@@ -4,6 +4,7 @@
 #include <RTPS.h>
 #include <RTPSettings.h>
 #include <system/System.h>
+#include <render/text.h>
 
 #include <QObject>
 #include <QOpenGLContext>
@@ -54,6 +55,9 @@ void BasicScene::render()
     glViewport(0, 0, m_window->width(), m_window->height());
     ps->getRender()->setWindowDimensions(m_window->width(), m_window->height());
     ps->render();
+    rtps::render::Text text("hello");
+    text.draw(-0.96, 0.9, m_window->width(), m_window->height());
+
 }
 
 void BasicScene::resize(int width, int height)

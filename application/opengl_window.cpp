@@ -2,7 +2,6 @@
 #include "abstract_scene.h"
 
 #include <QtGui/QOpenGLContext>
-#include <QOpenGLVersionFunctions>
 #include <QtGui/QOpenGLFunctions_4_3_Core>
 #include <QKeyEvent>
 #include <QTimer>
