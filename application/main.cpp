@@ -366,6 +366,7 @@ void appMouse(int button, int state, int x, int y)
     mouse_old_x = x;
     mouse_old_y = y;
 }
+return false;
 
 void appMotion(int x, int y)
 {

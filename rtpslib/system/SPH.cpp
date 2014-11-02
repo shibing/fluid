@@ -17,19 +17,17 @@
     {
         using namespace sph;
 
-        SPH::SPH(RTPS *psfr, int n, int max_nb_in_cloud)
+        SPH::SPH(RTPS *psfr, int n)
         {
             ps = psfr;
             settings = ps->settings;
-            max_num = n;
             num = 0;
-            nb_var = 10;
+            max_num = n;
+            grid = settings->grid;
 
             resource_path = settings->GetSettingAs<string>("rtps_path");
+            spacing = settings->GetSettingAs<float>("Spacing");
 
-            srand ( time(NULL) );
-
-            grid = settings->grid;
 
             std::vector<SPHParams> vparams(0);
             vparams.push_back(sphp);
@@ -37,8 +35,6 @@
 
             calculate();
             updateSPHP();
-
-            spacing = settings->GetSettingAs<float>("Spacing");
 
             setupDomain();
 
@@ -77,27 +73,12 @@
 
     SPH::~SPH()
     {
-        printf("SPH destructor\n");
-        if (pos_vbo && managed)
-        {
-            m_opengl_funcs->glBindBuffer(1, pos_vbo);
-            m_opengl_funcs->glDeleteBuffers(1, (GLuint*)&pos_vbo);
-            pos_vbo = 0;
-        }
-        if (col_vbo && managed)
-        {
-            m_opengl_funcs->glBindBuffer(1, col_vbo);
-            m_opengl_funcs->glDeleteBuffers(1, (GLuint*)&col_vbo);
-            col_vbo = 0;
-        }
-
         Hose* hose;
         int hs = hoses.size();  
         for(int i = 0; i < hs; i++)
         {
             hose = hoses[i];
             delete hose;
-
         }
     }
 
@@ -280,15 +261,14 @@
 		// Only called if number of fluid particles changes from one iteration
 		// to the other
 
-            cl_position_u.copyFromBuffer(cl_position_s, 0, 0, num);
-            cl_velocity_u.copyFromBuffer(cl_velocity_s, 0, 0, num);
-            cl_veleval_u.copyFromBuffer(cl_veleval_s, 0, 0, num);
-            cl_color_u.copyFromBuffer(cl_color_s, 0, 0, num);
+        cl_position_u.copyFromBuffer(cl_position_s, 0, 0, num);
+        cl_velocity_u.copyFromBuffer(cl_velocity_s, 0, 0, num);
+        cl_veleval_u.copyFromBuffer(cl_veleval_s, 0, 0, num);
+        cl_color_u.copyFromBuffer(cl_color_s, 0, 0, num);
     }
 
     void SPH::prepareSorted()
     {
-
         positions.resize(max_num);
         colors.resize(max_num);
         forces.resize(max_num);
@@ -297,10 +277,10 @@
         densities.resize(max_num);
         xsphs.resize(max_num);
         std::vector<float4> error_check(max_num);
+
         std::fill(forces.begin(), forces.end(), float4(0.0f, 0.0f, 1.0f, 0.0f));
         std::fill(velocities.begin(), velocities.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::fill(veleval.begin(), veleval.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
-
         std::fill(densities.begin(), densities.end(), 0.0f);
         std::fill(xsphs.begin(), xsphs.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::fill(error_check.begin(), error_check.end(), float4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -317,7 +297,6 @@
         m_col_vbo.bind();
         m_col_vbo.allocate(0, max_num * sizeof(float4));
 
-        //vbo buffers
         cl_position_u = Buffer<float4>(ps->cli, m_pos_vbo.bufferId());
         cl_position_s = Buffer<float4>(ps->cli, positions);
         cl_color_u = Buffer<float4>(ps->cli, m_col_vbo.bufferId());

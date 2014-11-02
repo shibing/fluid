@@ -5,6 +5,7 @@ class QOpenGLContext;
 class QKeyEvent; 
 
 class OpenGLWindow;
+class QMouseEvent;
 
 class AbstractScene
 {
@@ -23,6 +24,8 @@ public:
     virtual void render() = 0;
     virtual void resize(int width, int height) = 0;
     virtual bool keyPress(QKeyEvent * event) = 0 ;
+    virtual bool mousePress(QMouseEvent * event) = 0;
+    virtual bool mouseMove(QMouseEvent * event) = 0;
 
 protected:
     OpenGLWindow *m_window;

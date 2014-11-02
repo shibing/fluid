@@ -43,8 +43,8 @@ namespace rtps
     void RTPS::init()
     {
         settings->setMaxOuterParticles(4096*4);
-        system = new SPH(this, settings->max_particles, settings->max_outer_particles);
-        m_render = new Render(system->getPosVBO(), system->getColVBO(), cli, settings);
+        system = new SPH(this, settings->max_particles);
+        m_render = new render::Render(system->getPosVBO(), system->getColVBO(), cli, settings);
     }
 
     void RTPS::update()
@@ -56,12 +56,8 @@ namespace rtps
     {
         m_render->setNum(system->getNum());
         m_render->renderBox();
-        m_render->render();
+        m_render->renderFluid();
     }
 
-    void RTPS::printTimers()
-    {
-        system->printTimers();
-    }
 };
 

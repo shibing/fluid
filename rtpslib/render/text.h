@@ -7,10 +7,9 @@
 #include <QOpenGLVertexArrayObject>
 #include <string>
 #include <structs.h>
-
+#include <QOpenGLFunctions_4_3_Core>
 #include <memory>
 
-class QOpenGLFunctions_4_3_Core;
 class QOpenGLTexture;
 
 namespace rtps
@@ -18,18 +17,19 @@ namespace rtps
 namespace render
 {
 
-class Text
+class Text : protected QOpenGLFunctions_4_3_Core
 {
 public:
-    Text(const std::string& text);
-    void setText(const std::string& text);
-    void draw(float x, float y, int w, int h, const float4& color = float4(1.0, 1.0, 1.0, 1.0));
-    void setOpenGLFunctions(QOpenGLFunctions_4_3_Core *funcs) { m_gl_funcs = funcs; }
+    Text();
+    void draw(const std::string& text, float x, float y, int w, int h, const float4& color = float4(1.0, 1.0, 1.0, 1.0));
     void initTexture();
     void initProgram();
     void initBuffer();
 
     ~Text();
+
+public:
+    static void releaseResource();
 
 private:
 
@@ -38,9 +38,8 @@ private:
     QOpenGLShaderProgram m_program;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_pos_vbo;
-    QOpenGLFunctions_4_3_Core *m_gl_funcs;
 
-    static std::auto_ptr<QOpenGLTexture> texture;
+    static QOpenGLTexture*  texture;
 };
 
 }

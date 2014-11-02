@@ -67,6 +67,7 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/render/util/stb_image.c
     ${rtpslib_SOURCE_DIR}/render/util/stb_image_write.h
     ${rtpslib_SOURCE_DIR}/render/text
+    ${rtpslib_SOURCE_DIR}/render/quad
 
 
     ${rtpslib_SOURCE_DIR}/domain/Domain

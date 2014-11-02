@@ -5,11 +5,14 @@
 #include <QtGui/QOpenGLFunctions_4_3_Core>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QMouseEvent>
 
 QOpenGLContext *context;
 
 OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen *screen):
     QWindow(screen),
+    m_width(width),
+    m_height(height),
     m_scene(scene)
 {
     m_scene->setWindow(this);
@@ -60,6 +63,18 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *event)
         QWindow::keyPressEvent(event);
 }
 
+void OpenGLWindow::mousePressEvent(QMouseEvent *event)
+{
+    if(!m_scene->mousePress(event))
+        QWindow::mousePressEvent(event);
+}
+
+void OpenGLWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if(!m_scene->mouseMove(event))
+        QWindow::mouseMoveEvent(event);
+}
+
 void OpenGLWindow::initializeGL()
 {
     m_context->makeCurrent(this);
@@ -77,6 +92,8 @@ void OpenGLWindow::paintGL()
 
 void OpenGLWindow::resizeGL()
 {
+    m_width = width();
+    m_height = height();
     m_context->makeCurrent(this);
     m_scene->resize(width(), height());
 }

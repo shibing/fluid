@@ -29,20 +29,11 @@
 #include <sph/LeapFrog.h>
 #include <sph/Lifetime.h>
 #include <sph/Euler.h>
+#include <rtps_common.h>
 
 #include <Hose.h>
 
 #include <timer_eb.h>
-
-#ifdef WIN32
-    #if defined(rtps_EXPORTS)
-        #define RTPS_EXPORT __declspec(dllexport)
-    #else
-        #define RTPS_EXPORT __declspec(dllimport)
-	#endif 
-#else
-    #define RTPS_EXPORT
-#endif
 
 namespace rtps
 {
@@ -52,7 +43,7 @@ namespace rtps
     class RTPS_EXPORT SPH : public System
     {
     public:
-        SPH(RTPS *ps, int num, int nb_in_cloud=0);
+        SPH(RTPS *ps, int num);
         ~SPH();
 
         void update();
@@ -77,30 +68,29 @@ namespace rtps
         std::vector<float4> getDeletedVel();
 
     private:
+        void calculateSPHSettings();
+        void setupDomain();
+        void prepareSorted();
+
+    private:
         RTPS* ps;
+        float spacing; 
         RTPSettings* settings;
 
         SPHParams sphp;
         GridParams grid_params;
         GridParams grid_params_scaled;
         Integrator integrator;
-        float spacing; //Particle rest distance in world coordinates
 
         std::string sph_source_dir;
-        int nb_var;
 
         std::vector<float4> deleted_pos;
         std::vector<float4> deleted_vel;
-
 
         //keep track of hoses
         std::vector<Hose*> hoses;
 
         //needs to be called when particles are added
-        void calculateSPHSettings();
-        void setupDomain();
-        void prepareSorted();
-
         std::vector<float4> positions;
         std::vector<float4> colors;
         std::vector<float4> velocities;
@@ -163,6 +153,7 @@ namespace rtps
         void call_prep(int stage);
         Hash hash;
         //DataStructures datastructures;
+
         CellIndices cellindices;
         Permute permute;
         void hash_and_sort();
@@ -175,11 +166,10 @@ namespace rtps
         void collision();
         CollisionWall collision_wall;
         CollisionTriangle collision_tri;
-        //CollisionCloud collision_cloud;
+
         void integrate();
         LeapFrog leapfrog;
         Euler euler;
-        //CloudEuler cloud_euler;
 
         Lifetime lifetime;
 
@@ -189,7 +179,6 @@ namespace rtps
 
 		Utils u;
     };
-
 
 
 };
