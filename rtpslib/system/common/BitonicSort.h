@@ -1,10 +1,9 @@
 #ifndef RTPS_BITONIC_SORT_H
 #define RTPS_BITONIC_SORT_H
 
-#include "CLL.h"
-#include "../opencl/Kernel.h"
-#include "../opencl/Buffer.h"
-//#include "../opencl/Scopy.h"
+#include <opencl/CLL.h>
+#include <opencl/Kernel.h>
+#include <opencl/Buffer.h>
 
 #ifndef uint
 #define uint unsigned int
@@ -33,13 +32,6 @@ public:
 private:
     Kernel k_bitonicSortLocal, k_bitonicSortLocal1;
     Kernel k_bitonicMergeLocal, k_bitonicMergeGlobal;
-    /*
-    Buffer<T> *cl_srckey;
-    Buffer<T> *cl_srcval;
-    Buffer<T> *cl_dstkey;
-    Buffer<T> *cl_dstval;
-    */
-
     CL *cli;
 
 };

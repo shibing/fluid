@@ -1,5 +1,5 @@
 
-#include "Kernel.h"
+#include <opencl/Kernel.h>
 
 namespace rtps
 {
@@ -9,18 +9,15 @@ namespace rtps
         this->cli = cli;
         this->name = name;
         this->source = source;
-        //TODO need to save the program
         kernel = cli->loadKernel(source, name);
     }
+
     Kernel::Kernel(CL *cli, cl::Program prog, std::string name)
     {
         this->cli = cli;
         this->name = name;
-        //this->source = source;
         this->program = prog;
         kernel = cli->loadKernel(program, name);
-        //TODO need to save the program
-        //kernel = cli->loadKernel(source, name);
     }
 
     float Kernel::execute(int ndrange)

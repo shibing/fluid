@@ -15,7 +15,6 @@ namespace rtps
         path = path + "/cellindices.cl";
         k_cellindices = Kernel(cli, path, "cellindices");
         std::cout << "Load cell indices kernel" << std::endl;
-        
     }
 
     int CellIndices::execute(int num,
@@ -23,17 +22,14 @@ namespace rtps
                     Buffer<unsigned int>& indices,
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_end,
-                    //params
-                    //Buffer<SPHParams>& sphp,
                     Buffer<GridParams>& gp,
-                    int nb_cells,               //we should be able to get this from the gp buffer
-                    //debug params
+                    int nb_cells,               
                     Buffer<float4>& clf_debug,
                     Buffer<int4>& cli_debug)
     {
 
         int minus = 0xffffffff;
-        std::vector<unsigned int> ci_start_v(nb_cells+1);
+        std::vector<unsigned int> ci_start_v(nb_cells + 1);
         std::fill(ci_start_v.begin(), ci_start_v.end(), minus);
         ci_start.copyToDevice(ci_start_v);
 
@@ -46,13 +42,12 @@ namespace rtps
         k_cellindices.setArg(iarg++, gp.getDevicePtr());
 
         int workSize = 64;
-        int nb_bytes = (workSize+1)*sizeof(int);
+        int nb_bytes = (workSize + 1) * sizeof(int);
         k_cellindices.setArgShared(iarg++, nb_bytes);
         
         try
         {
             float gputime = k_cellindices.execute(num, workSize);
-
         }
         catch (cl::Error er)
         {

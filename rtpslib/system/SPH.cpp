@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <iostream>
 
 #include <RTPSettings.h>
 #include <system/System.h>
@@ -24,10 +25,7 @@
             num = 0;
             max_num = n;
             grid = settings->grid;
-
             resource_path = settings->GetSettingAs<string>("rtps_path");
-            spacing = settings->GetSettingAs<float>("Spacing");
-
 
             std::vector<SPHParams> vparams(0);
             vparams.push_back(sphp);
@@ -35,6 +33,7 @@
 
             calculate();
             updateSPHP();
+            spacing = settings->GetSettingAs<float>("Spacing");
 
             setupDomain();
 
@@ -181,7 +180,7 @@
 	//----------------------------------------------------------------------
     void SPH::hash_and_sort()
     {
-        hash.execute(   num,
+        hash.execute(num,
                 cl_position_u,
                 cl_sort_hashes,
                 cl_sort_indices,
@@ -343,7 +342,7 @@
         cl_sort_output_hashes = Buffer<unsigned int>(ps->cli, keys);
         cl_sort_output_indices = Buffer<unsigned int>(ps->cli, keys);
 
-		printf("keys.size= %d\n", keys.size()); // 
+		printf("keys.size= %d\n", keys.size()); 
 		printf("gcells.size= %d\n", gcells.size()); // 1729
      }
 
