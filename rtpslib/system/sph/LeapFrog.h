@@ -27,9 +27,6 @@ namespace sph
                         Buffer<float4>& veleval_u,
                         Buffer<float4>& force_s,
                         Buffer<float4>& xsph_s,
-                        //Buffer<float4>& uvars, 
-                        //Buffer<float4>& svars, 
-                        Buffer<unsigned int>& indices,
                         //params
                         Buffer<SPHParams>& sphp,
                         //debug

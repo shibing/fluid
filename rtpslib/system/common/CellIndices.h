@@ -16,14 +16,10 @@ namespace rtps
             CellIndices(std::string path, CL* cli);
             int execute(int num,
                     Buffer<unsigned int>& hashes,
-                    Buffer<unsigned int>& indices,
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_stop,
-                    //params
-                    //Buffer<SPHParams>& sphp,
                     Buffer<GridParams>& gp,
                     int nb_cells,
-                    //debug params
                     Buffer<float4>& clf_debug,
                     Buffer<int4>& cli_debug);
 

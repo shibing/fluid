@@ -1,5 +1,3 @@
-// This software contains source code provided by NVIDIA Corporation.
-// Specifically code from the CUDA 2.3 SDK "Particles" sample
 
 #ifndef _CELLINDICES_
 #define _CELLINDICES_ 
@@ -12,7 +10,6 @@
 __kernel void cellindices(
                             int num,
                             __global uint* sort_hashes,
-                            __global uint* sort_indices,
                             __global uint* cell_indices_start,
                             __global uint* cell_indices_end,
                             __constant struct GridParams* gp,
@@ -27,10 +24,6 @@ __kernel void cellindices(
     if( hash > ncells) {
         return;
     }
-#if 1
-    // Load hash data into shared memory so that we can look 
-    // at neighboring particle's hash value without loading
-    // two hash values per thread	
 
     uint tid = get_local_id(0);
 
@@ -46,14 +39,6 @@ __kernel void cellindices(
     barrier(CLK_LOCAL_MEM_FENCE);
 #endif
 
-    // If this particle has a different cell index to the previous
-    // particle then it must be the first particle in the cell,
-    // so store the index of this particle in the cell.
-    // As it isn't the first particle, it must also be the cell end of
-    // the previous particle's cell
-
-    //Having this check here is important! Can't quit before local threads are done
-    //but we can't keep going if our index goes out of bounds of the number of particles
     if (index >= num) return;
 
     if (index == 0) {
@@ -70,8 +55,6 @@ __kernel void cellindices(
     if (index == num - 1) {
         cell_indices_end[hash] = index + 1;
     }
-    
-#endif
 }
 
 #endif

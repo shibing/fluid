@@ -19,7 +19,6 @@ namespace rtps
 
     int CellIndices::execute(int num,
                     Buffer<unsigned int>& hashes,
-                    Buffer<unsigned int>& indices,
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_end,
                     Buffer<GridParams>& gp,
@@ -36,7 +35,6 @@ namespace rtps
         int iarg = 0;
         k_cellindices.setArg(iarg++, num);
         k_cellindices.setArg(iarg++, hashes.getDevicePtr());
-        k_cellindices.setArg(iarg++, indices.getDevicePtr());
         k_cellindices.setArg(iarg++, ci_start.getDevicePtr());
         k_cellindices.setArg(iarg++, ci_end.getDevicePtr());
         k_cellindices.setArg(iarg++, gp.getDevicePtr());

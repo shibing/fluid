@@ -101,7 +101,6 @@
 
             int nc = cellindices.execute(num,
                 cl_sort_hashes,
-                cl_sort_indices,
                 cl_cell_indices_start,
                 cl_cell_indices_end,
                 cl_GridParams,
@@ -123,28 +122,19 @@
                 clf_debug,
                 cli_debug);
 
+            //some partilces out of boundary
             if (nc <= num && nc >= 0)
             {
-                //check if the number of particles has changed
-                //(this happens when particles go out of bounds,
-                //  either because of forces or by explicitly placing
-                //  them in order to delete)
-                //
-                //if so we need to copy sorted into unsorted
-                //and redo hash_and_sort
-
+               
                 deleted_pos.resize(num-nc);
                 deleted_vel.resize(num-nc);
-                //The deleted particles should be the nc particles after num
                 cl_position_s.copyToHost(deleted_pos, nc); //damn these will always be out of bounds here!
                 cl_velocity_s.copyToHost(deleted_vel, nc);
 
                 settings->SetSetting("Number of Particles", num);
                 updateSPHP();
-
                 call_prep(2);
                 hash_and_sort();
-                //continue; 
             }
 
             density.execute(num,
@@ -157,7 +147,7 @@
                 clf_debug,
                 cli_debug);
 
-            force.execute(   num,
+            force.execute(num,
                 cl_position_s,
                 cl_density_s,
                 cl_veleval_s,
@@ -170,7 +160,7 @@
                 clf_debug,
                 cli_debug);
             collision();
-            integrate(); // includes boundary force
+            integrate(); 
         }
 
         cl_position_u.release();
@@ -187,14 +177,12 @@
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
-
         bitonic_sort();
     }
 
 	//----------------------------------------------------------------------
     void SPH::collision()
     {
-        //when implemented other collision routines can be chosen here
         collision_wall.execute(num,
                 cl_position_s,
                 cl_velocity_s,
@@ -203,7 +191,6 @@
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
-
 
         collision_tri.execute(num,
                 settings->dt,
@@ -214,7 +201,6 @@
                 clf_debug,
                 cli_debug);
     }
-	//----------------------------------------------------------------------
 
     void SPH::integrate()
     {
@@ -244,7 +230,6 @@
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
-                cl_sort_indices,
                 cl_sphp,
                 clf_debug,
                 cli_debug);
@@ -254,12 +239,6 @@
 
     void SPH::call_prep(int stage)
     {
-		// copy from sorted to unsorted arrays at the beginning of each 
-		// iteration
-		// copy from cl_position_s to cl_position_u
-		// Only called if number of fluid particles changes from one iteration
-		// to the other
-
         cl_position_u.copyFromBuffer(cl_position_s, 0, 0, num);
         cl_velocity_u.copyFromBuffer(cl_velocity_s, 0, 0, num);
         cl_veleval_u.copyFromBuffer(cl_veleval_s, 0, 0, num);

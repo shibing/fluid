@@ -24,9 +24,6 @@ namespace sph
                     Buffer<float4>& veleval_u,
                     Buffer<float4>& force_s,
                     Buffer<float4>& xsph_s,
-                    //Buffer<float4>& uvars, 
-                    //Buffer<float4>& svars, 
-                    Buffer<unsigned int>& indices,
                     //params
                     Buffer<SPHParams>& sphp,
                     //debug params
@@ -42,7 +39,6 @@ namespace sph
         k_leapfrog.setArg(iargs++, veleval_u.getDevicePtr());
         k_leapfrog.setArg(iargs++, force_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, xsph_s.getDevicePtr());
-        k_leapfrog.setArg(iargs++, indices.getDevicePtr());
         k_leapfrog.setArg(iargs++, sphp.getDevicePtr());
         k_leapfrog.setArg(iargs++, dt); //time step
 
@@ -61,7 +57,6 @@ namespace sph
             float4 v = velocities[i];
             float4 f = forces[i];
 
-            //external force is gravity
             f.z += -9.8f;
 
             float speed = magnitude(f);
@@ -96,7 +91,6 @@ namespace sph
             positions[i] = p;
 
         }
-        //printf("v.z %f p.z %f \n", velocities[0].z, positions[0].z);
     }
 
 } //namespace rtps
