@@ -12,6 +12,7 @@ SET( RTPS_CMAKE_MODULE_PATH
 SET( OPENCL_INCLUDE_DIR 
     ${rtpsuite_SOURCE_DIR}/opencl10)
 
+message("rtps_cmake_module_path: ${RTPS_CMAKE_MODULE_PATH}\n")
 
 IF(RTPS_INSTALL_DIR)
     message("**rtps install dir: ${RTPS_INSTALL_DIR}")

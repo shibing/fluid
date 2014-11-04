@@ -33,7 +33,6 @@
 
             calculate();
             updateSPHP();
-            spacing = settings->GetSettingAs<float>("Spacing");
 
             setupDomain();
 
@@ -97,7 +96,7 @@
 
         for (int i=0; i < sub_intervals; i++)
         {
-            hash_and_sort();
+            hashAndSort();
 
             int nc = cellindices.execute(num,
                 cl_sort_hashes,
@@ -133,8 +132,8 @@
 
                 settings->SetSetting("Number of Particles", num);
                 updateSPHP();
-                call_prep(2);
-                hash_and_sort();
+                callPrep(2);
+                hashAndSort();
             }
 
             density.execute(num,
@@ -168,7 +167,7 @@
     }
 
 	//----------------------------------------------------------------------
-    void SPH::hash_and_sort()
+    void SPH::hashAndSort()
     {
         hash.execute(num,
                 cl_position_u,
@@ -177,7 +176,7 @@
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
-        bitonic_sort();
+        bitonicSort();
     }
 
 	//----------------------------------------------------------------------
@@ -237,7 +236,7 @@
 		static int count=0;
     }
 
-    void SPH::call_prep(int stage)
+    void SPH::callPrep(int stage)
     {
         cl_position_u.copyFromBuffer(cl_position_s, 0, 0, num);
         cl_velocity_u.copyFromBuffer(cl_velocity_s, 0, 0, num);
@@ -313,16 +312,13 @@
 
         std::vector<unsigned int> gcells(grid_params.nb_cells+1);
         int minus = 0xffffffff;
-        std::fill(gcells.begin(), gcells.end(), 666);
+        std::fill(gcells.begin(), gcells.end(), minus);
 
         cl_cell_indices_start = Buffer<unsigned int>(ps->cli, gcells);
         cl_cell_indices_end   = Buffer<unsigned int>(ps->cli, gcells);
 
         cl_sort_output_hashes = Buffer<unsigned int>(ps->cli, keys);
         cl_sort_output_indices = Buffer<unsigned int>(ps->cli, keys);
-
-		printf("keys.size= %d\n", keys.size()); 
-		printf("gcells.size= %d\n", gcells.size()); // 1729
      }
 
 	//----------------------------------------------------------------------
@@ -356,6 +352,7 @@
     int SPH::addBox(int nn, float4 min, float4 max, bool scaled, float4 color)
     {
         float scale = 1.0f;
+        float spacing = settings->GetSettingAs<float>("Spacing");
 	    vector<float4> rect = addRect(nn, min, max, spacing, scale);
         float4 velo(0, 0, 0, 0);
         pushParticles(rect, velo, color);
@@ -365,6 +362,8 @@
     void SPH::addBall(int nn, float4 center, float radius, bool scaled)
     {
         float scale = 1.0f;
+        float spacing = settings->GetSettingAs<float>("Spacing");
+    
         if (scaled) scale = sphp.simulation_scale;
         vector<float4> sphere = addSphere(nn, center, radius, spacing, scale);
         float4 velo(0, 0, 0, 0);
@@ -374,6 +373,7 @@
 	//----------------------------------------------------------------------
     int SPH::addHose(int total_n, float4 center, float4 velocity, float radius, float4 color)
     {
+        float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
         Hose *hose = new Hose(ps, total_n, center, velocity, radius, spacing, color);
         hoses.push_back(hose);
@@ -381,6 +381,7 @@
     }
     void SPH::updateHose(int index, float4 center, float4 velocity, float radius, float4 color)
     {
+        float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
         hoses[index]->update(center, velocity, radius, spacing, color);
     }
@@ -403,11 +404,9 @@
 
     void SPH::testDelete()
     {
-
         std::vector<float4> poss(40);
         float4 posx(100.,100.,100.,1.);
         std::fill(poss.begin(), poss.end(),posx);
-        //cl_vars_unsorted.copyToDevice(poss, max_num + 2);
         cl_position_u.acquire();
         cl_position_u.copyToDevice(poss);
         cl_position_u.release();
@@ -452,25 +451,7 @@
         num += nn;  
     }
 
-    void SPH::radix_sort()
-    {
-    try 
-        {   
-            int snum = nlpo2(num);
-            if(snum < 1024)
-            {   
-                snum = 1024;
-            }   
-            radix.sort(snum, &cl_sort_hashes, &cl_sort_indices);
-        }   
-        catch (cl::Error er) 
-        {   
-            printf("ERROR(radix sort): %s(%s)\n", er.what(), oclErrorString(er.err()));
-        }   
-
-    }
-	//----------------------------------------------------------------------
-    void SPH::bitonic_sort()
+    void SPH::bitonicSort()
     {
         try
         {

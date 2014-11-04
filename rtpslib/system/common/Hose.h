@@ -6,7 +6,7 @@
 #include <RTPS.h>
 #include <vector>
 
-#include "../../rtps_common.h"
+#include <rtps_common.h>
 using namespace std;
 
 namespace rtps
@@ -46,13 +46,6 @@ private:
     RTPS *ps;
 
 };
-
-//std::vector<float4> addDisc(int num, float4 center, float4 u, float4 v, float radius, float spacing);
-
-//spray [rate] particles per update until [num] particles have been sprayed
-//vector<float3> addHose(int num, float3 origin, float3 normal, int rate);
-
-
 
 }
 

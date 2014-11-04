@@ -1,6 +1,6 @@
 
 
-#ifdef RTPS_COMMON_H
+#ifndef RTPS_COMMON_H
 #define RTPS_COMMON_H
 
 #ifdef WIN32

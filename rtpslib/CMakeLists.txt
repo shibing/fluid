@@ -7,7 +7,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 project(rtpslib C CXX)
 
 SET( CMAKE_MODULE_PATH ${RTPS_CMAKE_MODULE_PATH})
-message("cmake_module_path: ${CMAKE_MODULE_PATH}\n")
 
 #this mostly affects the path to cl files
 SET(RTPS_DEBUG TRUE)
@@ -18,7 +17,6 @@ SET(PREPROCESS_CL TRUE)
 SET(WITH_OPENCL TRUE)
 
 ADD_DEFINITIONS(-g )
-ADD_DEFINITIONS(-DGPU)
 
 ##### Source Paths ############################################################
 ADD_DEFINITIONS(-DSPH_CL_SOURCE_DIR="cl_sph")
@@ -30,15 +28,12 @@ ADD_DEFINITIONS(-DGLSL_SOURCE_DIR="render")
 
 FIND_PACKAGE (OpenGL)
 FIND_PACKAGE (OPENCL)
-FIND_PACKAGE (GLEW)
 FIND_PACKAGE (Qt5Gui)
 FIND_PACKAGE (Qt5Core)
 
-message("OPENCL INCLUDE: ${OPENCL_INCLUDE_DIR}\n")
 
 set (rtpslib_INCLUDES
     ${OPENGL_INCLUDE_DIR}
-    ${GLEW_INCLUDE_PATH}
     ${OPENCL_INCLUDE_DIR}
     ${rtpslib_SOURCE_DIR}
     ${rtpslib_SOURCE_DIR}/system
@@ -61,11 +56,6 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/rtps_common
 
     ${rtpslib_SOURCE_DIR}/render/Render
-    #${rtpslib_SOURCE_DIR}/render/SpriteRender
-    #${rtpslib_SOURCE_DIR}/render/SSFRender
-    #${rtpslib_SOURCE_DIR}/render/Sphere3DRender
-    ${rtpslib_SOURCE_DIR}/render/util/stb_image.c
-    ${rtpslib_SOURCE_DIR}/render/util/stb_image_write.h
     ${rtpslib_SOURCE_DIR}/render/text
     ${rtpslib_SOURCE_DIR}/render/quad
 
@@ -89,11 +79,6 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/system/sph/Collision_wall
     ${rtpslib_SOURCE_DIR}/system/sph/Collision_triangle
     
-    #### these are CPU only
-    ${rtpslib_SOURCE_DIR}/system/sph/Pressure
-    ${rtpslib_SOURCE_DIR}/system/sph/Viscosity
-    ${rtpslib_SOURCE_DIR}/system/sph/XSPH
-    ####
     )
 
 SET(rtpslib_SOURCES ${rtpslib_SOURCES}
@@ -106,7 +91,6 @@ ADD_LIBRARY(rtps STATIC ${rtpslib_SOURCES})
 TARGET_LINK_LIBRARIES (rtps
    ${OPENGL_LIBRARIES}
    ${OPENCL_LIBRARIES}
-   ${GLEW_LIBRARY}
    Qt5::Gui
 )
 

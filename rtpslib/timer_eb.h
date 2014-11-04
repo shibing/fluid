@@ -2,16 +2,8 @@
 #define _TIME_EB_H_
 
 #include <sys/time.h>
+#include <rtps_common.h>
 
-#ifdef WIN32
-    #if defined(rtps_EXPORTS)
-        #define RTPS_EXPORT __declspec(dllexport)
-    #else
-        #define RTPS_EXPORT __declspec(dllimport)
-	#endif 
-#else
-    #define RTPS_EXPORT
-#endif
 
 #include <string>
 #include <vector>

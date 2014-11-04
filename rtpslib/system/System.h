@@ -59,18 +59,16 @@ namespace rtps
     protected:
         int num;  
         int max_num;
-
-        QOpenGLFunctions_4_3_Core *m_opengl_funcs;
+        bool managed;
+        Domain* grid;
+        std::string resource_path;
+        std::string common_source_dir;
 
         QOpenGLBuffer m_pos_vbo;
         QOpenGLBuffer m_col_vbo;
+        QOpenGLFunctions_4_3_Core *m_opengl_funcs;
 
-        bool managed;
 
-        Domain* grid;
-
-        std::string resource_path;
-        std::string common_source_dir;
     };
 
 }

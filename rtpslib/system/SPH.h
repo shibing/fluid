@@ -14,9 +14,6 @@
 #include <Domain.h>
 #include <SPHSettings.h>
 
-#include <util.h>
-
-
 #include <Hash.h>
 #include <BitonicSort.h>
 #include <Radix.h>
@@ -32,7 +29,6 @@
 #include <rtps_common.h>
 
 #include <Hose.h>
-
 #include <timer_eb.h>
 
 namespace rtps
@@ -55,7 +51,6 @@ namespace rtps
         void refillHose(int index, int refill);
         void sprayHoses();
 
-
         void loadTriangles(std::vector<Triangle> &triangles);
 
         void testDelete();
@@ -72,25 +67,32 @@ namespace rtps
         void setupDomain();
         void prepareSorted();
 
+        void calculate();
+        void updateSPHP();
+
+        void callPrep(int stage);
+        void hashAndSort();
+        void bitonicSort();
+        void collision();
+        void integrate();
+        float Wspiky(float4 r, float h);
+        float Wviscosity(float4 r, float h);
+
     private:
         RTPS* ps;
-        float spacing; 
-        RTPSettings* settings;
 
+        std::string sph_source_dir;
+        RTPSettings* settings;
         SPHParams sphp;
         GridParams grid_params;
         GridParams grid_params_scaled;
         Integrator integrator;
 
-        std::string sph_source_dir;
+        std::vector<Hose*> hoses;
 
         std::vector<float4> deleted_pos;
         std::vector<float4> deleted_vel;
 
-        //keep track of hoses
-        std::vector<Hose*> hoses;
-
-        //needs to be called when particles are added
         std::vector<float4> positions;
         std::vector<float4> colors;
         std::vector<float4> velocities;
@@ -122,10 +124,6 @@ namespace rtps
         Buffer<unsigned int>         cl_sort_output_hashes;
         Buffer<unsigned int>         cl_sort_output_indices;
 
-        Bitonic<unsigned int> bitonic;
-        Radix<unsigned int> radix;
-
-        //Parameter structs
         Buffer<SPHParams>   cl_sphp;
         Buffer<GridParams>  cl_GridParams;
         Buffer<GridParams>  cl_GridParamsScaled;
@@ -133,51 +131,19 @@ namespace rtps
         Buffer<float4>      clf_debug;  //just for debugging cl files
         Buffer<int4>        cli_debug;  //just for debugging cl files
 
-        //CPU functions
-        void cpuDensity();
-        void cpuPressure();
-        void cpuViscosity();
-        void cpuXSPH();
-        void cpuCollision_wall();
-        void cpuCollision_cloud();
-        void cpuEuler();
-        void cpuLeapFrog();
 
-        //calculate the various parameters that depend on max_num of particles
-        void calculate();
-        //copy the SPH parameter struct to the GPU
-        void updateSPHP();
-
-        //Nearest Neighbors search related functions
-        //Prep prep;
-        void call_prep(int stage);
         Hash hash;
-        //DataStructures datastructures;
-
+        Bitonic<unsigned int> bitonic;
+        Radix<unsigned int> radix;
         CellIndices cellindices;
         Permute permute;
-        void hash_and_sort();
-        void cloud_hash_and_sort();  // GE
-        void bitonic_sort();
-        void radix_sort();
-        void cloud_bitonic_sort();   // GE
         Density density;
         Force force;
-        void collision();
         CollisionWall collision_wall;
         CollisionTriangle collision_tri;
-
-        void integrate();
         LeapFrog leapfrog;
         Euler euler;
-
         Lifetime lifetime;
-
-        float Wpoly6(float4 r, float h);
-        float Wspiky(float4 r, float h);
-        float Wviscosity(float4 r, float h);
-
-		Utils u;
     };
 
 

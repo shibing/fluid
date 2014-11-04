@@ -3,20 +3,11 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <rtps_common.h>
 
-#ifdef WIN32
-    #if defined(rtps_EXPORTS)
-        #define RTPS_EXPORT __declspec(dllexport)
-    #else
-        #define RTPS_EXPORT __declspec(dllimport)
-	#endif 
-#else
-    #define RTPS_EXPORT
-#endif
 
 namespace rtps
 {
-
     typedef struct float3
     {
         float x, y, z, w;
@@ -51,7 +42,6 @@ namespace rtps
         }
     } int3;
 
-    // Coded as int4 since OpenCL does not have int3
     typedef struct int4
     {
         int x, y, z;
@@ -221,7 +211,7 @@ namespace rtps
     typedef struct Triangle
     {
         float4 verts[3];
-        float4 normal;    //should pack this in verts array
+        float4 normal;    
     } Triangle;
 
     RTPS_EXPORT float magnitude(float4 vec);
