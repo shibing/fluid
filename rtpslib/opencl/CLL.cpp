@@ -4,7 +4,7 @@
 #include <GL/glx.h>
 
 #include "CLL.h"
-#include "../util.h"
+#include <util.h>
 
 namespace rtps
 {
@@ -52,10 +52,6 @@ namespace rtps
             printf("source= %s\n", kernel_source.c_str());
             printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
         }
-        /*std::cout << "Build Status: " << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices.front()) << std::endl;
-        std::cout << "Build Options:\t" << program.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(devices.front()) << std::endl;
-        std::cout << "Build Log:\t " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices.front()) << std::endl;*/
-
         return program;
     }
 

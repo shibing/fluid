@@ -73,7 +73,6 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/system/SPHSettings.cpp
     ${rtpslib_SOURCE_DIR}/system/sph/Euler
     ${rtpslib_SOURCE_DIR}/system/sph/LeapFrog
-    ${rtpslib_SOURCE_DIR}/system/sph/Lifetime
     ${rtpslib_SOURCE_DIR}/system/sph/Density
     ${rtpslib_SOURCE_DIR}/system/sph/Force
     ${rtpslib_SOURCE_DIR}/system/sph/Collision_wall

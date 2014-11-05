@@ -43,18 +43,6 @@ namespace rtps
         this->grid = grid;
     }
 
-    //with triangle collision
-    RTPSettings::RTPSettings(SysType system, int max_particles, float dt, Domain* grid, bool tri_collision)
-    {
-        changed = false;
-        this->system = system;
-        this->max_particles = max_particles;
-        this->max_outer_particles = 0;
-        this->dt = dt;
-        this->grid = grid;
-        this->tri_collision = tri_collision;
-    }
-    
 
     RTPSettings::~RTPSettings()
     {

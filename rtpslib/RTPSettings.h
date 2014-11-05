@@ -5,24 +5,14 @@
 #include <string>
 #include <map>
 #include <iostream>
-#include <stdio.h>
 #include <sstream>
+#include <rtps_common.h>
 
 
-#include "domain/Domain.h"
-#ifdef WIN32
-    #if defined(rtps_EXPORTS)
-        #define RTPS_EXPORT __declspec(dllexport)
-    #else
-        #define RTPS_EXPORT __declspec(dllimport)
-	#endif 
-#else
-    #define RTPS_EXPORT
-#endif
+#include <domain/Domain.h>
 
 namespace rtps
 {
-    //next largest power of 2. hack required for BitonicSort
     unsigned int nlpo2(register unsigned int x);
 
     class RTPS_EXPORT RTPSettings 
@@ -43,11 +33,6 @@ namespace rtps
         RTPSettings(SysType system, int max_particles, float dt);
         RTPSettings(SysType system, int max_particles, float dt, Domain *grid);
 
-        //collision
-        RTPSettings(SysType system, int max_particles, float dt, Domain *grid, bool tri_collision);
-
-        //flock
-        RTPSettings(SysType system, int max_particles, float dt, Domain* grid, float maxspeed, float mindist, float searchradius, float color[], float w_sep, float w_align, float w_coh);
 
 		void setMaxOuterParticles(int max_outer_particles) {
 			this->max_outer_particles = nlpo2(max_outer_particles);
@@ -63,13 +48,8 @@ namespace rtps
         Domain *grid; 
         //time step per iteration
         float dt;
-        bool tri_collision;
 
-        // FLOCK: target of goal rule
-        float4 target;
 
-        // FLOCK: 2D simulation
-        bool two_dimensional;
 
         bool has_changed() { return changed; };
         void updated() { changed = false; }; //one system using one setting 
@@ -169,25 +149,6 @@ namespace rtps
         void setUseGLSL(bool use_glsl)
         {
             this->use_glsl = use_glsl;
-        }
-
-        float4 getTarget()
-        {
-            return target;
-        }
-        void setTarget(float4 t)
-        {
-            target = t;
-            target.print("target");
-        }
-
-        int getDimension()
-        {
-            return two_dimensional;
-        }
-        void setDimension(bool dim)
-        {
-            two_dimensional = dim;
         }
     };
 

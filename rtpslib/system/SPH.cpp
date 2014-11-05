@@ -48,7 +48,6 @@
 
             hash = Hash(common_source_dir, ps->cli);
             bitonic = Bitonic<unsigned int>(common_source_dir, ps->cli );
-            radix = Radix<unsigned int>(common_source_dir, ps->cli, max_num, 128);
             cellindices = CellIndices(common_source_dir, ps->cli);
             permute = Permute( common_source_dir, ps->cli);
 
@@ -124,7 +123,6 @@
             //some partilces out of boundary
             if (nc <= num && nc >= 0)
             {
-               
                 deleted_pos.resize(num-nc);
                 deleted_vel.resize(num-nc);
                 cl_position_s.copyToHost(deleted_pos, nc); //damn these will always be out of bounds here!

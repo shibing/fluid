@@ -10,11 +10,11 @@
 namespace rtps
 {
 
-    Hash::Hash(std::string path, CL* cli_)
+    Hash::Hash(const std::string& path, CL* cli_)
     {
+        std::cout << path << std::endl;
         cli = cli_;
-        path = path + "/hash.cl";
-        k_hash = Kernel(cli, path, "hash");
+        k_hash = Kernel(cli, path + "/hash.cl", "hash");
         std::cout << "Load hash kernel" << std::endl;
     }
 

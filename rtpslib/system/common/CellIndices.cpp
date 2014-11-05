@@ -9,11 +9,10 @@
 namespace rtps
 {
 
-    CellIndices::CellIndices(std::string path, CL* cli_)
+    CellIndices::CellIndices(const std::string& path, CL* cli_)
     {
         cli = cli_;
-        path = path + "/cellindices.cl";
-        k_cellindices = Kernel(cli, path, "cellindices");
+        k_cellindices = Kernel(cli, path + "/cellindices.cl", "cellindices");
         std::cout << "Load cell indices kernel" << std::endl;
     }
 

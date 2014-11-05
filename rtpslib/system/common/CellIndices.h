@@ -13,7 +13,7 @@ namespace rtps
     {
         public:
             CellIndices() { cli = NULL; }
-            CellIndices(std::string path, CL* cli);
+            CellIndices(const std::string& path, CL* cli);
             int execute(int num,
                     Buffer<unsigned int>& hashes,
                     Buffer<unsigned int>& ci_start,

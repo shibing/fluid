@@ -5,20 +5,10 @@
 #define __CL_ENABLE_EXCEPTIONS
 
 #include <CL/cl.hpp>
-
-#ifdef WIN32
-    #if defined(rtps_EXPORTS)
-        #define RTPS_EXPORT __declspec(dllexport)
-    #else
-        #define RTPS_EXPORT __declspec(dllimport)
-	#endif 
-#else
-    #define RTPS_EXPORT
-#endif
+#include <rtps_common.h>
 
 namespace rtps
 {
-    //NVIDIA helper functions    
     RTPS_EXPORT const char* oclErrorString(cl_int error);
     RTPS_EXPORT cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID);
 

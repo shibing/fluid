@@ -18,7 +18,7 @@ namespace rtps
     {
         public:
             Hash() { cli = NULL; }
-            Hash(std::string path, CL* cli);
+            Hash(const std::string& path, CL* cli);
             void execute(int num,
                         Buffer<float4>& pos_u, 
                         //output
