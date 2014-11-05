@@ -7,7 +7,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 project(sph_fluid)
 
 SET( BASE_DIR ${sph_fluid_SOURCE_DIR}/..)
-SET( RTPS_DIR ${sph_fluid_SOURCE_DIR}/../rtpslib)
+SET( LIB_DIR ${sph_fluid_SOURCE_DIR}/../rtpslib)
 
 message("BASE_DIR: ${BASE_DIR}")
 
@@ -26,7 +26,7 @@ FIND_PACKAGE (Qt5Gui)
 FIND_PACKAGE (Qt5Core)
 
 set (APP_INCLUDES
-    ${RTPS_DIR}
+    ${LIB_DIR}
     ${OPENGL_INCLUDE_DIR}
     ${BASE_DIR}/opencl10
 )
@@ -47,7 +47,7 @@ ADD_EXECUTABLE(sph ${APP_SOURCES})
 message("current build dir:\n")
 message("${BASE_DIR}/rtps/build")
 
-LINK_DIRECTORIES(${rtpsuite_BINARY_DIR}/rtpslib)
+LINK_DIRECTORIES(${sphfluid_BINARY_DIR}/rtpslib)
 
 SET(LINK_LIBS
     rtps
@@ -56,9 +56,10 @@ SET(LINK_LIBS
     Qt5::Gui
     Qt5::Core
 )
+
 message(RTPS_EXPORTS "${rtps_EXPORTS}")
 
 TARGET_LINK_LIBRARIES (sph
     ${LINK_LIBS}
 )
-install (TARGETS sph DESTINATION ${rtpsuite_BINARY_DIR}/bin)
+install (TARGETS sph DESTINATION ${sphfluid_BINARY_DIR}/bin)
