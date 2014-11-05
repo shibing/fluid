@@ -2,13 +2,13 @@ IF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	MESSAGE(FATAL_ERROR "CMake generation must always be out-of-source!
     Remove the CMakeCache.txt file and try again from another folder")
 ENDIF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 project(rtpslib C CXX)
 
 SET( CMAKE_MODULE_PATH ${RTPS_CMAKE_MODULE_PATH})
 
-#this mostly affects the path to cl files
 SET(RTPS_DEBUG TRUE)
 
 #only works on mac/linux
@@ -40,7 +40,6 @@ set (rtpslib_INCLUDES
     ${rtpslib_SOURCE_DIR}/system/sph
     ${rtpslib_SOURCE_DIR}/system/common
     ${rtpslib_SOURCE_DIR}/render
-    ${rtpslib_SOURCE_DIR}/render/util
     ${rtpslib_SOURCE_DIR}/domain
     ${rtpslib_SOURCE_DIR}/opencl
     ${rtpslib_SOURCE_DIR}/matrix_library
