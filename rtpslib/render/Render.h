@@ -28,9 +28,6 @@ namespace rtps
     class RTPS_EXPORT Render 
     {
     public:
-        Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* settings=0);
-        ~Render();
-
         enum ShaderType
         {
             NO_SHADER,SPHERE_SHADER,
@@ -43,6 +40,17 @@ namespace rtps
             MIKEP_SHADER,
             COPY_TO_FB
         };
+
+        enum RenderType
+        {
+            POINT,
+            SPHERE,
+
+        };
+    public:
+        Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* settings=0, RenderType type = POINT);
+        ~Render();
+
 
         void setNum(int nn)
         {
@@ -61,8 +69,12 @@ namespace rtps
         void initParticleBuffer();
         void initShaderProgram();
 
+        void setRenderType(RenderType type) { m_render_type = type; }
+
         void renderBox();
         void renderFluid();
+        void renderFluidAsPoint();
+        void renderFluidAsSphere();
 
         virtual void setWindowDimensions(GLuint width,GLuint height);
         
@@ -91,6 +103,7 @@ namespace rtps
 
         QOpenGLShaderProgram m_basic_program;
         QOpenGLShaderProgram m_particle_program;
+        QOpenGLShaderProgram m_sphere_program;
 
         QOpenGLFunctions_4_3_Core *m_opengl_funcs;
 
@@ -98,6 +111,7 @@ namespace rtps
         int m_num;
 
         RTPSettings* m_settings; 
+        RenderType m_render_type;
 
         std::string shader_source_dir;
     };  

@@ -5,6 +5,7 @@
 #include <RTPSettings.h>
 #include <system/System.h>
 #include <render/text.h>
+#include <render/Render.h>
 #include <render/quad.h>
 
 #include <QObject>
@@ -146,6 +147,12 @@ bool BasicScene::keyPress(QKeyEvent *event)
         case Qt::Key_Space:
             ps->getRender()->resetMatrix();
             return true;
+        case Qt::Key_P:
+            ps->getRender()->setRenderType(render::Render::POINT);
+            return true;
+        case Qt::Key_N:
+            ps->getRender()->setRenderType(render::Render::SPHERE);
+            return true;
         default:
             return false;
     }
@@ -206,8 +213,10 @@ void BasicScene::renderOverlay()
         text.draw("H: Show Help Information", start_pos_x, start_pos_y - 0.03, w, h, color);
         text.draw("r: Add a box water", start_pos_x, start_pos_y - 0.06, w, h, color);
         text.draw("i: Show system information", start_pos_x, start_pos_y - 0.09, w, h, color);
-        text.draw("Q/q/ESC: Quit", start_pos_x, start_pos_y - 0.12, w, h, color);
-        text.draw("e: Add Dame Break", start_pos_x, start_pos_y - 0.15, w, h, color);
+        text.draw("p: Render fluid as point", start_pos_x, start_pos_y - 0.12, w, h, color);
+        text.draw("n: Render fluid as sphere", start_pos_x, start_pos_y - 0.15, w, h, color);
+        text.draw("Q/q/ESC: Quit", start_pos_x, start_pos_y - 0.18, w, h, color);
+        text.draw("e: Add Dame Break", start_pos_x, start_pos_y - 0.21, w, h, color);
     }
 
 }

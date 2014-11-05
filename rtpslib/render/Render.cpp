@@ -14,8 +14,9 @@ namespace rtps
 {
     namespace render {
 
-    Render::Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL* cli, RTPSettings* settings) :
+    Render::Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL* cli,  RTPSettings* settings, RenderType type) :
         m_num(0),
+        m_render_type(type),
         m_cli(cli),
         m_settings(settings),
         m_pos_vbo(pos_vbo),
@@ -94,8 +95,10 @@ namespace rtps
         m_particle_vao.create();
         m_particle_vao.bind();
         m_pos_vbo.bind();
-        m_particle_program.enableAttributeArray(0);
-        m_particle_program.setAttributeBuffer(0, GL_FLOAT, 0, 4);
+        /* m_particle_program.enableAttributeArray(0); */
+        /* m_particle_program.setAttributeBuffer(0, GL_FLOAT, 0, 4); */
+        m_sphere_program.enableAttributeArray(0);
+        m_sphere_program.setAttributeBuffer(0, GL_FLOAT, 0, 4);
         m_particle_vao.release();
     }
 
@@ -109,6 +112,22 @@ namespace rtps
         assert( m_particle_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/point.frag").c_str()));
         assert(m_particle_program.link());
 
+        assert(m_sphere_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/sphere.vs").c_str()));
+        assert(m_sphere_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/sphere.fs").c_str()));
+        assert(m_sphere_program.link());
+
+    }
+
+    void Render::renderFluid()
+    {
+        switch (m_render_type) {
+            case Render::POINT:
+                renderFluidAsPoint();
+                break;
+            case Render::SPHERE:
+                renderFluidAsSphere();
+                break;
+        }
     }
 
     void Render::renderBox()
@@ -127,7 +146,7 @@ namespace rtps
         m_basic_program.release();
     }
 
-    void Render::renderFluid()
+    void Render::renderFluidAsPoint()
     {
 
         int width = m_settings->GetSettingAs<int>("window_width");
@@ -150,6 +169,36 @@ namespace rtps
         m_particle_program.release();
     }
 
+    void Render::renderFluidAsSphere()
+    {
+
+        int width = m_settings->GetSettingAs<int>("window_width");
+        int height = m_settings->GetSettingAs<int>("window_height");
+        m_perspective_mat.setToIdentity();
+        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 0.1, 1000.0f);
+        
+        //m_opengl_funcs->glPointSize(15.0f);
+        m_opengl_funcs->glEnable(GL_PROGRAM_POINT_SIZE);
+        m_opengl_funcs->glEnable(GL_DEPTH_TEST);
+
+        m_sphere_program.bind();
+        m_particle_vao.bind();
+
+        m_sphere_program.setUniformValue("modelview_mat", m_modelview_mat * m_rotate_mat);
+        m_sphere_program.setUniformValue("projection_mat" , m_perspective_mat);
+        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_sphere_program.setUniformValue("near", 0.1f);
+        m_sphere_program.setUniformValue("far", 1000.0f);
+
+        m_opengl_funcs->glDrawArrays(GL_POINTS, 0, m_num);
+        m_opengl_funcs->glFinish(); 
+
+        m_opengl_funcs->glDisable(GL_PROGRAM_POINT_SIZE);
+        m_opengl_funcs->glDisable(GL_DEPTH_TEST);
+
+        m_particle_vao.release();
+        m_sphere_program.release();
+    }
     void Render::resetMatrix()
     {
         m_modelview_mat.setToIdentity();
