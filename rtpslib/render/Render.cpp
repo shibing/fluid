@@ -186,9 +186,12 @@ namespace rtps
 
         m_sphere_program.setUniformValue("modelview_mat", m_modelview_mat * m_rotate_mat);
         m_sphere_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f);
         m_sphere_program.setUniformValue("near", 0.1f);
         m_sphere_program.setUniformValue("far", 1000.0f);
+        m_sphere_program.setUniformValue("width", width);
+        m_sphere_program.setUniformValue("height", height);
+
 
         m_opengl_funcs->glDrawArrays(GL_POINTS, 0, m_num);
         m_opengl_funcs->glFinish(); 
