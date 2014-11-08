@@ -56,13 +56,13 @@ namespace rtps
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_BLEND);
             m_program.bind();
-            glActiveTexture(GL_TEXTURE0 + 80);
-            m_texture->bind();
-            m_program.setUniformValue("sampler", GLuint(80));
+            glActiveTexture(GL_TEXTURE0 + 20);
+            glBindTexture(GL_TEXTURE_2D, m_texture);
+            m_program.setUniformValue("sampler", GLuint(20));
             m_vao.bind();
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             m_vao.release();
-            m_texture->release();
+            glBindTexture(GL_TEXTURE_2D, 0);
             m_program.release();
         }
 

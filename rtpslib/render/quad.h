@@ -5,8 +5,8 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
 
-class QOpenGLTexture;
 
 namespace rtps
 {
@@ -17,7 +17,8 @@ namespace rtps
         {
         public:
             Quad(float x0 = -1, float y0 = -1, float x1= 1,float y1 = 1);
-            void setTexture(QOpenGLTexture *texture) { m_texture = texture; }
+            void setTexture(QOpenGLTexture *texture) { m_texture = texture->textureId(); }
+            void setTexture(GLuint texture) { m_texture = texture;  };
             void draw();
 
         private:
@@ -26,7 +27,7 @@ namespace rtps
             QOpenGLBuffer m_pos_vbo;
             QOpenGLBuffer m_tex_vbo;
             QOpenGLShaderProgram m_program;
-            QOpenGLTexture *m_texture; 
+            GLuint m_texture;
         };
     }
 }

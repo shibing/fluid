@@ -63,11 +63,7 @@ void BasicScene::initialize()
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
     ps = new RTPS(settings);
-    ps->getRender()->setOpenGLFunctions(m_window->getOpenGLFunctions());
     ps->getSystem()->setOpenGLFunctions(m_window->getOpenGLFunctions());
-    
-    //test_init();
-
 }
 
 void BasicScene::update(float t)
@@ -98,9 +94,14 @@ void BasicScene::resize(int width, int height)
 
 bool BasicScene::keyPress(QKeyEvent *event)
 {
-    int n  ;
+    int n;
     float4 min;  
     float4 max;
+
+    static render::Render::RenderType type[3] = {render::Render::POINT, render::Render::SPHERE, render::Render::SURFACE}; 
+
+    static int i = 0;
+
     switch(event->key()) {
         case Qt::Key_R: 
             n = 2048;
@@ -148,10 +149,8 @@ bool BasicScene::keyPress(QKeyEvent *event)
             ps->getRender()->resetMatrix();
             return true;
         case Qt::Key_P:
-            ps->getRender()->setRenderType(render::Render::POINT);
-            return true;
-        case Qt::Key_N:
-            ps->getRender()->setRenderType(render::Render::SPHERE);
+            i = (i + 1) % 3;
+            ps->getRender()->setRenderType(type[i]);
             return true;
         default:
             return false;

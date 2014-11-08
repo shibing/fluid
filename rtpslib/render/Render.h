@@ -8,7 +8,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions>
-
+#include <QOpenGLFunctions_4_3_Core>
 
 #include <structs.h>
 #include <rtps_common.h>
@@ -17,7 +17,8 @@
 #include <opencl/Kernel.h>
 #include <opencl/Buffer.h>
 
-class QOpenGLFunctions_4_3_Core;
+class QOpenGLTexture;
+
 namespace rtps
 {
 
@@ -25,7 +26,7 @@ namespace rtps
 
     namespace render {
 
-    class RTPS_EXPORT Render 
+    class RTPS_EXPORT Render : protected QOpenGLFunctions_4_3_Core
     {
     public:
         enum ShaderType
@@ -43,9 +44,9 @@ namespace rtps
 
         enum RenderType
         {
-            POINT,
+            POINT = 0,
             SPHERE,
-
+            SURFACE 
         };
     public:
         Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* settings=0, RenderType type = POINT);
@@ -61,13 +62,10 @@ namespace rtps
             TI_RENDER=0, TI_GLSL
         }; 
 
-
-        void setOpenGLFunctions(QOpenGLFunctions_4_3_Core*funcs) { m_opengl_funcs = funcs; }
-        QOpenGLFunctions_4_3_Core * getOpenGLFunctions() const { return m_opengl_funcs; }
-        
         void initBoxBuffer();
         void initParticleBuffer();
         void initShaderProgram();
+        void initFramebufferObject();
 
         void setRenderType(RenderType type) { m_render_type = type; }
 
@@ -75,6 +73,7 @@ namespace rtps
         void renderFluid();
         void renderFluidAsPoint();
         void renderFluidAsSphere();
+        void renderFluidAsSurface();
 
         virtual void setWindowDimensions(GLuint width,GLuint height);
         
@@ -85,6 +84,10 @@ namespace rtps
 
         void rotateX(float x);
         void rotateY(float x);
+
+
+    private:
+        void renderSpriteWithShader(QOpenGLShaderProgram& program);
 
     protected:
         GLuint window_height,window_width;
@@ -101,11 +104,16 @@ namespace rtps
         QOpenGLBuffer m_box_vbo;
         QOpenGLBuffer m_box_index;
 
+        GLuint m_fbo;
+        GLuint m_depth_tex[2];
+        GLuint m_thickness_tex[2];
+          
+
         QOpenGLShaderProgram m_basic_program;
         QOpenGLShaderProgram m_particle_program;
         QOpenGLShaderProgram m_sphere_program;
-
-        QOpenGLFunctions_4_3_Core *m_opengl_funcs;
+        QOpenGLShaderProgram m_depth_program;
+        QOpenGLShaderProgram m_thickness_program;
 
         CL *m_cli;
         int m_num;
