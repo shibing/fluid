@@ -11,7 +11,7 @@ out vec4 color;
 
 vec4 diffuse_color = vec4(1.0);
 
-vec3 L = vec3(1.0, 1.0, 1.0);
+vec3 L = vec3(0.57, 0.57, 0.57);
 
 void main()
 {

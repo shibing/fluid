@@ -18,6 +18,10 @@
 #include <opencl/Buffer.h>
 
 class QOpenGLTexture;
+namespace cl
+{
+    class Image2DGL;
+}
 
 namespace rtps
 {
@@ -66,6 +70,7 @@ namespace rtps
         void initParticleBuffer();
         void initShaderProgram();
         void initFramebufferObject();
+        void initProgramAndKernel();
 
         void setRenderType(RenderType type) { m_render_type = type; }
 
@@ -88,12 +93,14 @@ namespace rtps
 
     private:
         void renderSpriteWithShader(QOpenGLShaderProgram& program);
+        void smoothDepth();
+
 
     protected:
         GLuint window_height,window_width;
 
         QMatrix4x4 m_perspective_mat;
-        QMatrix4x4 m_modelview_mat;
+        QMatrix4x4 m_translate_mat;
         QMatrix4x4 m_rotate_mat;
 
         QOpenGLVertexArrayObject m_particle_vao;
@@ -107,6 +114,10 @@ namespace rtps
         GLuint m_fbo;
         GLuint m_depth_tex[2];
         GLuint m_thickness_tex[2];
+
+        cl::Image2DGL* m_depth_cl[2];
+        cl::Program * m_program;
+        cl::Kernel * m_curvature_flow_kernel;
           
 
         QOpenGLShaderProgram m_basic_program;
@@ -114,6 +125,9 @@ namespace rtps
         QOpenGLShaderProgram m_sphere_program;
         QOpenGLShaderProgram m_depth_program;
         QOpenGLShaderProgram m_thickness_program;
+        
+        QOpenGLShaderProgram m_show_depth_program;
+        QOpenGLShaderProgram m_compose_program;
 
         CL *m_cli;
         int m_num;

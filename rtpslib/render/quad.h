@@ -7,6 +7,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
+#include <vector>
 
 namespace rtps
 {
@@ -20,6 +21,7 @@ namespace rtps
             void setTexture(QOpenGLTexture *texture) { m_texture = texture->textureId(); }
             void setTexture(GLuint texture) { m_texture = texture;  };
             void draw();
+            void drawMesh(QOpenGLShaderProgram& program);
 
         private:
             float m_x0, m_y0, m_x1, m_y1;
@@ -28,6 +30,7 @@ namespace rtps
             QOpenGLBuffer m_tex_vbo;
             QOpenGLShaderProgram m_program;
             GLuint m_texture;
+            
         };
     }
 }

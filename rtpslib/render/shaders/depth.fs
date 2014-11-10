@@ -14,7 +14,7 @@ void main()
     float near = gl_DepthRange.near;
 
     vec3 N;
-    N.xy = gl_PointCoord.xy * vec2(2.0, -2.0) + vec2(-1, 1);
+    N.xy = gl_PointCoord.xy * vec2(2.0, 2.0) + vec2(-1, -1);
     float mag = dot(N.xy, N.xy);
     if(mag > 1.0) {
         discard;
@@ -29,5 +29,6 @@ void main()
 
     gl_FragDepth = ((far - near) * ndc_depth + far + near)/2.0;
 
-    color.x = (ndc_depth + 1.0) / 2.0 ;
+    //color.x = (ndc_depth + 1.0) * 0.5 ;
+    color.x = sphere_position_in_view.z; //write view space z to texture
 }

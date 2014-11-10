@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <QOpenGLTexture>
+#include <fstream>
 
 #include <RTPSettings.h>
 
@@ -34,6 +35,7 @@ namespace rtps
         initBoxBuffer();
         initParticleBuffer();
         initFramebufferObject();
+        initProgramAndKernel();
         resetMatrix();
     }
 
@@ -128,6 +130,14 @@ namespace rtps
         assert(m_thickness_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/thickness.fs").c_str()));
         assert(m_thickness_program.link());
 
+        assert(m_show_depth_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/quad.vert").c_str()));
+        assert(m_show_depth_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/show_depth.frag").c_str()));
+        assert(m_show_depth_program.link());
+
+        assert(m_compose_program.addShaderFromSourceFile(QOpenGLShader::Vertex, (shader_source_dir + "/quad.vert").c_str()));
+        assert(m_compose_program.addShaderFromSourceFile(QOpenGLShader::Fragment, (shader_source_dir + "/compose.frag").c_str()));
+        assert(m_compose_program.link());
+
     }
 
     void Render::initFramebufferObject()
@@ -135,6 +145,8 @@ namespace rtps
         int width = m_settings->GetSettingAs<int>("window_width");
         int height = m_settings->GetSettingAs<int>("window_height");
         glGenTextures(2, &m_depth_tex[0]);
+        //init cl buffer here
+        int err;
         for(int i = 0; i < 2; ++i) {
             glBindTexture(GL_TEXTURE_2D, m_depth_tex[i]);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -143,8 +155,12 @@ namespace rtps
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, NULL);
             glBindTexture(GL_TEXTURE_2D, 0);
-        }
 
+            m_depth_cl[i] = new cl::Image2DGL(m_cli->context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, m_depth_tex[i], &err);
+            if(err != CL_SUCCESS) {
+                std::cout << "can not create cl texture from opengl texture" << std::endl;
+            }
+        }
         glGenTextures(2, &m_thickness_tex[0]);
         for(int i = 0; i < 2; ++i) {
             glBindTexture(GL_TEXTURE_2D, m_thickness_tex[i]);
@@ -176,6 +192,54 @@ namespace rtps
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    void Render::initProgramAndKernel()
+    {
+        int err;
+        std::string path = m_settings->GetSettingAs<std::string>("rtps_path");
+        path += "/cl_common/curvature_flow.cl";
+        std::ifstream file(path.c_str());
+        std::string prog(std::istreambuf_iterator<char>(file), (std::istreambuf_iterator<char>()));
+        cl::Program::Sources source(1, std::make_pair(prog.c_str(), prog.length() + 1));
+        m_program = new cl::Program(m_cli->context, source);
+        err =  m_program->build(m_cli->devices);
+        m_curvature_flow_kernel = new cl::Kernel(*m_program, "curvature_flow", &err);
+        if(err != CL_SUCCESS)
+            std::cerr << "can't create kernel" << std::endl;
+    }
+
+    void Render::smoothDepth()
+    {
+        int iteration_count = 100;
+        float dt = 0.005;
+        float z_contrib = 40;
+        int width = m_settings->GetSettingAs<int>("window_width");
+        int height = m_settings->GetSettingAs<int>("window_height");
+        glFinish();
+        cl::Event event;
+        int err;
+        std::vector<cl::Memory> buffers;
+        buffers.push_back(*m_depth_cl[0]);
+        buffers.push_back(*m_depth_cl[1]);
+        err = m_cli->queue.enqueueAcquireGLObjects(&buffers, NULL, &event);
+        m_cli->queue.finish();
+        m_curvature_flow_kernel->setArg(2, dt);
+        m_curvature_flow_kernel->setArg(3, z_contrib);
+        m_curvature_flow_kernel->setArg(4, width);
+        m_curvature_flow_kernel->setArg(5, height);
+        m_curvature_flow_kernel->setArg(6, m_perspective_mat.data()[0]);
+        m_curvature_flow_kernel->setArg(7, m_perspective_mat.data()[5]);
+
+        for(int i = 0; i < iteration_count; ++i) {
+            m_curvature_flow_kernel->setArg(0, *m_depth_cl[0]);
+            m_curvature_flow_kernel->setArg(1, *m_depth_cl[1]);
+            err = m_cli->queue.enqueueNDRangeKernel(*m_curvature_flow_kernel, cl::NullRange, cl::NDRange(width, height), cl::NullRange, NULL, &event);
+            m_cli->queue.finish();
+            std::swap(m_depth_cl[0], m_depth_cl[1]);
+        }
+        err = m_cli->queue.enqueueReleaseGLObjects(&buffers, NULL, &event);
+        m_cli->queue.finish();
+    }
+
     void Render::renderFluid()
     {
         switch (m_render_type) {
@@ -193,18 +257,10 @@ namespace rtps
 
     void Render::renderSpriteWithShader(QOpenGLShaderProgram& program)
     {
-        int width = m_settings->GetSettingAs<int>("window_width");
-        int height = m_settings->GetSettingAs<int>("window_height");
-        m_perspective_mat.setToIdentity();
-        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 0.1, 1000.0f);
-        
         glEnable(GL_PROGRAM_POINT_SIZE);
-
         m_particle_vao.bind();
         glDrawArrays(GL_POINTS, 0, m_num);
-        glFinish(); 
         glDisable(GL_PROGRAM_POINT_SIZE);
-
         m_particle_vao.release();
         
     }
@@ -214,12 +270,12 @@ namespace rtps
         int width = m_settings->GetSettingAs<int>("window_width");
         int height = m_settings->GetSettingAs<int>("window_height");
         m_perspective_mat.setToIdentity();
-        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 0.1, 1000.0f);
+        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 1, 100.0f);
 
         glEnable(GL_DEPTH_TEST);
         m_basic_program.bind();
         GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
-        m_basic_program.setUniformValue(uniform_matrix, m_perspective_mat * m_modelview_mat * m_rotate_mat);
+        m_basic_program.setUniformValue(uniform_matrix, m_perspective_mat * m_translate_mat * m_rotate_mat);
         m_box_vao.bind();
         glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
         m_basic_program.release();
@@ -230,16 +286,16 @@ namespace rtps
         int width = m_settings->GetSettingAs<int>("window_width");
         int height = m_settings->GetSettingAs<int>("window_height");
         m_perspective_mat.setToIdentity();
-        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 0.1, 1000.0f);
+        m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 1.0, 100.0f);
         
         glPointSize(5.0f);
         glEnable(GL_DEPTH_TEST);
 
-        m_particle_program.bind();
+     -   m_particle_program.bind();
         m_particle_vao.bind();
 
         GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
-        m_particle_program.setUniformValue(uniform_matrix, m_perspective_mat * m_modelview_mat * m_rotate_mat);
+        m_particle_program.setUniformValue(uniform_matrix, m_perspective_mat * m_translate_mat * m_rotate_mat);
         glDrawArrays(GL_POINTS, 0, m_num);
         glFinish(); 
 
@@ -254,11 +310,11 @@ namespace rtps
 
         m_sphere_program.bind();
 
-        m_sphere_program.setUniformValue("modelview_mat", m_modelview_mat * m_rotate_mat);
+        m_sphere_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_sphere_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f);
-        m_sphere_program.setUniformValue("near", 0.1f);
-        m_sphere_program.setUniformValue("far", 1000.0f);
+        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f / 0.87f);
+        m_sphere_program.setUniformValue("near", 1.0f);
+        m_sphere_program.setUniformValue("far", 100.0f);
         m_sphere_program.setUniformValue("width", width);
         m_sphere_program.setUniformValue("height", height);
 
@@ -288,9 +344,9 @@ namespace rtps
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_depth_program.bind();
-        m_depth_program.setUniformValue("modelview_mat", m_modelview_mat * m_rotate_mat);
+        m_depth_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_depth_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_depth_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f);
+        m_depth_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
         m_depth_program.setUniformValue("near", 0.1f);
         m_depth_program.setUniformValue("far", 1000.0f);
         m_depth_program.setUniformValue("width", width);
@@ -302,8 +358,9 @@ namespace rtps
 
         m_depth_program.release();
 
-        //draw thickness
+        smoothDepth();
 
+        //draw thickness
         m_thickness_program.bind();
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_thickness_tex[0], 0);
@@ -314,11 +371,11 @@ namespace rtps
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
         m_thickness_program.bind();
-        m_thickness_program.setUniformValue("modelview_mat", m_modelview_mat * m_rotate_mat);
+        m_thickness_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_thickness_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f);
-        m_thickness_program.setUniformValue("near", 0.1f);
-        m_thickness_program.setUniformValue("far", 1000.0f);
+        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_thickness_program.setUniformValue("near",1.0f);
+        m_thickness_program.setUniformValue("far", 100.0f);
         m_thickness_program.setUniformValue("width", width);
         m_thickness_program.setUniformValue("height", height);
         renderSpriteWithShader(m_thickness_program);
@@ -327,26 +384,48 @@ namespace rtps
         m_thickness_program.release();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        glViewport(0, 0, width, height);
         Quad quad;
-        quad.setTexture(m_thickness_tex[0]);
-        quad.draw();
+        /* quad.setTexture(m_depth_tex[0]); */
+        /* m_show_depth_program.bind(); */
+        /* glActiveTexture(GL_TEXTURE0 + 21); */ 
+        /* glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]); */ 
+        /* m_show_depth_program.setUniformValue("sampler", GLuint(21)); */
+        /* m_show_depth_program.setUniformValue("projection_mat", m_perspective_mat); */
+        /* quad.drawMesh(m_show_depth_program); */
+        /* m_show_depth_program.release(); */
+
+        m_compose_program.bind();
+        m_compose_program.setUniformValue("width", width);
+        m_compose_program.setUniformValue("height", height);
+        m_compose_program.setUniformValue("projection_mat", m_perspective_mat);
+        m_compose_program.setUniformValue("inverse_proj", m_perspective_mat.inverted());
+        m_compose_program.setUniformValue("inverse_modelview", (m_translate_mat * m_rotate_mat).inverted());
+        m_compose_program.setUniformValue("texel_size", 1.0 / width, 1.0 / height);
+        glActiveTexture(GL_TEXTURE0 + 21);
+        glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]);
+        m_compose_program.setUniformValue("depth_tex", GLuint(21));
+        glActiveTexture(GL_TEXTURE0 + 22);
+        glBindTexture(GL_TEXTURE_2D, m_thickness_tex[0]);
+        m_compose_program.setUniformValue("thickness_tex", GLuint(22));
+        quad.drawMesh(m_compose_program);
     }
     void Render::resetMatrix()
     {
-        m_modelview_mat.setToIdentity();
-        m_modelview_mat.translate(0, 0, -9);
+        m_translate_mat.setToIdentity();
+        m_translate_mat.translate(0, 0, -9);
 
         m_rotate_mat.setToIdentity();
     }
 
     void Render::moveX(float x)
     {
-        m_modelview_mat.translate(x, 0, 0);
+        m_translate_mat.translate(x, 0, 0);
     }
 
     void Render::moveZ(float x)
     {
-        m_modelview_mat.translate(0, 0, x);
+        m_translate_mat.translate(0, 0, x);
     }
 
     void Render::rotateY(float x)
