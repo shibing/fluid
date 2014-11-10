@@ -12,6 +12,16 @@ float mean_curvature(read_only image2d_t depth_in, int2 coords, const int width,
     float z_right  = read_imagef(depth_in, sampler, coords + (int2)(1, 0)).x;
     float z_down   = read_imagef(depth_in, sampler, coords + (int2)(0, -1)).x;
     float z_up     = read_imagef(depth_in, sampler, coords + (int2)(0, 1)).x;
+
+    if(z_left == 0)
+        z_left = z;
+    if(z_right == 0)
+        z_right = z;
+    if(z_down == 0)
+        z_down = z;
+    if(z_up == 0)
+        z_up = z;
+
     float z_x = (z_right - z_left) / 2;
     float z_y = (z_up - z_down) / 2;
 
@@ -21,6 +31,15 @@ float mean_curvature(read_only image2d_t depth_in, int2 coords, const int width,
     float z11 = read_imagef(depth_in, sampler, coords + (int2)( 1,  1)).x;
     float z01 = read_imagef(depth_in, sampler, coords + (int2)(-1,  1)).x;
     
+    if(z00 == 0)
+        z00 = z;
+    if(z11 == 0)
+        z11 = z;
+    if(z10 == 0)
+        z10 = z;
+    if(z01 == 0)
+        z01 = z;
+
     float z_xy = (z11 + z00 - z10 - z01) / 4;
 
     float z_xx = (z_right + z_left  - 2 * z);

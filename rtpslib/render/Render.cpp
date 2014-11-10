@@ -373,7 +373,7 @@ namespace rtps
         m_thickness_program.bind();
         m_thickness_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_thickness_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing_No_Scale"));
+        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
         m_thickness_program.setUniformValue("num", (int)m_settings->GetSettingAs<int>("Number of Particles"));
         m_thickness_program.setUniformValue("near",1.0f);
         m_thickness_program.setUniformValue("far", 100.0f);

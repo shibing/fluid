@@ -91,12 +91,16 @@ void main()
         float thickness_right = texture(thickness_tex, tex_coord0 + vec2(texel_size.x, 0)).r;
         float thickness_down = texture(thickness_tex, tex_coord0 + vec2(0, -texel_size.y)).r;
         float thickness_up = texture(thickness_tex, tex_coord0 + vec2(0, texel_size.y)).r;
-        thickness *= sphere_radius;
+        //thickness *= sphere_radius;
         vec3 N = computeNormal(tex_coord0);
 
-        vec4 c_beer = vec4(exp(-0.6 * thickness),
-                          exp(-0.2 * thickness),
-                          exp(-0.05 * thickness),
+        const float k_r = 5.0f;
+        const float k_g = 1.0f;
+        const float k_b = 0.1;
+
+        vec4 c_beer = vec4(exp(-k_r * thickness),
+                          exp(-k_g * thickness),
+                          exp(-k_b * thickness),
                           1 - exp(-3 * thickness));
         const vec3 L = vec3(0.577, 0.577, 0.577);
         vec3 E = normalize(-posEye);
@@ -105,14 +109,12 @@ void main()
         vec4 diffuse = max(0, dot(N, L)) * c_beer;
         frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
         frag_color = diffuse + specular;
-       // frag_color = c_beer;
         
-
-        //fresnel reflection
+        /* //fresnel reflection */
 
         float r_0 = 0.3f;
         float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 5.0f);
-         fres_refl =  pow(1 - abs(dot(N, E)), 5.0f);
+        fres_refl =  pow(1 - abs(dot(N, E)), 8.0f);
 
         float normal_reflectance = pow(clamp(dot(N, L), 0, 1), 6);
         float spec_coeff = clamp(normal_reflectance +  (1 - normal_reflectance) * fres_refl, 0, 1);
