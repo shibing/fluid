@@ -54,12 +54,6 @@ void BasicScene::initialize()
     settings->setBlurScale(1.0);
     settings->setUseGLSL(1);
     settings->SetSetting("sub_intervals", 1);
-    settings->SetSetting("render_texture", "firejet_blast.png");
-    settings->SetSetting("render_frag_shader", "sprite_tex_frag.glsl");
-    settings->SetSetting("render_use_alpha", true);
-    settings->SetSetting("render_alpha_function", "add");
-    settings->SetSetting("lt_increment", -.00);
-    settings->SetSetting("lt_cl", "lifetime.cl");
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
     ps = new RTPS(settings);

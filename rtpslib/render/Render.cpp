@@ -373,7 +373,8 @@ namespace rtps
         m_thickness_program.bind();
         m_thickness_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_thickness_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing_No_Scale"));
+        m_thickness_program.setUniformValue("num", (int)m_settings->GetSettingAs<int>("Number of Particles"));
         m_thickness_program.setUniformValue("near",1.0f);
         m_thickness_program.setUniformValue("far", 100.0f);
         m_thickness_program.setUniformValue("width", width);
@@ -402,6 +403,7 @@ namespace rtps
         m_compose_program.setUniformValue("inverse_proj", m_perspective_mat.inverted());
         m_compose_program.setUniformValue("inverse_modelview", (m_translate_mat * m_rotate_mat).inverted());
         m_compose_program.setUniformValue("texel_size", 1.0 / width, 1.0 / height);
+        m_compose_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing_No_Scale"));
         glActiveTexture(GL_TEXTURE0 + 21);
         glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]);
         m_compose_program.setUniformValue("depth_tex", GLuint(21));
@@ -413,7 +415,7 @@ namespace rtps
     void Render::resetMatrix()
     {
         m_translate_mat.setToIdentity();
-        m_translate_mat.translate(0, 0, -9);
+        m_translate_mat.translate(0, 0, -12);
 
         m_rotate_mat.setToIdentity();
     }

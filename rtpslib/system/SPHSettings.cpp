@@ -29,6 +29,7 @@ namespace rtps
         settings->SetSetting("Boundary Distance", boundary_distance);
         float spacing = rest_distance / simulation_scale;
         settings->SetSetting("Spacing", spacing);
+        settings->SetSetting("Spacing_No_Scale", rest_distance);
  
         float pi = M_PI;
         float h9 = pow(smoothing_distance, 9.f);
