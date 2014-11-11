@@ -17,6 +17,7 @@ namespace rtps
         public:
             Cube();
             void draw(const QMatrix4x4& mat);
+            GLuint getTexture() { return m_texture; }
         private:
             void initCubeTexture();
         private:

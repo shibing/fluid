@@ -298,7 +298,6 @@ namespace rtps
         m_perspective_mat.setToIdentity();
         m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 1.0, 100.0f);
 
-
         m_particle_program.bind();
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
@@ -394,8 +393,6 @@ namespace rtps
 
         glDisable(GL_BLEND);
         m_thickness_program.release();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
         //draw background
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_background_tex, 0);
@@ -406,6 +403,7 @@ namespace rtps
         m_cube.draw(m_perspective_mat * m_rotate_mat);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDisable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         //final image
         Quad quad;
@@ -424,6 +422,12 @@ namespace rtps
         glActiveTexture(GL_TEXTURE0 + 22);
         glBindTexture(GL_TEXTURE_2D, m_thickness_tex[0]);
         m_compose_program.setUniformValue("thickness_tex", GLuint(22));
+        glActiveTexture(GL_TEXTURE0 + 23);
+        glBindTexture(GL_TEXTURE_2D, m_background_tex);
+        m_compose_program.setUniformValue("background_tex", GLuint(23));
+        glActiveTexture(GL_TEXTURE0 + 24);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_cube.getTexture());
+        m_compose_program.setUniformValue("cube_map_tex", GLuint(24));
         quad.drawMesh(m_compose_program);
 
     }

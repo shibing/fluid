@@ -5,6 +5,8 @@ out vec4 frag_color;
 
 uniform sampler2D depth_tex;
 uniform sampler2D thickness_tex;
+uniform sampler2D background_tex;
+uniform samplerCube cube_map_tex;
 
 uniform int width;
 uniform int height;
@@ -78,8 +80,12 @@ vec3 computeNormal(vec2 uv)
 void main()
 {
         float z = texture(depth_tex, tex_coord0).r;
-        if(z == 0)
-            discard;
+        vec4 background = texture(background_tex, tex_coord0);
+
+        if(z == 0) {
+            frag_color = background;
+            return;
+        }
 
         vec2 zw;
         zw = getZW(tex_coord0);
@@ -102,23 +108,27 @@ void main()
                           exp(-k_g * thickness),
                           exp(-k_b * thickness),
                           1 - exp(-3 * thickness));
+
         const vec3 L = vec3(0.577, 0.577, 0.577);
         vec3 E = normalize(-posEye);
         vec3 R = normalize(reflect(-L, N));
-        vec4 specular = pow(max(0.0, dot(R, E)), 30.0f) * vec4(1.0, 1.0, 1.0, 1.0);
-        vec4 diffuse = max(0, dot(N, L)) * c_beer;
-        frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
-        frag_color = diffuse + specular;
+        float specular = pow(max(0.0, dot(R, E)), 30.0f);
+        float diffuse = max(0, dot(N, L)) ;
+        //frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
         
-        /* //fresnel reflection */
 
+        vec4 refrac_color = texture(background_tex, tex_coord0 + N.xy * thickness); //refraction
+        vec4 final_color = mix(c_beer * diffuse, refrac_color, 1 - thickness);
+
+        /* //fresnel reflection */
         float r_0 = 0.3f;
         float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 5.0f);
-        fres_refl =  pow(1 - abs(dot(N, E)), 8.0f);
 
-        float normal_reflectance = pow(clamp(dot(N, L), 0, 1), 6);
-        float spec_coeff = clamp(normal_reflectance +  (1 - normal_reflectance) * fres_refl, 0, 1);
-        frag_color = diffuse + 0.1 * thickness * spec_coeff * vec4(1.0);
+        //Cube Map reflection
+        vec3 viewer_reflect = normalize(reflect(posEye, N));
+        vec4 refl_color = texture(cube_map_tex, viewer_reflect);
+
+        frag_color = final_color + specular * vec4(1.0) + refl_color * fres_refl;
 
  }
 
