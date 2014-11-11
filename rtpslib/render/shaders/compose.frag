@@ -120,7 +120,7 @@ void main()
 
         const float k_r = 0.6f;
         const float k_g = 0.2f;
-        const float k_b = 0.07;
+        const float k_b = 0.05;
 
         vec4 c_beer = vec4(exp(-k_r * thickness),
                           exp(-k_g * thickness),
@@ -133,7 +133,6 @@ void main()
         float diffuse = max(0, dot(N, L)) ;
         float specular = pow(max(0.0, dot(R, E)), 30.0f);
         frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
-        
 
         vec4 refrac_color = texture(background_tex, tex_coord0 + N.xy * thickness); //refraction
         vec4 self_color = mix(c_beer * diffuse, refrac_color, 1 - thickness); //the color of fluid self
