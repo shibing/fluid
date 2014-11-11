@@ -93,16 +93,34 @@ void main()
         vec4 posWorld = inverse_modelview * vec4(posEye, 1.0);
 
         float thickness = texture(thickness_tex, tex_coord0).r;
-        float thickness_left = texture(thickness_tex, tex_coord0 + vec2(-texel_size.x, 0)).r;
-        float thickness_right = texture(thickness_tex, tex_coord0 + vec2(texel_size.x, 0)).r;
-        float thickness_down = texture(thickness_tex, tex_coord0 + vec2(0, -texel_size.y)).r;
-        float thickness_up = texture(thickness_tex, tex_coord0 + vec2(0, texel_size.y)).r;
-        //thickness *= sphere_radius;
+
+        int radius = 20;
+        float sum = 0;
+        float wsum = 0;
+        float sigma = 5;
+        for(int r = -radius; r <= radius; r += 1) {
+            float samp = texture(thickness_tex, tex_coord0 + r * vec2(texel_size.x, 0)).x;
+            float v = r / sigma;
+            float w = exp(-v * v/2.0);
+            sum += samp * w;
+            wsum += w;
+        }
+        for(int r = -radius; r <= radius; r += 1) {
+            float samp = texture(thickness_tex, tex_coord0 + r * vec2(0, texel_size.y)).x;
+            float v = r / sigma;
+            float w = exp(-v * v/2.0);
+            sum += samp * w;
+            wsum += w;
+        }
+        if(wsum > 0)
+            sum /= wsum;
+        thickness = sum;
+
         vec3 N = computeNormal(tex_coord0);
 
-        const float k_r = 5.0f;
-        const float k_g = 1.0f;
-        const float k_b = 0.1;
+        const float k_r = 0.6f;
+        const float k_g = 0.2f;
+        const float k_b = 0.07;
 
         vec4 c_beer = vec4(exp(-k_r * thickness),
                           exp(-k_g * thickness),
@@ -112,23 +130,22 @@ void main()
         const vec3 L = vec3(0.577, 0.577, 0.577);
         vec3 E = normalize(-posEye);
         vec3 R = normalize(reflect(-L, N));
-        float specular = pow(max(0.0, dot(R, E)), 30.0f);
         float diffuse = max(0, dot(N, L)) ;
-        //frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
+        float specular = pow(max(0.0, dot(R, E)), 30.0f);
+        frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
         
 
         vec4 refrac_color = texture(background_tex, tex_coord0 + N.xy * thickness); //refraction
-        vec4 final_color = mix(c_beer * diffuse, refrac_color, 1 - thickness);
+        vec4 self_color = mix(c_beer * diffuse, refrac_color, 1 - thickness); //the color of fluid self
 
         /* //fresnel reflection */
         float r_0 = 0.3f;
-        float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 5.0f);
+        float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 4.0f);
 
         //Cube Map reflection
         vec3 viewer_reflect = normalize(reflect(posEye, N));
         vec4 refl_color = texture(cube_map_tex, viewer_reflect);
 
-        frag_color = final_color + specular * vec4(1.0) + refl_color * fres_refl;
-
+        frag_color = self_color +  specular * vec4(1.0) +  refl_color * fres_refl;
  }
 
