@@ -44,7 +44,6 @@ namespace rtps
         {
             if(texture)
                 return;
-
             texture = new QOpenGLTexture(QImage("./bin/textures/font.png"));
             texture->setMinificationFilter(QOpenGLTexture::Linear);
             texture->setMagnificationFilter(QOpenGLTexture::Linear);

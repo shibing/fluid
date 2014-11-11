@@ -10,6 +10,7 @@
 
 #include <render/Render.h>
 #include <render/quad.h>
+#include <render/cube.h>
 
 using namespace std;
 
@@ -172,6 +173,15 @@ namespace rtps
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
+        glGenTextures(1, &m_background_tex);
+        glBindTexture(GL_TEXTURE_2D, m_background_tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_INT, NULL);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         GLuint rb;
         glGenRenderbuffers(1, &rb);
         glBindRenderbuffer(GL_RENDERBUFFER, rb);
@@ -287,20 +297,20 @@ namespace rtps
         int height = m_settings->GetSettingAs<int>("window_height");
         m_perspective_mat.setToIdentity();
         m_perspective_mat.perspective(60.0f, width/(height * 1.0f), 1.0, 100.0f);
-        
-        glPointSize(5.0f);
+
+
+        m_particle_program.bind();
+        glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
-
-     -   m_particle_program.bind();
         m_particle_vao.bind();
-
         GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
         m_particle_program.setUniformValue(uniform_matrix, m_perspective_mat * m_translate_mat * m_rotate_mat);
         glDrawArrays(GL_POINTS, 0, m_num);
-        glFinish(); 
-
+        glDisable(GL_PROGRAM_POINT_SIZE);
         m_particle_vao.release();
         m_particle_program.release();
+
+        m_cube.draw(m_perspective_mat * m_rotate_mat);
     }
 
     void Render::renderFluidAsSphere()
@@ -323,7 +333,8 @@ namespace rtps
         renderSpriteWithShader(m_sphere_program);
         glDisable(GL_DEPTH_TEST);
 
-        m_sphere_program.bind();
+        m_sphere_program.release();
+        m_cube.draw(m_perspective_mat * m_rotate_mat);
     }
 
     void Render::renderFluidAsSurface()
@@ -369,7 +380,7 @@ namespace rtps
         glBlendFunc(GL_ONE, GL_ONE);
         glViewport(0, 0, width, height);
         glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_thickness_program.bind();
         m_thickness_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_thickness_program.setUniformValue("projection_mat" , m_perspective_mat);
@@ -385,17 +396,19 @@ namespace rtps
         m_thickness_program.release();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glViewport(0, 0, width, height);
-        Quad quad;
-        /* quad.setTexture(m_depth_tex[0]); */
-        /* m_show_depth_program.bind(); */
-        /* glActiveTexture(GL_TEXTURE0 + 21); */ 
-        /* glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]); */ 
-        /* m_show_depth_program.setUniformValue("sampler", GLuint(21)); */
-        /* m_show_depth_program.setUniformValue("projection_mat", m_perspective_mat); */
-        /* quad.drawMesh(m_show_depth_program); */
-        /* m_show_depth_program.release(); */
 
+        //draw background
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_background_tex, 0);
+        glEnable(GL_DEPTH_TEST);
+        glViewport(0, 0, width ,height);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_cube.draw(m_perspective_mat * m_rotate_mat);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST);
+
+        //final image
+        Quad quad;
         m_compose_program.bind();
         m_compose_program.setUniformValue("width", width);
         m_compose_program.setUniformValue("height", height);
@@ -404,6 +417,7 @@ namespace rtps
         m_compose_program.setUniformValue("inverse_modelview", (m_translate_mat * m_rotate_mat).inverted());
         m_compose_program.setUniformValue("texel_size", 1.0 / width, 1.0 / height);
         m_compose_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing_No_Scale"));
+        glViewport(0, 0, width, height);
         glActiveTexture(GL_TEXTURE0 + 21);
         glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]);
         m_compose_program.setUniformValue("depth_tex", GLuint(21));
@@ -411,6 +425,7 @@ namespace rtps
         glBindTexture(GL_TEXTURE_2D, m_thickness_tex[0]);
         m_compose_program.setUniformValue("thickness_tex", GLuint(22));
         quad.drawMesh(m_compose_program);
+
     }
     void Render::resetMatrix()
     {

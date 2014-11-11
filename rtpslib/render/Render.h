@@ -17,6 +17,8 @@
 #include <opencl/Kernel.h>
 #include <opencl/Buffer.h>
 
+#include <render/cube.h>
+
 class QOpenGLTexture;
 namespace cl
 {
@@ -114,6 +116,7 @@ namespace rtps
         GLuint m_fbo;
         GLuint m_depth_tex[2];
         GLuint m_thickness_tex[2];
+        GLuint m_background_tex;
 
         cl::Image2DGL* m_depth_cl[2];
         cl::Program * m_program;
@@ -128,6 +131,8 @@ namespace rtps
         
         QOpenGLShaderProgram m_show_depth_program;
         QOpenGLShaderProgram m_compose_program;
+
+        Cube m_cube;
 
         CL *m_cli;
         int m_num;

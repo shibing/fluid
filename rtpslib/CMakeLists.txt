@@ -57,6 +57,7 @@ set (rtpslib_SOURCES
     ${rtpslib_SOURCE_DIR}/render/Render
     ${rtpslib_SOURCE_DIR}/render/text
     ${rtpslib_SOURCE_DIR}/render/quad
+    ${rtpslib_SOURCE_DIR}/render/cube
 
 
     ${rtpslib_SOURCE_DIR}/domain/Domain
@@ -96,6 +97,7 @@ ADD_SUBDIRECTORY(system/common)
 ADD_SUBDIRECTORY(system/sph)
 
 MAKE_DIRECTORY(${rtpslib_BINARY_DIR}/shaders)
+MAKE_DIRECTORY(${rtpslib_BINARY_DIR}/textures)
 FILE(COPY ${rtpslib_SOURCE_DIR}/render/shaders/ DESTINATION ${rtpslib_BINARY_DIR}/shaders/)
 FILE(COPY ${rtpslib_SOURCE_DIR}/render/textures/ DESTINATION ${rtpslib_BINARY_DIR}/textures/)
 

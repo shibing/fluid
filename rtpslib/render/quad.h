@@ -7,8 +7,6 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
-#include <vector>
-
 namespace rtps
 {
     namespace render
