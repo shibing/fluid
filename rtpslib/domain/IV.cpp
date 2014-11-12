@@ -168,6 +168,24 @@ namespace rtps
 
     }
 
+    void addCylinder(const float4& center,  float radius, float spacing, std::vector<float4>& particles)
+    {
+        spacing *= 0.8f;
+        for(float x = center.x; x <= center.x + 5 * spacing; x += spacing) {
+            for(float y = center.y - radius; y <= center.y + radius; y += spacing) {
+                for(float z = center.z - radius; z <= center.z + radius; z += spacing) {
+                    float px = x;
+                    float py = y; 
+                    float pz = z;
+                    if((py - center.y) * (py - center.y) + (pz - center.z) * (pz - center.z) > radius * radius)
+                        continue;
+                    particles.push_back(float4(px, py, pz, 1.0));
+                }
+            }
+        }
+
+    }
+
     std::vector<float4> addDiscRandom(int num, float4 center, float4 v, float4 u, float4 w, float radius, float spacing)
     {
         spacing *= 1.1f; //should probably just figure out whats up with my spacing

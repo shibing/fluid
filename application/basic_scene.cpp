@@ -100,8 +100,8 @@ bool BasicScene::keyPress(QKeyEvent *event)
                 show_help = !show_help;
             }
             else {
-                float4 center(0, 1.8, 0, 1.0);
-                float4 velocity(1.5, 0.5, 2.0, 0);
+                float4 center(-2.0, 1.8, 0, 1.0);
+                float4 velocity(2.2, 0.0, 0.0, 0);
                 ps->system->addHose(5000, center, velocity, 4, float4(1.0, 1.0, 1.0, 1.0));
             }
             return true;

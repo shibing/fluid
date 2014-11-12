@@ -1,4 +1,5 @@
 #include "cube.h"
+#include <iostream>
 
 namespace rtps
 {
@@ -67,6 +68,7 @@ namespace rtps
             QImage zneg("./bin/textures/zneg.png");
             int width = xpos.width();
             int height = xpos.height();
+            std::cout << width << std::endl;
 
             glGenTextures(1, &m_texture);
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
@@ -112,7 +114,6 @@ namespace rtps
             glCullFace(old_cull_face_mode);
             glDisable(GL_DEPTH_TEST);
             glDepthFunc(old_depth_func_mode);
-
         }
 
     }
