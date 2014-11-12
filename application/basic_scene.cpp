@@ -23,17 +23,6 @@ using namespace rtps;
 
 QOpenGLTexture *texture;
 
-void test_init()
-{       
-    QImage img("./bin/textures/font.png");
-
-    texture = new QOpenGLTexture(QImage("./bin/textures/font.png").mirrored());
-
-    texture->setMinificationFilter(QOpenGLTexture::Linear);
-    texture->setMagnificationFilter(QOpenGLTexture::Linear);
-    texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-}
-
 BasicScene::BasicScene()
     : max_num(100000) 
     , dt(0.003)
@@ -46,7 +35,7 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-    Domain *domain = new Domain(float4(-2.5, -2.5, -2.5, 1), float4(2.5, 2.5, 2.5, 1));
+    Domain *domain = new Domain(float4(-4.0, -2.5, -2.0, 1), float4(4.0, 2.5, 2.0, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);
@@ -118,9 +107,12 @@ bool BasicScene::keyPress(QKeyEvent *event)
             return true;
         case Qt::Key_E:
             n = 16384;
-            min = float4(0.0, 0.2, -2.3, 1.0);
-            max = float4(2.2, 2.2, 2.3, 1.);
+            min = float4(-3.9, 0.2, -1.9, 1.0);
+            max = float4(-1.6,  2.2,  1.9, 1.0);
             ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
+            return true;
+        case Qt::Key_L:
+            ps->system->setPush();
             return true;
         case Qt::Key_Q:
         case Qt::Key_Escape:

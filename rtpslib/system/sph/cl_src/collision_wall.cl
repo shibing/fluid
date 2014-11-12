@@ -4,6 +4,7 @@
 #include "cl_collision.h"
 
 __kernel void collision_wall(
+                            int push,
                             __global float4* pos_s,
                             __global float4* vel_s,
                             __global float4* force_s,
@@ -59,11 +60,16 @@ __kernel void collision_wall(
         f_f += calculateFrictionForce(v, f, normal, friction_kinetic, friction_static_limit);
     }
     //X walls
-    diff = bound_dist - (p.x - gp->bnd_min.x);
+    if(push == 1)
+        diff = bound_dist - (p.x - gp->bnd_min.x - 0.06);
+    else
+        diff = bound_dist - (p.x - gp->bnd_min.x);
+
     if (diff > sphp->EPSILON)
     {
         float4 normal = (float4)(1.0f, 0.0f, 0.0f, 0.0f);
         r_f += calculateRepulsionForce(normal, v, sphp->boundary_stiffness, sphp->boundary_dampening, diff);
+        f_f += (float4)(1.0, 0.0, 0.0, 0.0);
         f_f += calculateFrictionForce(v, f, normal, friction_kinetic, friction_static_limit);
     }
     diff = bound_dist - (gp->bnd_max.x - p.x);

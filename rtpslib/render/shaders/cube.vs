@@ -6,7 +6,7 @@ out vec3 tex_coords;
 uniform mat4 mat;
 void main()
 {
-    gl_Position = mat * (vec4((10 * position), 1.0));
+    gl_Position = mat * (vec4((20 * position), 1.0));
     gl_Position.z = gl_Position.w;
     tex_coords = position;
 }

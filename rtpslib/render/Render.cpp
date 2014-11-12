@@ -415,6 +415,7 @@ namespace rtps
         m_compose_program.setUniformValue("inverse_modelview", (m_translate_mat * m_rotate_mat).inverted());
         m_compose_program.setUniformValue("texel_size", 1.0 / width, 1.0 / height);
         m_compose_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing_No_Scale"));
+        m_compose_program.setUniformValue("particle_num", m_settings->GetSettingAs<int>("Number of Particles"));
         glViewport(0, 0, width, height);
         glActiveTexture(GL_TEXTURE0 + 21);
         glBindTexture(GL_TEXTURE_2D, m_depth_tex[0]);
@@ -434,7 +435,7 @@ namespace rtps
     void Render::resetMatrix()
     {
         m_translate_mat.setToIdentity();
-        m_translate_mat.translate(0, 0, -12);
+        m_translate_mat.translate(0, -0, -12);
 
         m_rotate_mat.setToIdentity();
     }

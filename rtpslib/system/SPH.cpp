@@ -21,6 +21,7 @@
         SPH::SPH(RTPS *psfr, int n)
         {
             ps = psfr;
+            m_push = false;
             settings = ps->settings;
             num = 0;
             max_num = n;
@@ -180,7 +181,14 @@
 	//----------------------------------------------------------------------
     void SPH::collision()
     {
-        collision_wall.execute(num,
+        int push;
+        if(m_push) {
+            push = 1;
+            m_push = false;
+        }
+        else
+            push = 0;
+        collision_wall.execute(num, push,
                 cl_position_s,
                 cl_velocity_s,
                 cl_force_s,

@@ -11,6 +11,7 @@ namespace rtps
         std::cout << "Load Collision Wall kernel" << std::endl;
     } 
     void CollisionWall::execute(int num,
+            int push,
             //input
             //Buffer<float4>& svars, 
             Buffer<float4>& pos_s, 
@@ -25,7 +26,8 @@ namespace rtps
             Buffer<int4>& cli_debug)
     {
         int iargs = 0;
-        //k_collision_wall.setArg(iargs++, svars.getDevicePtr());
+        
+        k_collision_wall.setArg(iargs++, push);
         k_collision_wall.setArg(iargs++, pos_s.getDevicePtr());
         k_collision_wall.setArg(iargs++, vel_s.getDevicePtr());
         k_collision_wall.setArg(iargs++, force_s.getDevicePtr());

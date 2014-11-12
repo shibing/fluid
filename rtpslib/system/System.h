@@ -39,6 +39,7 @@ namespace rtps
         {
             num = nn;
         };
+        virtual void setPush() = 0;
         virtual QOpenGLBuffer getPosVBO() { return m_pos_vbo; }
 
         virtual QOpenGLBuffer getColVBO() { return m_col_vbo; }

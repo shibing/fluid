@@ -58,6 +58,8 @@ namespace rtps
 
         std::vector<float4> getDeletedPos();
         std::vector<float4> getDeletedVel();
+        
+        void setPush() { m_push = true; }
 
     private:
         void calculateSPHSettings();
@@ -77,6 +79,7 @@ namespace rtps
 
     private:
         RTPS* ps;
+        bool m_push;
 
         std::string sph_source_dir;
         RTPSettings* settings;

@@ -94,10 +94,11 @@ void main()
 
         float thickness = texture(thickness_tex, tex_coord0).r;
 
-        int radius = 20;
+        int radius = 10;
         float sum = 0;
         float wsum = 0;
         float sigma = 5;
+
         for(int r = -radius; r <= radius; r += 1) {
             float samp = texture(thickness_tex, tex_coord0 + r * vec2(texel_size.x, 0)).x;
             float v = r / sigma;
@@ -105,6 +106,7 @@ void main()
             sum += samp * w;
             wsum += w;
         }
+
         for(int r = -radius; r <= radius; r += 1) {
             float samp = texture(thickness_tex, tex_coord0 + r * vec2(0, texel_size.y)).x;
             float v = r / sigma;
@@ -114,13 +116,13 @@ void main()
         }
         if(wsum > 0)
             sum /= wsum;
-        thickness = sum;
+       thickness = sum;
 
         vec3 N = computeNormal(tex_coord0);
 
-        const float k_r = 0.6f;
-        const float k_g = 0.2f;
-        const float k_b = 0.05;
+        const float k_r = 5.0;
+        const float k_g = 1.0;
+        const float k_b = 0.1;
 
         vec4 c_beer = vec4(exp(-k_r * thickness),
                           exp(-k_g * thickness),
@@ -136,15 +138,17 @@ void main()
 
         vec4 refrac_color = texture(background_tex, tex_coord0 + N.xy * thickness); //refraction
         vec4 self_color = mix(c_beer * diffuse, refrac_color, 1 - thickness); //the color of fluid self
+        //self_color = c_beer * diffuse;
 
         /* //fresnel reflection */
         float r_0 = 0.3f;
-        float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 4.0f);
+        float fres_refl = r_0 + (1 - r_0) * pow(1 - dot(N, E), 5.0f);
 
         //Cube Map reflection
         vec3 viewer_reflect = normalize(reflect(posEye, N));
         vec4 refl_color = texture(cube_map_tex, viewer_reflect);
 
         frag_color = self_color +  specular * vec4(1.0) +  refl_color * fres_refl;
+        //frag_color = c_beer * diffuse;
  }
 

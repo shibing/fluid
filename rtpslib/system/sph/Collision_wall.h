@@ -14,7 +14,7 @@ namespace rtps
         public:
             CollisionWall() { cli = NULL;};
             CollisionWall(std::string path, CL* cli);
-            void execute(int num,
+            void execute(int num, int push,
                         Buffer<float4>& pos_s, 
                         Buffer<float4>& vel_s, 
                         Buffer<float4>& force_s, 
