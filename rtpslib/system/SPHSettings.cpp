@@ -16,7 +16,7 @@ namespace rtps
         float4 dmax = grid->getBndMax();
         float domain_vol = (dmax.x - dmin.x) * (dmax.y - dmin.y) * (dmax.z - dmin.z);
 
-        float simulation_scale = pow(.5f * VP * max_num / domain_vol, 1.f/3.f); 
+        float simulation_scale = pow(.5f * VP * max_num / (5 * 5 * 5), 1.f/3.f); 
 
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);

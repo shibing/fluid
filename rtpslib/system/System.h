@@ -18,6 +18,7 @@ namespace rtps
     {
     public:
         System(): m_pos_vbo(QOpenGLBuffer::VertexBuffer), m_col_vbo(QOpenGLBuffer::VertexBuffer) { }
+
         virtual void update() = 0;
 
         virtual ~System()
@@ -28,6 +29,7 @@ namespace rtps
         {
             return grid;
         }
+
         virtual int getNum()
         {
             return num;
@@ -39,6 +41,7 @@ namespace rtps
         {
             num = nn;
         };
+
         virtual void setPush() = 0;
         virtual void setPaused() = 0;
         virtual QOpenGLBuffer getPosVBO() { return m_pos_vbo; }
@@ -50,6 +53,7 @@ namespace rtps
         virtual void addBall(int nn, float4 center, float radius, bool scaled, float4 color=float4(1., 0., 0., 1.)) { } 
 
         virtual int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { return 0; }
+        virtual int addBunny(float4 center) = 0;
 
         virtual void updateHose(int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
         virtual void refillHose(int index, int refill) { }

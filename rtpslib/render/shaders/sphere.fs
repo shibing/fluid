@@ -30,6 +30,6 @@ void main()
     sphere_position_in_proj.z  /= sphere_position_in_proj.w;
 
     gl_FragDepth = ((far - near) * sphere_position_in_proj.z + far + near)/2.0;
-    color = max(0, dot(N, L)) * vec4((v_position_in_world + 2.5) / 5.0, 1.0);
+    color = max(0, dot(N, L)) * vec4((v_position_in_world + vec3(4, 2.5, 2)) / vec3(8, 5, 4), 1.0);
 
 }

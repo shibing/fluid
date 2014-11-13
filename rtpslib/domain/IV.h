@@ -18,6 +18,7 @@ namespace rtps
     RTPS_EXPORT void addCylinder(const float4& center, float radius, float spacing, std::vector<float4>& particles);
 
     RTPS_EXPORT void addCube(int num, float4 min, float4 max, float spacing, float scale, std::vector<float4>& rvec);
+	RTPS_EXPORT void addBunny(const float4& center, std::vector<float4>& rvec);
 
     RTPS_EXPORT vector<float4> addRandRect(int num, float4 min, float4 max, float spacing, float scale, float4 dmin, float4 dmax);
     RTPS_EXPORT vector<float4> addRandArrangement(int num, float scale, float4 dmin, float4 dmax);

@@ -2,8 +2,10 @@
 #include "IV.h"
 #include <vector>
 
-#include<stdlib.h>
-#include<time.h>
+#include <iostream>
+#include <cstdio>
+#include<cstdlib>
+#include<ctime>
 
 namespace rtps
 {
@@ -355,7 +357,22 @@ namespace rtps
 	}
 //----------------------------------------------------------------------
 
-
+RTPS_EXPORT void addBunny(const float4& center, std::vector<float4>& rvec)
+{
+    std::string file_path("./bin/models/bunny.txt");
+    char line[256] = {0};
+    FILE *file;
+    if((file = fopen(file_path.c_str(), "r")) == NULL) {
+        std::cerr << "can't open file for read\n";
+        exit(-1);
+    }
+    while(!feof(file)) {
+        if(fgets(line, 255, file) == NULL) break;
+        float x, y, z;
+        sscanf(line, "%f %f %f", &x, &y, &z);
+        rvec.push_back(float4(x, y, z, 1.0f));
+    }
+}
 
 }
 

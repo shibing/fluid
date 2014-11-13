@@ -376,7 +376,15 @@
         if (scaled) scale = sphp.simulation_scale;
         vector<float4> sphere = addSphere(nn, center, radius, spacing, scale);
         float4 velo(0, 0, 0, 0);
-        pushParticles(sphere,velo);
+        pushParticles(sphere, velo);
+    }
+
+    int SPH::addBunny(float4 center)
+    {
+        vector<float4> particles;
+        rtps::addBunny(center, particles);
+        pushParticles(particles, float4(0, 0, 0, 0));
+        return particles.size();
     }
 
 	//----------------------------------------------------------------------

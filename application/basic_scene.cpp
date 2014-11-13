@@ -35,7 +35,7 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-    Domain *domain = new Domain(float4(-4.0, -2.5, -2.0, 1), float4(4.0, 2.5, 2.0, 1));
+    Domain *domain = new Domain(float4(-9.0, -7.0, -4.0, 1), float4(9.0, 7.0, 4.0, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);
@@ -86,12 +86,6 @@ bool BasicScene::keyPress(QKeyEvent *event)
     static int i = 0;
 
     switch(event->key()) {
-        case Qt::Key_R: 
-            n = 2048;
-            min = float4(-0.5, -0.5, 0.7, 1.0);
-            max = float4( 0.5,  0.5, 1.5, 1.0);
-            ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
-            return true;
         case Qt::Key_I:
             show_info = !show_info;
             return true;
@@ -102,16 +96,18 @@ bool BasicScene::keyPress(QKeyEvent *event)
             else {
                 float4 center(-2.0, 1.8, 0, 1.0);
                 float4 velocity(2.2, 0.0, 0.0, 0);
-                ps->system->addHose(5000, center, velocity, 4, float4(1.0, 1.0, 1.0, 1.0));
+                ps->system->addHose(5000, center, velocity, 6, float4(1.0, 1.0, 1.0, 1.0));
             }
             return true;
         case Qt::Key_E:
-            n = 16384;
-            min = float4(-3.9, 0.2, -1.9, 1.0);
-            max = float4(-1.6,  2.2,  1.9, 1.0);
+            n = 163840;
+            min = float4(-8.9, -3.2, -3.0, 1.0);
+            max = float4(-5.0, -0.2,  3.0, 1.0);
             ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
             return true;
-
+        case Qt::Key_B:
+            ps->system->addBunny(float4(0, 0, 0, 0));
+            return true;
         case Qt::Key_T:
             ps->system->setPaused();
             return true;
