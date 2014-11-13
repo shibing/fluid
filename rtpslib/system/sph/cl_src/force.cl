@@ -47,7 +47,7 @@ inline void ForNeighbor(
         float idj = 1.0/dj;
 
 
-        float rest_density = 1000.f;
+        float rest_density = sphp->rest_density;
         float Pi = sphp->K*(di - rest_density);
         float Pj = sphp->K*(dj - rest_density);
 
@@ -64,6 +64,9 @@ inline void ForNeighbor(
         float dWijlapl = sphp->wvisc_dd_coef * Wvisc_lapl(rlen, sphp->smoothing_distance, sphp);
         float4 visc = vvisc * (velj-veli) * dWijlapl * idj * idi;
         force += visc;
+
+        //add buoyancy
+      //  force += 10.0 * (di - sphp->rest_density) * (0.0, -9.8, 0.0, 1.0) * idi;
 
         force *= sphp->mass;
 

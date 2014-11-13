@@ -12,6 +12,7 @@ typedef struct CLOUDParams
 typedef struct SPHParams
 {
     float mass;
+    float rest_density;
     float rest_distance;
     float smoothing_distance;
     float simulation_scale;

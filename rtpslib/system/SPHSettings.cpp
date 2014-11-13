@@ -20,6 +20,7 @@ namespace rtps
 
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);
+        settings->SetSetting("rho0", rho0);
         settings->SetSetting("Rest Distance", rest_distance);
         settings->SetSetting("Smoothing Distance", smoothing_distance);
         settings->SetSetting("Simulation Scale", simulation_scale);
@@ -71,16 +72,14 @@ namespace rtps
         //CL parameters
         settings->SetSetting("Number of Particles", 0);
         settings->SetSetting("Number of Variables", 10); // for combined variables (vars_sorted, etc.) //TO be depracated
-        settings->SetSetting("Choice", 0); // which kind of calculation to invoke //TO be depracated
 
-		// CL Cloud parameters
-        settings->SetSetting("Number of Cloud Particles", 0);
     }
    
 	//----------------------------------------------------------------------
     void SPH::updateSPHP()
     {
         sphp.mass = settings->GetSettingAs<float>("Mass");
+        sphp.rest_density = settings->GetSettingAs<float>("rho0");
         sphp.rest_distance = settings->GetSettingAs<float>("Rest Distance");
         sphp.smoothing_distance = settings->GetSettingAs<float>("Smoothing Distance");
         sphp.simulation_scale = settings->GetSettingAs<float>("Simulation Scale");

@@ -111,6 +111,10 @@ bool BasicScene::keyPress(QKeyEvent *event)
             max = float4(-1.6,  2.2,  1.9, 1.0);
             ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
             return true;
+
+        case Qt::Key_T:
+            ps->system->setPaused();
+            return true;
         case Qt::Key_L:
             ps->system->setPush();
             return true;

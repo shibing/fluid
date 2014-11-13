@@ -68,8 +68,6 @@ namespace rtps
             QImage zneg("./bin/textures/zneg.png");
             int width = xpos.width();
             int height = xpos.height();
-            std::cout << width << std::endl;
-
             glGenTextures(1, &m_texture);
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

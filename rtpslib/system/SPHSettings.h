@@ -19,6 +19,7 @@ namespace rtps
 	struct __attribute__((aligned(16)))  SPHParams
     {
         float mass;
+        float rest_density;
         float rest_distance;
         float smoothing_distance;
         float simulation_scale;

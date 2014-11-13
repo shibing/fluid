@@ -22,6 +22,7 @@
         {
             ps = psfr;
             m_push = false;
+            m_paused = false;
             settings = ps->settings;
             num = 0;
             max_num = n;
@@ -82,6 +83,8 @@
 
     void SPH::update()
     {
+        if(m_paused)
+            return;
         glFinish();
         if (settings->has_changed()) updateSPHP();
 

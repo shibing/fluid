@@ -49,8 +49,6 @@ namespace rtps
         //time step per iteration
         float dt;
 
-
-
         bool has_changed() { return changed; };
         void updated() { changed = false; }; //one system using one setting 
 
