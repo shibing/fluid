@@ -35,7 +35,7 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-    Domain *domain = new Domain(float4(-9.0, -7.0, -4.0, 1), float4(9.0, 7.0, 4.0, 1));
+    Domain *domain = new Domain(float4(-9.0, -7.0, -4.0, 1), float4(9.0, 6.0, 4.0, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);

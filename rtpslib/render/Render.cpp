@@ -435,7 +435,7 @@ namespace rtps
     void Render::resetMatrix()
     {
         m_translate_mat.setToIdentity();
-        m_translate_mat.translate(0, -0, -24);
+        m_translate_mat.translate(0, 3, -24);
         m_rotate_mat.setToIdentity();
     }
 
