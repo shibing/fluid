@@ -24,9 +24,11 @@ uniform vec2 texel_size;
 vec2 getZW(vec2 coords )
 {
     float z = texture(depth_tex, coords).x;
+    if(z == 0)
+        z = 0.00001;
     vec4 pos = vec4(0, 0, z, 1);
     pos = projection_mat * pos; //clip space
-    z = pos.z / pos.w; //ndc space
+    //z = pos.z / pos.w; //ndc space
     return vec2(z, pos.w);
 }
 
@@ -47,15 +49,20 @@ vec3 uvToEye(vec2 uv, float depth, float w)
 
 vec3 computeNormal(vec2 uv)
 {
-    vec2 zw;
-    zw = getZW(uv);
-    vec3 posEye = uvToEye(uv, zw.x, zw.y);
+    vec2 zw_self;
+    zw_self = getZW(uv);
+    vec3 posEye = uvToEye(uv, zw_self.x / zw_self.y, zw_self.y);
 
+    vec2 zw;
     zw = getZW(uv + vec2(texel_size.x, 0));
-    vec3 posEye_right = uvToEye(uv + vec2(texel_size.x, 0), zw.x, zw.y);
+    if(zw.x == 0)
+        zw.x = zw_self.x;
+    vec3 posEye_right = uvToEye(uv + vec2(texel_size.x, 0), zw.x / zw.y, zw.y);
 
     zw = getZW(uv + vec2(-texel_size.x, 0));
-    vec3 posEye_left = uvToEye(uv + vec2(-texel_size.x, 0), zw.x, zw.y);
+    if(zw.x == 0)
+        zw.x = zw_self.x;
+    vec3 posEye_left = uvToEye(uv + vec2(-texel_size.x, 0), zw.x / zw.y, zw.y);
 
     vec3 ddx = posEye_right - posEye;
     vec3 ddx2 = posEye - posEye_left;
@@ -63,10 +70,14 @@ vec3 computeNormal(vec2 uv)
         ddx = ddx2;
 
     zw = getZW(uv + vec2(0 ,texel_size.y));
-    vec3 posEye_up = uvToEye(uv + vec2(0, texel_size.y), zw.x, zw.y);
+    if(zw.x == 0)
+        zw.x = zw_self.x;
+    vec3 posEye_up = uvToEye(uv + vec2(0, texel_size.y), zw.x / zw.y,  zw.y);
     
     zw = getZW(uv + vec2(0 ,-texel_size.y));
-    vec3 posEye_down = uvToEye(uv + vec2(0, -texel_size.y), zw.x, zw.y);
+    if(zw.x == 0)
+        zw.x = zw_self.x;
+    vec3 posEye_down = uvToEye(uv + vec2(0, -texel_size.y), zw.x / zw.y, zw.y);
 
     vec3 ddy = posEye_up - posEye;
     vec3 ddy2 = posEye - posEye_down;
@@ -149,6 +160,5 @@ void main()
         vec4 refl_color = texture(cube_map_tex, viewer_reflect);
 
         frag_color = self_color +  specular * vec4(1.0) +  refl_color * fres_refl;
-        //frag_color = c_beer * diffuse;
  }
 

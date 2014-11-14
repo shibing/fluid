@@ -53,7 +53,6 @@ namespace rtps
     std::vector<float4> addRect(int num, float4 min, float4 max, float spacing, float scale)
     {
         spacing *= 1.1f;
-
         float xmin = min.x / scale;
         float xmax = max.x / scale;
         float ymin = min.y / scale;
@@ -88,10 +87,7 @@ namespace rtps
         float ymax = max.y / scale;
         float zmin = min.z / scale;
         float zmax = max.z / scale;
-
-
         rvec.resize(num);
-
         int i=0;
         for (float z = zmin; z <= zmax+.0*(zmax-zmin); z+=spacing) {
         for (float y = ymin; y <= ymax+.0*(ymax-ymin); y+=spacing) {
@@ -102,7 +98,6 @@ namespace rtps
         }}
         }
         rvec.resize(i);
-
     }
 
 	//----------------------------------------------------------------------
@@ -228,9 +223,7 @@ namespace rtps
 
     std::vector<float4> addRandRect(int num, float4 min, float4 max, float spacing, float scale, float4 dmin, float4 dmax)
     {
-
         srand(time(NULL));	
-
         spacing *= 1.1f;
         float xmin = min.x  / scale;
         float xmax = max.x  / scale;
@@ -238,7 +231,6 @@ namespace rtps
         float ymax = max.y  / scale;
         float zmin = min.z  / scale;
         float zmax = max.z  / scale;
-
         std::vector<float4> rvec(num);
         int i=0;
         for (float z = zmin; z <= zmax; z+=spacing) {
@@ -372,6 +364,7 @@ RTPS_EXPORT void addBunny(const float4& center, std::vector<float4>& rvec)
         sscanf(line, "%f %f %f", &x, &y, &z);
         rvec.push_back(float4(x, y, z, 1.0f));
     }
+    fclose(file);
 }
 
 }
