@@ -196,12 +196,13 @@ void BasicScene::renderOverlay()
         start_pos_y = 0.92;
         text.draw("Help Information:", start_pos_x, start_pos_y, w, h, color);
         text.draw("H: Show Help Information", start_pos_x, start_pos_y - 0.03, w, h, color);
-        text.draw("r: Add a box water", start_pos_x, start_pos_y - 0.06, w, h, color);
+        text.draw("b: Add a bunny water", start_pos_x, start_pos_y - 0.06, w, h, color);
         text.draw("i: Show system information", start_pos_x, start_pos_y - 0.09, w, h, color);
-        text.draw("p: Render fluid as point", start_pos_x, start_pos_y - 0.12, w, h, color);
-        text.draw("n: Render fluid as sphere", start_pos_x, start_pos_y - 0.15, w, h, color);
-        text.draw("Q/q/ESC: Quit", start_pos_x, start_pos_y - 0.18, w, h, color);
-        text.draw("e: Add Dame Break", start_pos_x, start_pos_y - 0.21, w, h, color);
+        text.draw("p: change render method", start_pos_x, start_pos_y - 0.12, w, h, color);
+        text.draw("Q/q/ESC: Quit", start_pos_x, start_pos_y - 0.15, w, h, color);
+        text.draw("e: Add Dame Break", start_pos_x, start_pos_y - 0.18, w, h, color);
+        text.draw("t: Pause simulation", start_pos_x, start_pos_y - 0.21, w, h, color);
+        text.draw("l: Push Fluid", start_pos_x, start_pos_y - 0.24, w, h, color);
     }
 
 }
