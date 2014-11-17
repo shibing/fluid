@@ -41,11 +41,10 @@ namespace rtps
         ~SPH();
 
         void update();
-        int addBox(int nn, float4 min, float4 max, bool scaled, float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f));
-        void addBall(int nn, float4 center, float radius, bool scaled);
-        int addBunny(float4 center);
+        int addBox(int nn, float4 min, float4 max, System::FluidType type, float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f));
+        int addBunny(float4 center, System::FluidType);
 
-        int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
+        int addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
         void updateHose(int index, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
         void refillHose(int index, int refill);
         void sprayHoses();
@@ -101,6 +100,8 @@ namespace rtps
         std::vector<float4> velocities;
         std::vector<float4> veleval;
 
+        std::vector<float> mass;
+        std::vector<float> rest_density;
         std::vector<float>  densities;
         std::vector<float4> forces;
         std::vector<float4> xsphs;
@@ -113,6 +114,10 @@ namespace rtps
         Buffer<float4>      cl_velocity_s;
         Buffer<float4>      cl_veleval_u;
         Buffer<float4>      cl_veleval_s;
+        Buffer<float>       cl_mass_u;
+        Buffer<float>       cl_mass_s;
+        Buffer<float>       cl_rest_density_u;
+        Buffer<float>       cl_rest_density_s;
 
         Buffer<float>       cl_density_s;
         Buffer<float4>      cl_force_s;

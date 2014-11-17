@@ -16,6 +16,14 @@ namespace rtps
 
     class RTPS_EXPORT System
     {
+    
+    public:
+        enum FluidType
+        {
+            OIL = 0,
+            WATER = 1
+        };
+
     public:
         System(): m_pos_vbo(QOpenGLBuffer::VertexBuffer), m_col_vbo(QOpenGLBuffer::VertexBuffer) { }
 
@@ -48,12 +56,9 @@ namespace rtps
 
         virtual QOpenGLBuffer getColVBO() { return m_col_vbo; }
 
-        virtual int addBox(int nn, float4 min, float4 max, bool scaled, float4 color=float4(1., 0., 0., 1.)) { return 0; }
-
-        virtual void addBall(int nn, float4 center, float radius, bool scaled, float4 color=float4(1., 0., 0., 1.)) { } 
-
-        virtual int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { return 0; }
-        virtual int addBunny(float4 center) = 0;
+        virtual int addBox(int nn, float4 min, float4 max, FluidType type = WATER, float4 color = float4(1., 0., 0., 1.)) { return 0; }
+        virtual int addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type = WATER,  float4 color = float4(1., 0., 0., 1.)) { return 0; }
+        virtual int addBunny(float4 center, FluidType type = WATER) = 0;
 
         virtual void updateHose(int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
         virtual void refillHose(int index, int refill) { }

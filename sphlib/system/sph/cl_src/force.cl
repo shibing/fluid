@@ -4,8 +4,8 @@
 #define _NEIGHBORS_CL_
 
 
-#define ARGS __global float4* pos, __global float* density, __global float4* veleval, __global float4* force, __global float4* xsph
-#define ARGV pos, density, veleval, force, xsph
+#define ARGS __global float4* pos, __global float* density, __global float* mass, __global float* rest_density,  __global float4* veleval, __global float4* force, __global float4* xsph
+#define ARGV pos, density, mass, rest_density, veleval, force, xsph
 
 /*----------------------------------------------------------------------*/
 
@@ -26,9 +26,21 @@ inline void ForNeighbor(
                         DEBUG_ARGS
                        )
 {
-    int num = sphp->num;
-
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
+
+    float mass_i = mass[index_i];
+    float mass_j = mass[index_j];
+    float rest_density_i = rest_density[index_i];
+    float rest_density_j = rest_density[index_j];
+    float delta_i = density[index_i];
+    float delta_j = density[index_j];
+    float inv_delta_i = 1 / delta_i;
+    float inv_delta_j = 1 / delta_j;
+    float density_i = mass_i * density[index_i];
+    float density_j = mass_j * density[index_j];
+    float inv_density_i = 1 / density_i;
+    float inv_density_j = 1 / density_j;
+
     float4 r = (position_i - position_j); 
     r.w = 0.f;
     float rlen = length(r);
@@ -41,40 +53,29 @@ inline void ForNeighbor(
 
         float dWijdr = Wspiky_dr(rlen, sphp->smoothing_distance, sphp);
 
-        float di = density[index_i];  
-        float dj = density[index_j];
-        float idi = 1.0/di;
-        float idj = 1.0/dj;
 
-
-        float rest_density = sphp->rest_density;
-        float Pi = sphp->K*(di - rest_density);
-        float Pj = sphp->K*(dj - rest_density);
-
+        float Pi = sphp->K * (density_i - rest_density_i);
+        float Pj = sphp->K * (density_j - rest_density_j);
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
-        float kern = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
-        float4 force = kern*r; 
-
-        float4 veli = veleval[index_i]; 
-        float4 velj = veleval[index_j];
+        float kern = -1.0f * (Pi * inv_delta_i * inv_delta_i + Pj * inv_delta_j * inv_delta_j) * sphp->wspiky_d_coef * dWijdr;
+        float4 force = kern * r;
 
         // Add viscous forces
+        float4 veli = veleval[index_i]; 
+        float4 velj = veleval[index_j];
         float vvisc = sphp->viscosity;
         float dWijlapl = sphp->wvisc_dd_coef * Wvisc_lapl(rlen, sphp->smoothing_distance, sphp);
-        float4 visc = vvisc * (velj-veli) * dWijlapl * idj * idi;
+        float4 visc = vvisc * (velj-veli) * dWijlapl * inv_delta_i * inv_delta_j;
+
         force += visc;
 
-        //add buoyancy
-      //  force += 10.0 * (di - sphp->rest_density) * (0.0, -9.8, 0.0, 1.0) * idi;
-
-        force *= sphp->mass;
+        force /= mass_i;
 
         float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
-        float4 xsph = (2.f * sphp->mass * Wijpol6 * (velj-veli)/(di+dj));
+        float4 xsph = (2.f * mass_i * Wijpol6 * (velj - veli)/(inv_density_i + inv_density_j));
         pt->xsph += xsph * (float)iej;
         pt->xsph.w = 0.f;
-
         pt->force += force * (float)iej;
 
     }

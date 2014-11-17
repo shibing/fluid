@@ -36,7 +36,7 @@ inline void ForNeighbor(ARGS,
     {
         float Wij = Wpoly6(r, sphp->smoothing_distance, sphp);
 
-        pt->density.x += sphp->mass*Wij;
+        pt->density.x += Wij; //number density
     }
 }
 

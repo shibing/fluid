@@ -115,6 +115,10 @@
                 cl_position_s,
                 cl_velocity_u,
                 cl_velocity_s,
+                cl_mass_u,
+                cl_mass_s,
+                cl_rest_density_u,
+                cl_rest_density_s,
                 cl_veleval_u,
                 cl_veleval_s,
                 cl_color_u,
@@ -151,6 +155,8 @@
             force.execute(num,
                 cl_position_s,
                 cl_density_s,
+                cl_mass_s,
+                cl_rest_density_s,
                 cl_veleval_s,
                 cl_force_s,
                 cl_xsph_s,
@@ -261,6 +267,10 @@
         velocities.resize(max_num);
         veleval.resize(max_num);
         densities.resize(max_num);
+
+        mass.resize(max_num);
+        rest_density.resize(max_num);           
+
         xsphs.resize(max_num);
         std::vector<float4> error_check(max_num);
 
@@ -296,6 +306,11 @@
         cl_density_s = Buffer<float>(ps->cli, densities);
         cl_force_s = Buffer<float4>(ps->cli, forces);
         cl_xsph_s = Buffer<float4>(ps->cli, xsphs);
+        
+        cl_mass_u = Buffer<float>(ps->cli, mass);
+        cl_mass_s = Buffer<float>(ps->cli, mass);
+        cl_rest_density_u =  Buffer<float>(ps->cli, rest_density);
+        cl_rest_density_s =  Buffer<float>(ps->cli, rest_density);
 
         std::vector<GridParams> gparams(0);
         gparams.push_back(grid_params);
@@ -358,37 +373,25 @@
     }
 
 	//----------------------------------------------------------------------
-    int SPH::addBox(int nn, float4 min, float4 max, bool scaled, float4 color)
+    int SPH::addBox(int nn, float4 min, float4 max,  FluidType type, float4 color)
     {
-        float scale = 1.0f;
         float spacing = settings->GetSettingAs<float>("Spacing");
-	    vector<float4> rect = addRect(nn, min, max, spacing, scale);
+	    vector<float4> rect = addRect(nn, min, max, spacing, 1.0);
         float4 velo(0, 0, 0, 0);
         pushParticles(rect, velo, color);
         return rect.size();
     }
 
-    void SPH::addBall(int nn, float4 center, float radius, bool scaled)
-    {
-        float scale = 1.0f;
-        float spacing = settings->GetSettingAs<float>("Spacing");
-    
-        if (scaled) scale = sphp.simulation_scale;
-        vector<float4> sphere = addSphere(nn, center, radius, spacing, scale);
-        float4 velo(0, 0, 0, 0);
-        pushParticles(sphere, velo);
-    }
-
-    int SPH::addBunny(float4 center)
+    int SPH::addBunny(float4 center, System::FluidType type )
     {
         vector<float4> particles;
         rtps::addBunny(center, particles);
-        pushParticles(particles, float4(0, 0, 0, 0));
+        pushParticles(particles, center);
         return particles.size();
     }
 
 	//----------------------------------------------------------------------
-    int SPH::addHose(int total_n, float4 center, float4 velocity, float radius, float4 color)
+    int SPH::addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type, float4 color)
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
@@ -396,6 +399,7 @@
         hoses.push_back(hose);
         return hoses.size() - 1;
     }
+
     void SPH::updateHose(int index, float4 center, float4 velocity, float radius, float4 color)
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
@@ -451,6 +455,9 @@
         std::vector<float4> cols(nn);
         std::fill(cols.begin(), cols.end(),color);
 
+        std::vector<float> mass(nn, settings->GetSettingAs<float>("Mass"));
+        std::vector<float> rho0(nn, settings->GetSettingAs<float>("rho0"));
+
         glFinish();
         cl_position_u.acquire();
         cl_color_u.acquire();
@@ -458,6 +465,9 @@
         cl_position_u.copyToDevice(pos, num);
         cl_color_u.copyToDevice(cols, num);
         cl_velocity_u.copyToDevice(vels, num);
+
+        cl_mass_u.copyToDevice(mass, num);
+        cl_rest_density_u.copyToDevice(rho0, num);
 
         settings->SetSetting("Number of Particles", num + nn);
         updateSPHP();

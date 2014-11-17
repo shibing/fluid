@@ -22,15 +22,18 @@ namespace rtps
                     Buffer<float4>& pos_s,
                     Buffer<float4>& vel_u,
                     Buffer<float4>& vel_s,
+                    
+                    Buffer<float>&  mass_u,
+                    Buffer<float>&  mass_s,
+                    Buffer<float>&  rest_density_u,
+                    Buffer<float>&  rest_density_s,
+
                     Buffer<float4>& veleval_u,
                     Buffer<float4>& veleval_s,
                     Buffer<float4>& color_u,
                     Buffer<float4>& color_s,
                     Buffer<unsigned int>& indices,
-                    //params
-                    //Buffer<SPHParams>& sphp,
                     Buffer<GridParams>& gp,
-                    //debug params
                     Buffer<float4>& clf_debug,
                     Buffer<int4>& cli_debug)
     {
@@ -40,6 +43,12 @@ namespace rtps
         k_permute.setArg(iarg++, pos_s.getDevicePtr());
         k_permute.setArg(iarg++, vel_u.getDevicePtr());
         k_permute.setArg(iarg++, vel_s.getDevicePtr());
+
+        k_permute.setArg(iarg++, mass_u.getDevicePtr());
+        k_permute.setArg(iarg++, mass_s.getDevicePtr());
+        k_permute.setArg(iarg++, rest_density_u.getDevicePtr());
+        k_permute.setArg(iarg++, rest_density_s.getDevicePtr());
+
         k_permute.setArg(iarg++, veleval_u.getDevicePtr());
         k_permute.setArg(iarg++, veleval_s.getDevicePtr());
         k_permute.setArg(iarg++, color_u.getDevicePtr());

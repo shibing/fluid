@@ -9,7 +9,6 @@ namespace rtps
     Density::Density(std::string path, CL* cli_ )
     {
         cli = cli_;
-     
         try
         {
             path = path + "/density.cl";
@@ -21,12 +20,11 @@ namespace rtps
         {
             printf("ERROR(Density): %s(%s)\n", er.what(), oclErrorString(er.err()));
         }
-
-
     }
     void Density::execute(int num,
                     Buffer<float4>& pos_s,
                     Buffer<float>& dens_s,
+
                     //output
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_end,
@@ -40,6 +38,7 @@ namespace rtps
         int iarg = 0;
         k_density.setArg(iarg++, pos_s.getDevicePtr());
         k_density.setArg(iarg++, dens_s.getDevicePtr());
+
         k_density.setArg(iarg++, ci_start.getDevicePtr());
         k_density.setArg(iarg++, ci_end.getDevicePtr());
         k_density.setArg(iarg++, gp.getDevicePtr());

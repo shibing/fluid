@@ -12,6 +12,10 @@ namespace rtps
         float rest_distance = .87 * pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
         float smoothing_distance = 2.0f * rest_distance;//interaction radius
 
+        float rho0_oil = 500;
+        float mass_oil = rho0_oil * VP;
+
+
         float4 dmin = grid->getBndMin();
         float4 dmax = grid->getBndMax();
         float domain_vol = (dmax.x - dmin.x) * (dmax.y - dmin.y) * (dmax.z - dmin.z);
@@ -21,6 +25,8 @@ namespace rtps
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);
         settings->SetSetting("rho0", rho0);
+        settings->SetSetting("Mass_Oil", mass_oil);
+        settings->SetSetting("rho0_Oil", rho0_oil);
         settings->SetSetting("Rest Distance", rest_distance);
         settings->SetSetting("Smoothing Distance", smoothing_distance);
         settings->SetSetting("Simulation Scale", simulation_scale);

@@ -24,6 +24,10 @@ namespace rtps
     void Force::execute(int num,
                     Buffer<float4>& pos_s,
                     Buffer<float>& dens_s,
+                    
+                    Buffer<float>& mass_s,
+                    Buffer<float>& rest_density_s,
+
                     Buffer<float4>& veleval_s,
                     Buffer<float4>& force_s,
                     Buffer<float4>& xsph_s,
@@ -39,6 +43,10 @@ namespace rtps
         int iarg = 0;
         k_force.setArg(iarg++, pos_s.getDevicePtr());
         k_force.setArg(iarg++, dens_s.getDevicePtr());
+
+        k_force.setArg(iarg++, mass_s.getDevicePtr());
+        k_force.setArg(iarg++, rest_density_s.getDevicePtr());
+
         k_force.setArg(iarg++, veleval_s.getDevicePtr());
         k_force.setArg(iarg++, force_s.getDevicePtr());
         k_force.setArg(iarg++, xsph_s.getDevicePtr());
