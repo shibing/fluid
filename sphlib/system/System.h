@@ -56,11 +56,11 @@ namespace rtps
 
         virtual QOpenGLBuffer getColVBO() { return m_col_vbo; }
 
-        virtual int addBox(int nn, float4 min, float4 max, FluidType type = WATER, float4 color = float4(1., 0., 0., 1.)) { return 0; }
-        virtual int addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type = WATER,  float4 color = float4(1., 0., 0., 1.)) { return 0; }
-        virtual int addBunny(float4 center, FluidType type = WATER) = 0;
+        virtual int addBox(FluidType type, int nn, float4 min, float4 max, float4 color = float4(1., 0., 0., 1.)) { return 0; }
+        virtual int addHose(FluidType type, int total_n, float4 center, float4 velocity, float radius, float4 color = float4(1., 0., 0., 1.)) { return 0; }
+        virtual int addBunny(FluidType type, float4 center) = 0;
 
-        virtual void updateHose(int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
+        virtual void updateHose(FluidType type, int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
         virtual void refillHose(int index, int refill) { }
  
         virtual void sprayHoses() {}
@@ -78,8 +78,6 @@ namespace rtps
         QOpenGLBuffer m_pos_vbo;
         QOpenGLBuffer m_col_vbo;
         QOpenGLFunctions_4_3_Core *m_opengl_funcs;
-
-
     };
 
 }

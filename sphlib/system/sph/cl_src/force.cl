@@ -32,12 +32,14 @@ inline void ForNeighbor(
     float mass_j = mass[index_j];
     float rest_density_i = rest_density[index_i];
     float rest_density_j = rest_density[index_j];
+
     float delta_i = density[index_i];
     float delta_j = density[index_j];
     float inv_delta_i = 1 / delta_i;
     float inv_delta_j = 1 / delta_j;
-    float density_i = mass_i * density[index_i];
-    float density_j = mass_j * density[index_j];
+    float density_i = mass_i * delta_i;
+    float density_j = mass_j * delta_j;
+
     float inv_density_i = 1 / density_i;
     float inv_density_j = 1 / density_j;
 
@@ -53,13 +55,12 @@ inline void ForNeighbor(
 
         float dWijdr = Wspiky_dr(rlen, sphp->smoothing_distance, sphp);
 
-
         float Pi = sphp->K * (density_i - rest_density_i);
         float Pj = sphp->K * (density_j - rest_density_j);
 
-       // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
+       // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * inv_density_i * inv_density_j * mass_j;
         float kern = -1.0f * (Pi * inv_delta_i * inv_delta_i + Pj * inv_delta_j * inv_delta_j) * sphp->wspiky_d_coef * dWijdr;
-        float4 force = kern * r;
+        float4 p_force = kern * r;
 
         // Add viscous forces
         float4 veli = veleval[index_i]; 
@@ -68,16 +69,14 @@ inline void ForNeighbor(
         float dWijlapl = sphp->wvisc_dd_coef * Wvisc_lapl(rlen, sphp->smoothing_distance, sphp);
         float4 visc = vvisc * (velj-veli) * dWijlapl * inv_delta_i * inv_delta_j;
 
-        force += visc;
-
-        force /= mass_i;
+        p_force += visc;
+        p_force /= mass_i;
 
         float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
-        float4 xsph = (2.f * mass_i * Wijpol6 * (velj - veli)/(inv_density_i + inv_density_j));
+        float4 xsph = (2.f * mass_i * Wijpol6 * (velj - veli)/(density_i + density_j));
         pt->xsph += xsph * (float)iej;
         pt->xsph.w = 0.f;
-        pt->force += force * (float)iej;
-
+        pt->force += p_force * (float)iej;
     }
 }
 

@@ -25,7 +25,6 @@ inline void ForNeighbor(ARGS,
                         DEBUG_ARGS
                        )
 {
-    int num = sphp->num;
 
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
     float4 r = (position_i - position_j); 

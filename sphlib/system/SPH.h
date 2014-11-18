@@ -41,11 +41,11 @@ namespace rtps
         ~SPH();
 
         void update();
-        int addBox(int nn, float4 min, float4 max, System::FluidType type, float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f));
-        int addBunny(float4 center, System::FluidType);
+        int addBox(System::FluidType type, int nn, float4 min, float4 max, float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f));
+        int addBunny(System::FluidType type, float4 center);
 
-        int addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
-        void updateHose(int index, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
+        int addHose(FluidType type, int total_n, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
+        void updateHose(FluidType type, int index, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
         void refillHose(int index, int refill);
         void sprayHoses();
 
@@ -53,8 +53,8 @@ namespace rtps
 
         void testDelete();
 
-        void pushParticles(const vector<float4>& pos, float4 velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
-        void pushParticles(const vector<float4>& pos, const vector<float4>& velo, float4 color=float4(1.0, 0.0, 0.0, 1.0));
+        void pushParticles(FluidType type, const vector<float4>& pos, const float4& velo, const float4& color = float4(1.0, 0.0, 0.0, 1.0));
+        void pushParticles(FluidType type, const vector<float4>& pos, const vector<float4>& velo, const float4& color = float4(1.0, 0.0, 0.0, 1.0));
 
         std::vector<float4> getDeletedPos();
         std::vector<float4> getDeletedVel();

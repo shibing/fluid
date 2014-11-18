@@ -298,7 +298,6 @@
         cl_color_u = Buffer<float4>(ps->cli, m_col_vbo.bufferId());
         cl_color_s = Buffer<float4>(ps->cli, colors);
 
-        //pure opencl buffers: these are deprecated
         cl_velocity_u = Buffer<float4>(ps->cli, velocities);
         cl_velocity_s = Buffer<float4>(ps->cli, velocities);
         cl_veleval_u = Buffer<float4>(ps->cli, veleval);
@@ -373,25 +372,25 @@
     }
 
 	//----------------------------------------------------------------------
-    int SPH::addBox(int nn, float4 min, float4 max,  FluidType type, float4 color)
+    int SPH::addBox(FluidType type, int nn, float4 min, float4 max, float4 color)
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
 	    vector<float4> rect = addRect(nn, min, max, spacing, 1.0);
         float4 velo(0, 0, 0, 0);
-        pushParticles(rect, velo, color);
+        pushParticles(type, rect, velo, color);
         return rect.size();
     }
 
-    int SPH::addBunny(float4 center, System::FluidType type )
+    int SPH::addBunny(FluidType type, float4 center)
     {
         vector<float4> particles;
         rtps::addBunny(center, particles);
-        pushParticles(particles, center);
+        pushParticles(type, particles, center);
         return particles.size();
     }
 
 	//----------------------------------------------------------------------
-    int SPH::addHose(int total_n, float4 center, float4 velocity, float radius, FluidType type, float4 color)
+    int SPH::addHose(FluidType type, int total_n, float4 center, float4 velocity, float radius, float4 color)
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
@@ -400,12 +399,13 @@
         return hoses.size() - 1;
     }
 
-    void SPH::updateHose(int index, float4 center, float4 velocity, float radius, float4 color)
+    void SPH::updateHose(FluidType type, int index, float4 center, float4 velocity, float radius, float4 color)
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
         hoses[index]->update(center, velocity, radius, spacing, color);
     }
+
     void SPH::refillHose(int index, int refill)
     {
         hoses[index]->refill(refill);
@@ -413,13 +413,12 @@
 
     void SPH::sprayHoses()
     {
-
         std::vector<float4> parts;
         for (int i = 0; i < hoses.size(); i++)
         {
             parts = hoses[i]->spray();
             if (parts.size() > 0)
-                pushParticles(parts, hoses[i]->getVelocity(), hoses[i]->getColor());
+                pushParticles(System::WATER, parts, hoses[i]->getVelocity(), hoses[i]->getColor());
         }
     }
 
@@ -434,18 +433,17 @@
         ps->cli->queue.finish();
     }
 	//----------------------------------------------------------------------
-    void SPH::pushParticles(const vector<float4> &pos, float4 velo, float4 color)
+    void SPH::pushParticles(FluidType type, const vector<float4> &pos, const float4& velo, const float4& color)
     {
         int nn = pos.size();
         std::vector<float4> vels(nn);
         std::fill(vels.begin(), vels.end(), velo);
-        pushParticles(pos, vels, color);
+        pushParticles(type, pos, vels, color);
 
     }
 	//----------------------------------------------------------------------
-    void SPH::pushParticles(const vector<float4>& pos, const vector<float4>& vels, float4 color)
+    void SPH::pushParticles(FluidType type, const vector<float4>& pos, const vector<float4>& vels, const float4& color)
     {
-
         int nn = pos.size();
         if (num + nn > max_num)
         {
@@ -454,9 +452,19 @@
         }
         std::vector<float4> cols(nn);
         std::fill(cols.begin(), cols.end(),color);
+        
+        float mass, rho0;
+        if(type == System::WATER) {
+            mass = settings->GetSettingAs<float>("Mass");
+            rho0 = settings->GetSettingAs<float>("rho0");
+        }
+        else if(type == System::OIL) {
+            mass = settings->GetSettingAs<float>("Mass_Oil");
+            rho0 = settings->GetSettingAs<float>("rho0_Oil");
+        }
 
-        std::vector<float> mass(nn, settings->GetSettingAs<float>("Mass"));
-        std::vector<float> rho0(nn, settings->GetSettingAs<float>("rho0"));
+        std::vector<float> mass_v(nn, mass);
+        std::vector<float> rho0_v(nn, rho0);
 
         glFinish();
         cl_position_u.acquire();
@@ -466,8 +474,8 @@
         cl_color_u.copyToDevice(cols, num);
         cl_velocity_u.copyToDevice(vels, num);
 
-        cl_mass_u.copyToDevice(mass, num);
-        cl_rest_density_u.copyToDevice(rho0, num);
+        cl_mass_u.copyToDevice(mass_v, num);
+        cl_rest_density_u.copyToDevice(rho0_v, num);
 
         settings->SetSetting("Number of Particles", num + nn);
         updateSPHP();
