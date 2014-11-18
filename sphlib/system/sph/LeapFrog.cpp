@@ -21,6 +21,15 @@ namespace sph
                     Buffer<float4>& pos_s,
                     Buffer<float4>& vel_u,
                     Buffer<float4>& vel_s,
+
+                    Buffer<float>& mass_u,
+                    Buffer<float>& mass_s,
+                    Buffer<float>& rest_density_u,
+                    Buffer<float>& rest_density_s,
+
+                    Buffer<float4>& color_u,
+                    Buffer<float4>& color_s,
+
                     Buffer<float4>& veleval_u,
                     Buffer<float4>& force_s,
                     Buffer<float4>& xsph_s,
@@ -36,6 +45,16 @@ namespace sph
         k_leapfrog.setArg(iargs++, pos_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, vel_u.getDevicePtr());
         k_leapfrog.setArg(iargs++, vel_s.getDevicePtr());
+
+        k_leapfrog.setArg(iargs++, mass_u.getDevicePtr());
+        k_leapfrog.setArg(iargs++, mass_s.getDevicePtr());
+
+        k_leapfrog.setArg(iargs++, rest_density_u.getDevicePtr());
+        k_leapfrog.setArg(iargs++, rest_density_s.getDevicePtr());
+
+        k_leapfrog.setArg(iargs++, color_u.getDevicePtr());
+        k_leapfrog.setArg(iargs++, color_s.getDevicePtr());
+
         k_leapfrog.setArg(iargs++, veleval_u.getDevicePtr());
         k_leapfrog.setArg(iargs++, force_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, xsph_s.getDevicePtr());

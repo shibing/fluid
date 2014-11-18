@@ -102,10 +102,11 @@ namespace rtps
         m_particle_vao.create();
         m_particle_vao.bind();
         m_pos_vbo.bind();
-        /* m_particle_program.enableAttributeArray(0); */
-        /* m_particle_program.setAttributeBuffer(0, GL_FLOAT, 0, 4); */
         m_sphere_program.enableAttributeArray(0);
         m_sphere_program.setAttributeBuffer(0, GL_FLOAT, 0, 4);
+        m_col_vbo.bind();
+        m_sphere_program.enableAttributeArray(1);
+        m_sphere_program.setAttributeBuffer(1, GL_FLOAT, 0, 4);
         m_particle_vao.release();
     }
 

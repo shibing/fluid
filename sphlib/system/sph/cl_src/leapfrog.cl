@@ -8,9 +8,19 @@ __kernel void leapfrog(
                       __global float4* pos_s,
                       __global float4* vel_u,
                       __global float4* vel_s,
+
+                      __global float* mass_u,
+                      __global float* mass_s,
+                      __global float* rest_density_u,
+                      __global float* rest_density_s,
+
+                      __global float4* color_u,
+                      __global float4* color_s,
+
                       __global float4* veleval_u,
                       __global float4* force_s,
                       __global float4* xsph_s,
+                      
                       __constant struct SPHParams* sphp, 
                       float dt)
 {
@@ -42,6 +52,11 @@ __kernel void leapfrog(
     vel_u[i] = vnext;
     veleval_u[i] = veval; 
     pos_u[i] = (float4)(p.xyz, 1.0f);  
+
+    mass_u[i] = mass_s[i];
+    rest_density_u[i] = rest_density_s[i];
+
+    color_u[i] = color_s[i];
 }
 
 

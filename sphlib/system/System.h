@@ -52,8 +52,8 @@ namespace rtps
 
         virtual void setPush() = 0;
         virtual void setPaused() = 0;
-        virtual QOpenGLBuffer getPosVBO() { return m_pos_vbo; }
 
+        virtual QOpenGLBuffer getPosVBO() { return m_pos_vbo; }
         virtual QOpenGLBuffer getColVBO() { return m_col_vbo; }
 
         virtual int addBox(FluidType type, int nn, float4 min, float4 max, float4 color = float4(1., 0., 0., 1.)) { return 0; }
@@ -62,8 +62,8 @@ namespace rtps
 
         virtual void updateHose(FluidType type, int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
         virtual void refillHose(int index, int refill) { }
- 
         virtual void sprayHoses() {}
+
         virtual void testDelete() {}
         virtual void loadTriangles(std::vector<Triangle> &triangles) {}
 

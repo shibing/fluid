@@ -24,6 +24,14 @@ namespace sph
                         Buffer<float4>& pos_s,
                         Buffer<float4>& vel_u,
                         Buffer<float4>& vel_s,
+
+                        Buffer<float>& mass_u,
+                        Buffer<float>& mass_s,
+                        Buffer<float>& rest_density_u,
+                        Buffer<float>& rest_density_s,
+
+                        Buffer<float4>& color_u,
+                        Buffer<float4>& color_s,
                         Buffer<float4>& veleval_u,
                         Buffer<float4>& force_s,
                         Buffer<float4>& xsph_s,

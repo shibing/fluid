@@ -241,6 +241,14 @@
                 cl_position_s,
                 cl_velocity_u,
                 cl_velocity_s,
+
+                cl_mass_u,
+                cl_mass_s,
+                cl_rest_density_u,
+                cl_rest_density_s,
+
+                cl_color_u,
+                cl_color_s,
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
@@ -319,14 +327,12 @@
         sgparams.push_back(grid_params_scaled);
         cl_GridParamsScaled = Buffer<GridParams>(ps->cli, sgparams);
 
-
         std::vector<float4> clfv(max_num);
         std::fill(clfv.begin(), clfv.end(),float4(0.0f, 0.0f, 0.0f, 0.0f));
         std::vector<int4> cliv(max_num);
         std::fill(cliv.begin(), cliv.end(),int4(0.0f, 0.0f, 0.0f, 0.0f));
         clf_debug = Buffer<float4>(ps->cli, clfv);
         cli_debug = Buffer<int4>(ps->cli, cliv);
-
 
         std::vector<unsigned int> keys(max_num);
         std::fill(keys.begin(), keys.end(), INT_MAX);
