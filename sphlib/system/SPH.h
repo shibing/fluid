@@ -26,13 +26,13 @@
 #include <sph/Euler.h>
 #include <rtps_common.h>
 
-#include <Hose.h>
 #include <timer_eb.h>
 
 namespace rtps
 {
     using namespace sph;
     class RTPSettings;
+    class Hose;
 
     class RTPS_EXPORT SPH : public System
     {

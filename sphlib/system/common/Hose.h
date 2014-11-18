@@ -7,6 +7,9 @@
 #include <vector>
 
 #include <rtps_common.h>
+
+#include <system/System.h>
+
 using namespace std;
 
 namespace rtps
@@ -16,18 +19,20 @@ namespace rtps
 class RTPS_EXPORT Hose
 {
 public:
-    Hose(RTPS *ps, int total_n, float4 center, float4 velocity, float radius, float spacing, float4 color);
+    Hose(RTPS *ps, System::FluidType type, int total_n, float4 center, float4 velocity, float radius, float spacing, float4 color);
 
     void update(float4 center, float4 velocity, float radius, float spacing, float4 color);
     void refill(int num);
     std::vector<float4> spray();
     float4 getVelocity(){ return velocity;}
     float4 getColor(){ return color;}
-
+    System::FluidType getType() const { return m_type; }
 
 private:
     int total_n;        //total particles available to the hose
     int n_count;        //number of particles left in the hose
+
+    System::FluidType m_type;
 
     float4 center;
     float4 velocity;

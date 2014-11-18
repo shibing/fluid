@@ -24,8 +24,8 @@ using namespace rtps;
 QOpenGLTexture *texture;
 
 BasicScene::BasicScene()
-    : max_num(100000) 
-    , dt(0.003)
+    : max_num(200000) 
+    , dt(0.002)
     , show_help(true)
     , show_info(true)
 
@@ -42,7 +42,7 @@ void BasicScene::initialize()
     settings->setRadiusScale(0.4);
     settings->setBlurScale(1.0);
     settings->setUseGLSL(1);
-    settings->SetSetting("sub_intervals", 1);
+    settings->SetSetting("sub_intervals", 4);
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
     ps = new RTPS(settings);
@@ -80,6 +80,8 @@ bool BasicScene::keyPress(QKeyEvent *event)
     int n;
     float4 min;  
     float4 max;
+    float4 center;
+    float4 velocity;
 
     static render::Render::RenderType type[3] = {render::Render::POINT, render::Render::SPHERE, render::Render::SURFACE}; 
 
@@ -94,10 +96,19 @@ bool BasicScene::keyPress(QKeyEvent *event)
                 show_help = !show_help;
             }
             else {
-                float4 center(-2.0, 1.8, 0, 1.0);
-                float4 velocity(2.2, 0.0, 0.0, 0);
-                ps->system->addHose(System::WATER, 5000, center, velocity, 6, float4(1.0, 1.0, 1.0, 1.0));
+                center =  float4(-6.0, 1.8, 0, 1.0);
+                velocity = float4(2.2, 0.0, 0.0, 0);
+                ps->system->addHose(System::OIL, 50000, center, velocity, 6, float4(0.0, 1.0, 0.0, 1.0));
             }
+            return true;
+        case Qt::Key_9:
+            center = float4(-7.0, 1.5, 0, 1.0);
+            velocity = float4(1.2, 0.0, 0.0, 0);
+            ps->system->addHose(System::OIL, 50000, center, velocity, 6, float4(0.0, 1.0, 0.0, 1.0));
+
+            center =  float4(7.0, 1.5, 0, 1.0);
+            velocity = float4(-1.2, 0.0, 0.0, 0);
+            ps->system->addHose(System::WATER, 50000, center, velocity, 6, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_E:
             n = 163840;
@@ -110,6 +121,16 @@ bool BasicScene::keyPress(QKeyEvent *event)
             min = float4(-8.9, -3.2, -3.0, 1.0);
             max = float4(-5.0, -0.2,  3.0, 1.0);
             ps->system->addBox(System::OIL, n, min, max, float4(0.0, 1.0, 0.0, 1.0));
+            return true;
+        case Qt::Key_M:
+            n = 163840;
+            min = float4(-8.9, -3.2, -3.0, 1.0);
+            max = float4(-5.0, -0.2,  3.0, 1.0);
+            ps->system->addBox(System::OIL, n, min, max, float4(0.0, 1.0, 0.0, 1.0));
+
+            min = float4( 5.0, -3.2, -3.0, 1.0);
+            max = float4( 8.9, -0.2,  3.0, 1.0);
+            ps->system->addBox(System::WATER, n, min, max, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_B:
             ps->system->addBunny(System::WATER, float4(0, 0, 0, 0));
@@ -206,9 +227,12 @@ void BasicScene::renderOverlay()
         text.draw("i: Show system information", start_pos_x, start_pos_y - 0.09, w, h, color);
         text.draw("p: change render method", start_pos_x, start_pos_y - 0.12, w, h, color);
         text.draw("Q/q/ESC: Quit", start_pos_x, start_pos_y - 0.15, w, h, color);
-        text.draw("e: Add Dame Break", start_pos_x, start_pos_y - 0.18, w, h, color);
-        text.draw("t: Pause simulation", start_pos_x, start_pos_y - 0.21, w, h, color);
-        text.draw("l: Push Fluid", start_pos_x, start_pos_y - 0.24, w, h, color);
+        text.draw("e: Add Dame Break(water)", start_pos_x, start_pos_y - 0.18, w, h, color);
+        text.draw("o: Add Dame Break(oil)", start_pos_x, start_pos_y - 0.21, w, h, color);
+        text.draw("t: Pause simulation", start_pos_x, start_pos_y - 0.24, w, h, color);
+        text.draw("l: Push Fluid", start_pos_x, start_pos_y - 0.27, w, h, color);
+        text.draw("9: Two hose", start_pos_x, start_pos_y - 0.30, w, h, color);
+        text.draw("m: Two box", start_pos_x, start_pos_y - 0.33, w, h, color);
     }
 
 }

@@ -11,6 +11,7 @@
 #include <domain/IV.h>
 
 #include <system/common/Hose.h>
+#include <Hose.h>
 
 #include<time.h>
 
@@ -400,7 +401,7 @@
     {
         float spacing = settings->GetSettingAs<float>("Spacing");
         radius *= spacing;
-        Hose *hose = new Hose(ps, total_n, center, velocity, radius, spacing, color);
+        Hose *hose = new Hose(ps, type, total_n, center, velocity, radius, spacing, color);
         hoses.push_back(hose);
         return hoses.size() - 1;
     }
@@ -424,7 +425,7 @@
         {
             parts = hoses[i]->spray();
             if (parts.size() > 0)
-                pushParticles(System::WATER, parts, hoses[i]->getVelocity(), hoses[i]->getColor());
+                pushParticles(hoses[i]->getType(), parts, hoses[i]->getVelocity(), hoses[i]->getColor());
         }
     }
 

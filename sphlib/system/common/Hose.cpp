@@ -11,7 +11,7 @@
 namespace rtps
 {
 
-Hose::Hose(RTPS *ps, int total_n, float4 center, float4 velocity, float radius, float spacing, float4 color)
+Hose::Hose(RTPS *ps, System::FluidType type, int total_n, float4 center, float4 velocity, float radius, float spacing, float4 color)
 {
     this->ps = ps;
     this->total_n = total_n;
@@ -20,6 +20,7 @@ Hose::Hose(RTPS *ps, int total_n, float4 center, float4 velocity, float radius, 
     this->radius = radius;
     this->spacing = spacing;
     this->color = color;
+    m_type = type;
     em_count = 0;
     n_count = total_n;
     calc_vectors();
@@ -69,7 +70,6 @@ std::vector<float4> Hose::spray()
     if(em_count >= em && n_count > 0) {
         float4 v = velocity * ps->settings->dt;
         particles = addDiscRandom(n_count, center, v, u, w, radius, spacing);
-        /* addCylinder(center, radius, spacing, particles); */
         n_count -= particles.size();
         em_count = 0;
     }
