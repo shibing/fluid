@@ -59,7 +59,7 @@ namespace rtps
         settings->SetSetting("Gas Constant", 2.0f);
         settings->SetSetting("Viscosity", 0.01f);
         settings->SetSetting("Velocity Limit", 550.0f);
-        settings->SetSetting("XSPH Factor", .1f);
+        settings->SetSetting("XSPH Factor", .05f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
         settings->SetSetting("Boundary Stiffness", 20000.0f);

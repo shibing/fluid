@@ -58,17 +58,17 @@ inline void ForNeighbor(
         float Pi;
         float Pj;
 
-        /* float Pi = sphp->K * (density_i - rest_density_i); */
-        /* float Pj = sphp->K * (density_j - rest_density_j); */
+        Pi = sphp->K * (density_i - rest_density_i);
+        Pj = sphp->K * (density_j - rest_density_j);
 
-        float rhoi_rho0 = density_i / rest_density_i;
-        float rhoj_rho0 = density_j / rest_density_j;
+        /* float rhoi_rho0 = density_i / rest_density_i; */
+        /* float rhoj_rho0 = density_j / rest_density_j; */
 
-        rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ;
-        rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ;
+        /* rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; */
+        /* rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; */
 
-        Pi = sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1);
-        Pj = sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1);
+        /* Pi = sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1); */
+        /* Pj = sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1); */
 
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * inv_density_i * inv_density_j * mass_j;
@@ -90,6 +90,7 @@ inline void ForNeighbor(
         pt->xsph += xsph * (float)iej;
         pt->xsph.w = 0.f;
         pt->force += p_force * (float)iej;
+
     }
 }
 
@@ -119,6 +120,14 @@ __kernel void force_update(
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
     force[index] = pt.force; 
+
+    float mass_i = mass[index];
+    float delta_i = density[index];
+    float density_i = mass_i * delta_i;
+    float rest_density_i = rest_density[index];
+    if(rest_density_i < 1000) //add buoyancy
+        force[index] += (float4)(0, 0.03 * (density_i - rest_density_i) * 9.8, 0.0, 0.0);
+
     clf[index].xyz = pt.force.xyz;
     xsph[index] = sphp->wpoly6_coef * pt.xsph;
 }
