@@ -321,7 +321,7 @@ namespace rtps
 
         m_sphere_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_sphere_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f / 0.87f);
+        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
         m_sphere_program.setUniformValue("near", 1.0f);
         m_sphere_program.setUniformValue("far", 100.0f);
         m_sphere_program.setUniformValue("width", width);
