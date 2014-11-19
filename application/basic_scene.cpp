@@ -35,7 +35,7 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-    Domain *domain = new Domain(float4(-9.0, -7.0, -4.0, 1), float4(9.0, 6.0, 4.0, 1));
+    Domain *domain = new Domain(float4(-3.0, -6.0, -3.0, 1), float4(3.0, 6.0, 3.0, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);
@@ -82,6 +82,7 @@ bool BasicScene::keyPress(QKeyEvent *event)
     float4 max;
     float4 center;
     float4 velocity;
+    static int h = 0; //fluid height
 
     static render::Render::RenderType type[3] = {render::Render::POINT, render::Render::SPHERE, render::Render::SURFACE}; 
 
@@ -112,14 +113,16 @@ bool BasicScene::keyPress(QKeyEvent *event)
             return true;
         case Qt::Key_E:
             n = 163840;
-            min = float4(-8.9, -3.2, -3.0, 1.0);
-            max = float4(-5.0, -0.2,  3.0, 1.0);
+            min = float4(-2.9, -2.2 + i * 1, -2.9, 1.0);
+            max = float4( 2.9,  1.2 + i * 1,  2.9, 1.0);
+            ++i;
             ps->system->addBox(System::WATER, n, min, max, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_O:
             n = 163840;
-            min = float4(-8.9, -3.2, -3.0, 1.0);
-            max = float4(-5.0, -0.2,  3.0, 1.0);
+            min = float4(-2.9,  -2.2 + i * 1, -2.9, 1.0);
+            max = float4( 2.9,   1.2 + i * 1,  2.9, 1.0);
+            ++i;
             ps->system->addBox(System::OIL, n, min, max, float4(0.0, 1.0, 0.0, 1.0));
             return true;
         case Qt::Key_M:

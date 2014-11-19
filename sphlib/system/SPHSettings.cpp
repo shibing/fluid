@@ -13,7 +13,7 @@ namespace rtps
         float rest_distance = .87 * pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
         float smoothing_distance = 2.0f * rest_distance;//interaction radius
 
-        float rho0_oil = 480;
+        float rho0_oil = 500;
         float mass_oil = rho0_oil * VP;
 
         float4 dmin = grid->getBndMin();
