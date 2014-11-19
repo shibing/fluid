@@ -183,6 +183,15 @@ namespace rtps
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_INT, NULL);
         glBindTexture(GL_TEXTURE_2D, 0);
 
+        glGenTextures(1, &m_color_tex);
+        glBindTexture(GL_TEXTURE_2D, m_color_tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_INT, NULL);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         GLuint rb;
         glGenRenderbuffers(1, &rb);
         glBindRenderbuffer(GL_RENDERBUFFER, rb);
@@ -303,8 +312,11 @@ namespace rtps
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
         m_particle_vao.bind();
-        GLuint uniform_matrix = m_basic_program.uniformLocation("matrix");
-        m_particle_program.setUniformValue(uniform_matrix, m_perspective_mat * m_translate_mat * m_rotate_mat);
+        m_particle_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
+        m_particle_program.setUniformValue("projection_mat" , m_perspective_mat);
+        m_particle_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_particle_program.setUniformValue("width", width);
+        m_particle_program.setUniformValue("height", height);
         glDrawArrays(GL_POINTS, 0, m_num);
         glDisable(GL_PROGRAM_POINT_SIZE);
         m_particle_vao.release();
@@ -322,9 +334,7 @@ namespace rtps
 
         m_sphere_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_sphere_program.setUniformValue("projection_mat" , m_perspective_mat);
-        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing") / 2.0f / 0.87f);
-        m_sphere_program.setUniformValue("near", 1.0f);
-        m_sphere_program.setUniformValue("far", 100.0f);
+        m_sphere_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
         m_sphere_program.setUniformValue("width", width);
         m_sphere_program.setUniformValue("height", height);
 
@@ -358,8 +368,6 @@ namespace rtps
         m_depth_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_depth_program.setUniformValue("projection_mat" , m_perspective_mat);
         m_depth_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
-        m_depth_program.setUniformValue("near", 0.1f);
-        m_depth_program.setUniformValue("far", 1000.0f);
         m_depth_program.setUniformValue("width", width);
         m_depth_program.setUniformValue("height", height);
 
@@ -373,7 +381,6 @@ namespace rtps
 
         //draw thickness
         m_thickness_program.bind();
-
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_thickness_tex[0], 0);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
@@ -381,19 +388,31 @@ namespace rtps
         glViewport(0, 0, width, height);
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_thickness_program.bind();
         m_thickness_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
         m_thickness_program.setUniformValue("projection_mat" , m_perspective_mat);
         m_thickness_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
         m_thickness_program.setUniformValue("num", (int)m_settings->GetSettingAs<int>("Number of Particles"));
-        m_thickness_program.setUniformValue("near",1.0f);
-        m_thickness_program.setUniformValue("far", 100.0f);
         m_thickness_program.setUniformValue("width", width);
         m_thickness_program.setUniformValue("height", height);
         renderSpriteWithShader(m_thickness_program);
 
         glDisable(GL_BLEND);
         m_thickness_program.release();
+
+        //draw color, different fluid
+        m_particle_program.bind();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
+        glEnable(GL_DEPTH_TEST);
+        glViewport(0, 0, width, height);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_particle_program.setUniformValue("modelview_mat", m_translate_mat * m_rotate_mat);
+        m_particle_program.setUniformValue("projection_mat" , m_perspective_mat);
+        m_particle_program.setUniformValue("sphere_radius", m_settings->GetSettingAs<float>("Spacing"));
+        m_particle_program.setUniformValue("width", width);
+        m_particle_program.setUniformValue("height", height);
+        renderSpriteWithShader(m_sphere_program);
+        m_particle_program.release();
 
         //draw background
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_background_tex, 0);
@@ -429,7 +448,9 @@ namespace rtps
         m_compose_program.setUniformValue("background_tex", GLuint(23));
         glActiveTexture(GL_TEXTURE0 + 24);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_cube.getTexture());
-        m_compose_program.setUniformValue("cube_map_tex", GLuint(24));
+        glActiveTexture(GL_TEXTURE0 + 25);
+        glBindTexture(GL_TEXTURE_2D, m_color_tex);
+        m_compose_program.setUniformValue("color_tex", GLuint(25));
         quad.drawMesh(m_compose_program);
 
     }

@@ -61,7 +61,7 @@ __kernel void collision_wall(
     }
     //X walls
     if(push == 1)
-        diff = bound_dist - (p.x - gp->bnd_min.x - 0.06);
+        diff = bound_dist - (p.x - gp->bnd_min.x - 0.1);
     else
         diff = bound_dist - (p.x - gp->bnd_min.x);
 

@@ -7,6 +7,7 @@ uniform sampler2D depth_tex;
 uniform sampler2D thickness_tex;
 uniform sampler2D background_tex;
 uniform samplerCube cube_map_tex;
+uniform sampler2D color_tex;
 
 uniform int width;
 uniform int height;
@@ -146,7 +147,6 @@ void main()
         vec3 H = normalize(E + L);
         float diffuse = max(0, dot(N, L)) ;
         float specular = pow(max(0.0, dot(R, E)), 30.0f);
-        frag_color = max(0, dot(N, L)) * (posWorld + 2.5) / 5.0 + specular; //color with position
 
         vec4 refrac_color = texture(background_tex, tex_coord0 + N.xy * thickness); //refraction
         vec4 self_color = mix(c_beer * diffuse, refrac_color, exp(-thickness)); //the color of fluid self
@@ -160,5 +160,6 @@ void main()
         vec4 refl_color = texture(cube_map_tex, viewer_reflect);
 
         frag_color = (1 - fres_refl) * self_color +  fres_refl * refl_color + specular * vec4(1.0);
+        frag_color = texture(color_tex, tex_coord0) * diffuse;
  }
 

@@ -49,12 +49,8 @@ float Wspiky(float rlen, float h, __constant struct SPHParams* params)
 //----------------------------------------------------------------------
 float Wspiky_dr(float rlen, float h, __constant struct SPHParams* params)
 {
-    // Derivative with respect to |r| divided by |r|
-    //   W_{|r|}/r = (45/pi*h^6) (h-|r|)^2 (-1) / r
     float hr2 = h - rlen;
-    //return -hr2*hr2/rlen;
-    //return hr2*hr2/(rlen + params->EPSILON);
-    return hr2*hr2/rlen;
+    return hr2 * hr2 / rlen;
 }
 
 //----------------------------------------------------------------------

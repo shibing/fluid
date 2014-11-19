@@ -116,6 +116,7 @@ namespace rtps
         GLuint m_fbo;
         GLuint m_depth_tex[2];
         GLuint m_thickness_tex[2];
+        GLuint m_color_tex; //different fluid
         GLuint m_background_tex;
 
         cl::Image2DGL* m_depth_cl[2];

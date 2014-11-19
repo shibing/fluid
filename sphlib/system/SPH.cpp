@@ -392,7 +392,12 @@
     {
         vector<float4> particles;
         rtps::addBunny(center, particles);
-        pushParticles(type, particles, center);
+        float4 color;
+        if(type == System::WATER)
+            color = float4(1, 0, 0, 0);
+        else
+            color = float4(0, 1, 0, 0);
+        pushParticles(type, particles, float4(0, 0, 0, 0), color);
         return particles.size();
     }
 

@@ -135,6 +135,9 @@ bool BasicScene::keyPress(QKeyEvent *event)
         case Qt::Key_B:
             ps->system->addBunny(System::WATER, float4(0, 0, 0, 0));
             return true;
+        case Qt::Key_8:
+            ps->system->addBunny(System::OIL, float4(0, 0, 0, 0));
+            return true;
         case Qt::Key_T:
             ps->system->setPaused();
             return true;
@@ -233,6 +236,7 @@ void BasicScene::renderOverlay()
         text.draw("l: Push Fluid", start_pos_x, start_pos_y - 0.27, w, h, color);
         text.draw("9: Two hose", start_pos_x, start_pos_y - 0.30, w, h, color);
         text.draw("m: Two box", start_pos_x, start_pos_y - 0.33, w, h, color);
+        text.draw("8: Aadd buny oil", start_pos_x, start_pos_y - 0.36, w, h, color);
     }
 
 }

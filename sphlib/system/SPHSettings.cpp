@@ -13,7 +13,7 @@ namespace rtps
         float rest_distance = .87 * pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
         float smoothing_distance = 2.0f * rest_distance;//interaction radius
 
-        float rho0_oil = 500;
+        float rho0_oil = 480;
         float mass_oil = rho0_oil * VP;
 
         float4 dmin = grid->getBndMin();
@@ -58,7 +58,7 @@ namespace rtps
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
         settings->SetSetting("Gas Constant", 2.0f);
         settings->SetSetting("Viscosity", 0.01f);
-        settings->SetSetting("Velocity Limit", 600.0f);
+        settings->SetSetting("Velocity Limit", 550.0f);
         settings->SetSetting("XSPH Factor", .1f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
@@ -72,7 +72,7 @@ namespace rtps
         settings->SetSetting("Spring", 0.0f);
 
         //constants
-        settings->SetSetting("EPSILON", 1E-6);
+        settings->SetSetting("EPSILON", 1E-8);
         settings->SetSetting("PI", M_PI);
 
         //CL parameters
