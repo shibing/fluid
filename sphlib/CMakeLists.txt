@@ -16,7 +16,12 @@ SET(PREPROCESS_CL TRUE)
 
 SET(WITH_OPENCL TRUE)
 
-ADD_DEFINITIONS(-g )
+ADD_DEFINITIONS(-g)
+
+option(WITH_SHOW_DENSITY "" ON)
+IF(WITH_SHOW_DENSITY)
+    ADD_DEFINITIONS(-DSHOW_DENSITY)
+ENDIF()
 
 ##### Source Paths ############################################################
 ADD_DEFINITIONS(-DSPH_CL_SOURCE_DIR="cl_sph")

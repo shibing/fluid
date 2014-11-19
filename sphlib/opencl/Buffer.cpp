@@ -24,7 +24,6 @@ Buffer<T>::Buffer(CL *cli, GLuint bo_id)
     cl_buffer.push_back(cl::BufferGL(cli->context, CL_MEM_READ_WRITE, bo_id, &cli->err));
 }
 
-
 template <class T>
 Buffer<T>::Buffer(CL *cli, GLuint bo_id, int type)
 {

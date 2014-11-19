@@ -48,8 +48,20 @@ inline void ForNeighbor(
 
 
         float rest_density = sphp->rest_density;
-        float Pi = sphp->K*(di - rest_density);
-        float Pj = sphp->K*(dj - rest_density);
+		float Pi;
+		float Pj;
+		
+		float rhoi_rho0 = di / rest_density; 
+        float rhoj_rho0 = dj / rest_density; 
+
+        rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
+        rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
+
+         Pi = sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); 
+         Pj = sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); 
+		
+        //Pi = sphp->K*(di - rest_density);
+        //Pj = sphp->K*(dj - rest_density);
 
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;

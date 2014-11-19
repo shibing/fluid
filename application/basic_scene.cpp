@@ -24,8 +24,8 @@ using namespace rtps;
 QOpenGLTexture *texture;
 
 BasicScene::BasicScene()
-    : max_num(100000) 
-    , dt(0.003)
+    : max_num(200000) 
+    , dt(0.002)
     , show_help(true)
     , show_info(true)
 
@@ -35,7 +35,7 @@ BasicScene::BasicScene()
 
 void BasicScene::initialize()
 {
-    Domain *domain = new Domain(float4(-9.0, -7.0, -4.0, 1), float4(9.0, 6.0, 4.0, 1));
+    Domain *domain = new Domain(float4(-9.0, -6.0, -4.0, 1), float4(9.0, 6.0, 4.0, 1));
     settings = new RTPSettings(RTPSettings::SPH, max_num, dt, domain); 
     settings->SetSetting("rtps_path", "./bin");
     settings->setRenderType(RTPSettings::RENDER);
@@ -45,6 +45,8 @@ void BasicScene::initialize()
     settings->SetSetting("sub_intervals", 1);
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
+    settings->SetSetting("min_density", 0.0f);
+    settings->SetSetting("max_density", 0.0f);
     ps = new RTPS(settings);
     ps->getSystem()->setOpenGLFunctions(m_window->getOpenGLFunctions());
 }
@@ -101,8 +103,14 @@ bool BasicScene::keyPress(QKeyEvent *event)
             return true;
         case Qt::Key_E:
             n = 163840;
-            min = float4(-8.9, -3.2, -3.0, 1.0);
-            max = float4(-5.0, -0.2,  3.0, 1.0);
+            if(event->modifiers() & Qt::ShiftModifier) {
+                min = float4(-1.5, -5.0, -1.5, 1.0);
+                max = float4( 1.5, -2.0,  1.5, 1.0);
+            }
+            else {
+                min = float4(-9.0, -6.0, -3.0, 1.0);
+                max = float4(-5.0, -3.0,  3.0, 1.0);
+            }
             ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
             return true;
         case Qt::Key_B:
@@ -188,6 +196,8 @@ void BasicScene::renderOverlay()
         renderKeyValue("Gravity", ps->settings->GetSettingAs<float>("Gravity"), start_pos_x, start_pos_y - 0.15, color, text);
         renderKeyValue("Viscosity", ps->settings->GetSettingAs<float>("Viscosity"), start_pos_x, start_pos_y - 0.18, color, text);
         renderKeyValue("Velocity Limit", ps->settings->GetSettingAs<float>("Velocity Limit"), start_pos_x, start_pos_y - 0.21, color, text);
+        renderKeyValue("Min density", ps->settings->GetSettingAs<float>("min_density"), start_pos_x, start_pos_y - 0.24, color, text);
+        renderKeyValue("Max density", ps->settings->GetSettingAs<float>("max_density"), start_pos_x, start_pos_y - 0.27, color, text);
     }
 
     //==================================================

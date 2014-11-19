@@ -148,6 +148,23 @@
                 clf_debug,
                 cli_debug);
 
+        #ifdef SHOW_DENSITY            
+            if(num > 0 ) {
+            std::vector<float> density_h(num);
+            cl_density_s.copyToHost(density_h);
+            float max_density, min_density;
+            max_density = min_density = density_h[0];
+            for(int i = 1; i < density_h.size(); ++i) {
+                if(density_h[i] > max_density)
+                    max_density = density_h[i];
+                else if(density_h[i] < min_density)
+                    min_density = density_h[i];
+            }
+                ps->settings->SetSetting("max_density", max_density);
+                ps->settings->SetSetting("min_density", min_density);
+            }
+        #endif
+
             force.execute(num,
                 cl_position_s,
                 cl_density_s,
