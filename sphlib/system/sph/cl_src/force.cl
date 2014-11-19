@@ -58,17 +58,17 @@ inline void ForNeighbor(
         float Pi;
         float Pj;
 
-        /* float Pi = sphp->K * (density_i - rest_density_i); */
-        /* float Pj = sphp->K * (density_j - rest_density_j); */
+        Pi = sphp->K * (density_i - rest_density_i);
+        Pj = sphp->K * (density_j - rest_density_j);
 
-        float rhoi_rho0 = density_i / rest_density_i;
-        float rhoj_rho0 = density_j / rest_density_j;
+/*         float rhoi_rho0 = density_i / rest_density_i; */
+/*         float rhoj_rho0 = density_j / rest_density_j; */
 
-        rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ;
-        rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ;
+/*         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; */
+/*         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; */
 
-        Pi = sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1);
-        Pj = sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1);
+/*         Pi = sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1); */
+/*         Pj = sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1); */
 
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * inv_density_i * inv_density_j * mass_j;

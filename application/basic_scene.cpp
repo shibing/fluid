@@ -113,17 +113,21 @@ bool BasicScene::keyPress(QKeyEvent *event)
             return true;
         case Qt::Key_E:
             n = 163840;
-            min = float4(-2.9, -2.2 + i * 1, -2.9, 1.0);
-            max = float4( 2.9,  1.2 + i * 1,  2.9, 1.0);
-            ++i;
+            min = float4(-2.9, -4.2, -2.9, 1.0);
+            max = float4( 2.9, -1.2,  2.9, 1.0);
             ps->system->addBox(System::WATER, n, min, max, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_O:
             n = 163840;
-            min = float4(-2.9,  -2.2 + i * 1, -2.9, 1.0);
-            max = float4( 2.9,   1.2 + i * 1,  2.9, 1.0);
-            ++i;
+            min = float4(-0.9,  -3.0, -0.9, 1.0);
+            max = float4( 0.9,  -1.2,  0.9, 1.0);
             ps->system->addBox(System::OIL, n, min, max, float4(0.0, 1.0, 0.0, 1.0));
+            return true;
+        case Qt::Key_7:
+            n = 163840;
+            min = float4(-0.9,  -2.6, -0.9, 1.0);
+            max = float4( 0.9,  -0.8,  0.9, 1.0);
+            ps->system->addBox(System::WATER, n, min, max, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_M:
             n = 163840;
