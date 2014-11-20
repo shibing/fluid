@@ -52,7 +52,7 @@ namespace rtps
 //----------------------------------------------------------------------
     std::vector<float4> addRect(int num, float4 min, float4 max, float spacing, float scale)
     {
-        spacing *= 1.1f;
+        spacing *= 1.01f;
         float xmin = min.x / scale;
         float xmax = max.x / scale;
         float ymin = min.y / scale;
@@ -103,7 +103,7 @@ namespace rtps
 	//----------------------------------------------------------------------
     std::vector<float4> addSphere(int num, float4 center, float radius, float spacing, float scale)
     {
-        spacing *= 1.9f;
+        spacing *= 1.0f;
         float xmin = (center.x - radius) / scale;
         float xmax = (center.x + radius) / scale;
         float ymin = (center.y - radius) / scale;

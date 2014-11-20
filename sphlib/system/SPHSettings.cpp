@@ -10,13 +10,13 @@ namespace rtps
         float VP = 2 * .0262144 / 131072;              //Particle Volume [ m^3 ]
         float mass = rho0 * VP;                         //Particle Mass [ kg ]
         float rest_distance =  pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
-        float smoothing_distance = 2.0f * rest_distance;//interaction radius
+        float smoothing_distance = 2.0001f * rest_distance;//interaction radius
 
         float4 dmin = grid->getBndMin();
         float4 dmax = grid->getBndMax();
         float domain_vol = (dmax.x - dmin.x) * (dmax.y - dmin.y) * (dmax.z - dmin.z);
 
-        float simulation_scale = pow(VP * 131072 / (5 * 5 * 5), 1.f/3.f); 
+        float simulation_scale = pow(0.5 * VP * 131072 / (5 * 5 * 5), 1.f/3.f); 
 
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);
@@ -51,10 +51,10 @@ namespace rtps
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
         //settings->SetSetting("Gravity", -0.0f); // -9.8 m/sec^2
-        settings->SetSetting("Gas Constant", 5.0f);
+        settings->SetSetting("Gas Constant", 3.0f);
         settings->SetSetting("Viscosity", 0.01f);
         settings->SetSetting("Velocity Limit", 600.0f);
-        settings->SetSetting("XSPH Factor", .08f);
+        settings->SetSetting("XSPH Factor", .05f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
         settings->SetSetting("Boundary Stiffness", 20000.0f);

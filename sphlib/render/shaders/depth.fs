@@ -14,7 +14,7 @@ void main()
     float near = gl_DepthRange.near;
 
     vec3 N;
-    N.xy = gl_PointCoord.xy * vec2(2.0, 2.0) + vec2(-1, -1);
+    N.xy = gl_PointCoord.xy * vec2(-2.0, 2.0) + vec2(1, -1);
     float mag = dot(N.xy, N.xy);
     if(mag > 1.0) {
         discard;

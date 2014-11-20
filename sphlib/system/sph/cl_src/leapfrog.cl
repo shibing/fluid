@@ -33,7 +33,7 @@ __kernel void leapfrog(
     float4 vnext = v + dt*f;
     vnext += sphp->xsph_factor * xsph_s[i];
 
-    float4 veval = 0.5f*(v+vnext);
+    float4 veval = 0.5f * (v + vnext);
 
     p += dt * vnext;
     p.w = 1.0f; 

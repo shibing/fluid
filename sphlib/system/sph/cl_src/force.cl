@@ -57,16 +57,27 @@ inline void ForNeighbor(
         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
 
-         Pi = max(0.0f, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
-         Pj = max(0.0f, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
+         Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
+         Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
+         Pi =  sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1);
+         Pj =  sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); 
+         float sigma = 0.5;
+         if(Pi < 0)
+             Pi = 0.01 * Pi;
+         if(Pj < 0)
+             Pj = 0.01 * Pj;
+
+         float Pi_near = sphp->K * di;
+         float Pj_near = sphp->K * dj;
 		
         //Pi = sphp->K*(di - rest_density);
         //Pj = sphp->K*(dj - rest_density);
 
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
-        float kern = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
-        float4 force = kern*r; 
+        float mag = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
+        //float kern_near = -1.0f * dWijdr * (Pi_near * idi * idi + Pj_near * idj * idj) * sphp->wspiky_d_coef;
+        float4 force = (mag + 0) * r; 
 
         float4 veli = veleval[index_i]; 
         float4 velj = veleval[index_j];
@@ -77,12 +88,14 @@ inline void ForNeighbor(
         float4 visc = vvisc * (velj-veli) * dWijlapl * idj * idi;
         force += visc;
 
-        //add buoyancy
-      //  force += 10.0 * (di - sphp->rest_density) * (0.0, -9.8, 0.0, 1.0) * idi;
-
         force *= sphp->mass;
 
+
         float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
+
+        //surface tension
+        /* force -=  100 * (di / sphp->mass) * r * Wijpol6; */
+        
         float4 xsph = (2.f * sphp->mass * Wijpol6 * (velj-veli)/(di+dj));
         pt->xsph += xsph * (float)iej;
         pt->xsph.w = 0.f;
