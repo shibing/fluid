@@ -57,8 +57,8 @@ inline void ForNeighbor(
         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
 
-         Pi = sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); 
-         Pj = sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); 
+         Pi = max(0.0f, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
+         Pj = max(0.0f, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
 		
         //Pi = sphp->K*(di - rest_density);
         //Pj = sphp->K*(dj - rest_density);
