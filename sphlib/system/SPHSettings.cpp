@@ -10,17 +10,19 @@ namespace rtps
 
         float rho0 = 1000;                              //rest density [kg/m^3 ]
         float mass = rho0 * VP;                         //Particle Mass [ kg ]
-        float rest_distance = .87 * pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
-        float smoothing_distance = 2.0f * rest_distance;//interaction radius
+        float rest_distance =  pow(VP, 1.f/3.f);   //rest distance between particles [ m ]
+        float smoothing_distance = 2.0001f * rest_distance;//interaction radius
 
-        float rho0_oil = 480;
+        float rho0_oil = 500;
         float mass_oil = rho0_oil * VP;
 
         float4 dmin = grid->getBndMin();
         float4 dmax = grid->getBndMax();
         float domain_vol = (dmax.x - dmin.x) * (dmax.y - dmin.y) * (dmax.z - dmin.z);
 
-        float simulation_scale = pow(.5f * VP * 131072 / (5 * 5 * 5), 1.f/3.f); 
+        float simulation_scale = pow(0.5 * VP * 131072 / (5 * 5 * 5), 1.f/3.f); 
+        std::cout << "rest_distance: " << rest_distance << std::endl;
+        std::cout << simulation_scale << std::endl;
 
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);
@@ -56,8 +58,8 @@ namespace rtps
 
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
-        settings->SetSetting("Gas Constant", 2.0f);
-        settings->SetSetting("Viscosity", 0.01f);
+        settings->SetSetting("Gas Constant", 10.0f);
+        settings->SetSetting("Viscosity", 0.05f);
         settings->SetSetting("Velocity Limit", 550.0f);
         settings->SetSetting("XSPH Factor", .05f);
         settings->SetSetting("Friction Kinetic", 0.0f);

@@ -1,7 +1,7 @@
 #version 430
 
 in vec2 tex_coord0;
-out vec4 frag_color;
+smooth out vec4 frag_color;
 
 uniform sampler2D depth_tex;
 uniform sampler2D thickness_tex;

@@ -42,7 +42,7 @@ void BasicScene::initialize()
     settings->setRadiusScale(0.4);
     settings->setBlurScale(1.0);
     settings->setUseGLSL(1);
-    settings->SetSetting("sub_intervals", 4);
+    settings->SetSetting("sub_intervals", 2);
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
     ps = new RTPS(settings);
