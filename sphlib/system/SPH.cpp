@@ -177,6 +177,23 @@
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
+        #ifdef SHOW_FORCE            
+            if(num > 0 ) {
+            std::vector<float4> force_h(num);
+            cl_force_s.copyToHost(force_h);
+            float max_force, min_force;
+            max_force = min_force = magnitude(force_h[0]);
+            for(int i = 1; i < force_h.size(); ++i) {
+                float force_mag = magnitude(force_h[i]);
+                if(force_mag > max_force)
+                    max_force = force_mag;
+                else if(force_mag < min_force)
+                    min_force = force_mag;
+            }
+                ps->settings->SetSetting("max_force", max_force);
+                ps->settings->SetSetting("min_froce", min_force);
+            }
+        #endif
             collision();
             integrate(); 
         }
@@ -255,6 +272,7 @@
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
+                cl_GridParamsScaled,
                 cl_sphp,
                 clf_debug,
                 cli_debug);

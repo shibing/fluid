@@ -362,7 +362,7 @@ RTPS_EXPORT void addBunny(const float4& center, std::vector<float4>& rvec)
         if(fgets(line, 255, file) == NULL) break;
         float x, y, z;
         sscanf(line, "%f %f %f", &x, &y, &z);
-        rvec.push_back(float4(x, y, z, 1.0f));
+        rvec.push_back(float4(center.x + x, center.y + y, center.z + z, 1.0f));
     }
     fclose(file);
 }

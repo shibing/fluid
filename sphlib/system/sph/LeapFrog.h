@@ -28,6 +28,7 @@ namespace sph
                         Buffer<float4>& force_s,
                         Buffer<float4>& xsph_s,
                         //params
+                        Buffer<GridParams>& gp,
                         Buffer<SPHParams>& sphp,
                         //debug
                         Buffer<float4>& clf_debug,

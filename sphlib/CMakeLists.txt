@@ -19,8 +19,13 @@ SET(WITH_OPENCL TRUE)
 ADD_DEFINITIONS(-g)
 
 option(WITH_SHOW_DENSITY "" ON)
+option(WITH_SHOW_FORCE "" ON)
 IF(WITH_SHOW_DENSITY)
     ADD_DEFINITIONS(-DSHOW_DENSITY)
+ENDIF()
+
+IF(WITH_SHOW_FORCE)
+    ADD_DEFINITIONS(-DSHOW_FORCE)
 ENDIF()
 
 ##### Source Paths ############################################################

@@ -63,9 +63,9 @@ inline void ForNeighbor(
          Pj =  sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); 
          float sigma = 0.5;
          if(Pi < 0)
-             Pi = 0.01 * Pi;
+             Pi = 0.00 * Pi;
          if(Pj < 0)
-             Pj = 0.01 * Pj;
+             Pj = 0.00 * Pj;
 
          float Pi_near = sphp->K * di;
          float Pj_near = sphp->K * dj;

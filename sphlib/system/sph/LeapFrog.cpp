@@ -25,6 +25,7 @@ namespace sph
                     Buffer<float4>& force_s,
                     Buffer<float4>& xsph_s,
                     //params
+                    Buffer<GridParams>& gp,
                     Buffer<SPHParams>& sphp,
                     //debug params
                     Buffer<float4>& clf_debug,
@@ -39,6 +40,7 @@ namespace sph
         k_leapfrog.setArg(iargs++, veleval_u.getDevicePtr());
         k_leapfrog.setArg(iargs++, force_s.getDevicePtr());
         k_leapfrog.setArg(iargs++, xsph_s.getDevicePtr());
+        k_leapfrog.setArg(iargs++, gp.getDevicePtr());
         k_leapfrog.setArg(iargs++, sphp.getDevicePtr());
         k_leapfrog.setArg(iargs++, dt); //time step
 
