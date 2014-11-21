@@ -25,7 +25,7 @@ QOpenGLTexture *texture;
 
 BasicScene::BasicScene()
     : max_num(200000) 
-    , dt(0.0004)
+    , dt(0.0003)
     , show_help(true)
     , show_info(true)
 
@@ -197,7 +197,7 @@ void BasicScene::renderOverlay()
         renderKeyValue("Gas Constant (K)", ps->settings->GetSettingAs<float>("Gas Constant"), start_pos_x, start_pos_y - 0.12, color, text);
         renderKeyValue("Gravity", ps->settings->GetSettingAs<float>("Gravity"), start_pos_x, start_pos_y - 0.15, color, text);
         renderKeyValue("Viscosity", ps->settings->GetSettingAs<float>("Viscosity"), start_pos_x, start_pos_y - 0.18, color, text);
-        renderKeyValue("Velocity Limit", ps->settings->GetSettingAs<float>("Velocity Limit"), start_pos_x, start_pos_y - 0.21, color, text);
+        renderKeyValue("Acceleration Limit", ps->settings->GetSettingAs<float>("Acceleration Limit"), start_pos_x, start_pos_y - 0.21, color, text);
         renderKeyValue("Min density", ps->settings->GetSettingAs<float>("min_density"), start_pos_x, start_pos_y - 0.24, color, text);
         renderKeyValue("Max density", ps->settings->GetSettingAs<float>("max_density"), start_pos_x, start_pos_y - 0.27, color, text);
         renderKeyValue("Min force", ps->settings->GetSettingAs<float>("min_force"), start_pos_x, start_pos_y - 0.30, color, text);

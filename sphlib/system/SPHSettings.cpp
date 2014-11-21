@@ -50,11 +50,10 @@ namespace rtps
 
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
-        //settings->SetSetting("Gravity", -0.0f); // -9.8 m/sec^2
         settings->SetSetting("Gas Constant", 1000.0f);
         settings->SetSetting("Viscosity", 0.01f);
-        settings->SetSetting("Velocity Limit", 450.0f);
-        settings->SetSetting("XSPH Factor", .05f);
+        settings->SetSetting("Acceleration Limit", 600.0f);
+        settings->SetSetting("XSPH Factor", .02f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
         settings->SetSetting("Boundary Stiffness", 20000.0f);
@@ -89,7 +88,7 @@ namespace rtps
         sphp.boundary_distance = settings->GetSettingAs<float>("Boundary Distance");
         sphp.K = settings->GetSettingAs<float>("Gas Constant");        
         sphp.viscosity = settings->GetSettingAs<float>("Viscosity");
-        sphp.velocity_limit = settings->GetSettingAs<float>("Velocity Limit");
+        sphp.velocity_limit = settings->GetSettingAs<float>("Acceleration Limit");
         sphp.xsph_factor = settings->GetSettingAs<float>("XSPH Factor");
         sphp.gravity = settings->GetSettingAs<float>("Gravity"); // -9.8 m/sec^2
         sphp.friction_coef = settings->GetSettingAs<float>("Friction");
