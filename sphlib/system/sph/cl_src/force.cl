@@ -47,10 +47,10 @@ inline void ForNeighbor(
     r.w = 0.f;
     float rlen = length(r);
 
-    if (rlen <= sphp->smoothing_distance)
+    if (rlen > 0.000001f && rlen <= sphp->smoothing_distance)
     {
-        int iej = index_i != index_j;
-
+        pt->count++;
+        pt->w_density += rest_density_j;
         rlen = max(rlen, sphp->EPSILON);
 
         float dWijdr = Wspiky_dr(rlen, sphp->smoothing_distance, sphp);
@@ -85,9 +85,9 @@ inline void ForNeighbor(
 
         float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
         float4 xsph = ( (mass_j + mass_i) * Wijpol6 * (velj - veli)/(density_i + density_j));
-        pt->xsph += xsph * (float)iej;
+        pt->xsph += xsph;
         pt->xsph.w = 0.f;
-        pt->force += p_force * (float)iej;
+        pt->force += p_force;
 
     }
 }
@@ -118,11 +118,11 @@ __kernel void force_update(
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
     force[index] = pt.force; 
-
-    float mass_i = mass[index];
-    float delta_i = density[index];
-    float density_i = mass_i * delta_i;
     float rest_density_i = rest_density[index];
+    if(rest_density_i < 1000) {
+        if(fabs(pt.w_density / pt.count - 100) > 450)
+            force[index].y += -10 * (-9.8);
+    }
 
     clf[index].xyz = pt.force.xyz;
     xsph[index] = sphp->wpoly6_coef * pt.xsph;
