@@ -23,9 +23,6 @@ __kernel void leapfrog(
     float4 v = vel_s[i];
     float4 f = force_s[i];
 
-    f.y += sphp->gravity;
-    f.w = 0.f;
-
     float speed = length(f);
     if (speed > sphp->velocity_limit) {
         f *= sphp->velocity_limit/speed;

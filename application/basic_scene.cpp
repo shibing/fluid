@@ -106,8 +106,8 @@ bool BasicScene::keyPress(QKeyEvent *event)
         case Qt::Key_E:
             n = 163840;
             if(event->modifiers() & Qt::ShiftModifier) {
-                min = float4(-1.5, -5.0, -1.5, 1.0);
-                max = float4( 1.5, -2.0,  1.5, 1.0);
+                min = float4(-1.0, -6.0, -1.0, 1.0);
+                max = float4( 1.0, -4.0,  1.0, 1.0);
             }
             else {
                 min = float4(-8.5, -4.0, -3.0, 1.0);

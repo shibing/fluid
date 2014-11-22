@@ -54,6 +54,7 @@
             permute = Permute( common_source_dir, ps->cli);
 
             density = Density(sph_source_dir, ps->cli);
+			normal = Normal(sph_source_dir, ps->cli);
             force = Force(sph_source_dir, ps->cli);
             collision_wall = CollisionWall(sph_source_dir, ps->cli);
             collision_tri = CollisionTriangle(sph_source_dir, ps->cli, 2048); //TODO expose max_triangles as a parameter
@@ -147,6 +148,17 @@
                 cl_GridParamsScaled, // Might have to fix this. Do not know. 
                 clf_debug,
                 cli_debug);
+			
+			 normal.execute(num,
+                cl_position_s,
+                cl_density_s,
+                cl_normal_s,
+                cl_cell_indices_start,
+                cl_cell_indices_end,
+                cl_sphp,
+                cl_GridParamsScaled,
+                clf_debug,
+                cli_debug);
 
         #ifdef SHOW_DENSITY            
             if(num > 0 ) {
@@ -169,6 +181,7 @@
                 cl_position_s,
                 cl_density_s,
                 cl_veleval_s,
+                cl_normal_s,
                 cl_force_s,
                 cl_xsph_s,
                 cl_cell_indices_start,
@@ -177,6 +190,7 @@
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
+
         #ifdef SHOW_FORCE            
             if(num > 0 ) {
             std::vector<float4> force_h(num);
@@ -330,6 +344,7 @@
         cl_veleval_s = Buffer<float4>(ps->cli, veleval);
         cl_density_s = Buffer<float>(ps->cli, densities);
         cl_force_s = Buffer<float4>(ps->cli, forces);
+        cl_normal_s = Buffer<float4>(ps->cli, forces); //normal
         cl_xsph_s = Buffer<float4>(ps->cli, xsphs);
 
         std::vector<GridParams> gparams(0);

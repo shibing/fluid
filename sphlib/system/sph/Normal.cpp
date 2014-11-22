@@ -6,28 +6,25 @@ namespace rtps
 {
 
     //----------------------------------------------------------------------
-    Force::Force(std::string path, CL* cli_)
+    Normal::Normal(std::string path, CL* cli_)
     {
         cli = cli_;
         try
         {
-            path = path + "/force.cl";
-            k_force = Kernel(cli, path, "force_update");
-            std::cout  << "Load Force kernel" << std::endl;
+            path = path + "/normal.cl";
+            k_force = Kernel(cli, path, "compute_normal");
+            std::cout  << "Load Normal kernel" << std::endl;
         }
         catch (cl::Error er)
         {
-            printf("ERROR(Force): %s(%s)\n", er.what(), oclErrorString(er.err()));
+            printf("ERROR(Normal): %s(%s)\n", er.what(), oclErrorString(er.err()));
         }
     }
 
-    void Force::execute(int num,
+    void Normal::execute(int num,
                     Buffer<float4>& pos_s,
                     Buffer<float>& dens_s,
-                    Buffer<float4>& veleval_s,
                     Buffer<float4>& normal_s,
-                    Buffer<float4>& force_s,
-                    Buffer<float4>& xsph_s,
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_end,
                     //params
@@ -40,10 +37,7 @@ namespace rtps
         int iarg = 0;
         k_force.setArg(iarg++, pos_s.getDevicePtr());
         k_force.setArg(iarg++, dens_s.getDevicePtr());
-        k_force.setArg(iarg++, veleval_s.getDevicePtr());
         k_force.setArg(iarg++, normal_s.getDevicePtr());
-        k_force.setArg(iarg++, force_s.getDevicePtr());
-        k_force.setArg(iarg++, xsph_s.getDevicePtr());
         k_force.setArg(iarg++, ci_start.getDevicePtr());
         k_force.setArg(iarg++, ci_end.getDevicePtr());
         k_force.setArg(iarg++, gp.getDevicePtr());

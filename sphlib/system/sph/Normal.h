@@ -1,6 +1,6 @@
 
-#ifndef RTPS_FORCE_H_INCLUDED
-#define RTPS_FORCE_H_INCLUDED
+#ifndef RTPS_NORMAL_H_INCLUDED
+#define RTPS_NORMAL_H_INCLUDED
 
 
 #include <CLL.h>
@@ -9,18 +9,15 @@
 
 namespace rtps
 {
-    class Force
+    class Normal
     {
         public:
-            Force() { cli = NULL; }
-            Force(std::string path, CL* cli);
+            Normal() { cli = NULL; }
+            Normal(std::string path, CL* cli);
             void execute(int num,
                     Buffer<float4>& pos_s, 
                     Buffer<float>& dens_s, 
-                    Buffer<float4>& veleval_s, 
                     Buffer<float4>& normal_s,
-                    Buffer<float4>& force_s, 
-                    Buffer<float4>& xsph_s, 
                     Buffer<unsigned int>& ci_start,
                     Buffer<unsigned int>& ci_end,
                     //params
