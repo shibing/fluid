@@ -25,7 +25,7 @@ QOpenGLTexture *texture;
 
 BasicScene::BasicScene()
     : max_num(200000) 
-    , dt(0.0003)
+    , dt(0.001)
     , show_help(true)
     , show_info(true)
 
