@@ -100,7 +100,7 @@ bool BasicScene::keyPress(QKeyEvent *event)
             else {
                 float4 center(-2.0, 1.8, 0, 1.0);
                 float4 velocity(2.2, 0.0, 0.0, 0);
-                ps->system->addHose(16000, center, velocity, 6, float4(1.0, 1.0, 1.0, 1.0));
+                ps->system->addHose(16000, center, velocity, 6, float4(0.1, 0.4, 0.9, 0.0));
             }
             return true;
         case Qt::Key_E:
@@ -113,7 +113,7 @@ bool BasicScene::keyPress(QKeyEvent *event)
                 min = float4(-8.5, -4.0, -3.0, 1.0);
                 max = float4(-4.5, -1.0,  3.0, 1.0);
             }
-            ps->system->addBox(n, min, max, false, float4(1.0, 1.0, 1.0, 1.0));
+            ps->system->addBox(n, min, max, false, float4(0.1, 0.4, 0.9, 0.0));
             return true;
         case Qt::Key_B:
             ps->system->addBunny(float4(0, -3, 0, 0));

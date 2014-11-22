@@ -27,6 +27,8 @@ namespace sph
                         Buffer<float4>& veleval_u,
                         Buffer<float4>& force_s,
                         Buffer<float4>& xsph_s,
+                        Buffer<float4>& color_u, 
+                        Buffer<float4>& color_s,
                         //params
                         Buffer<GridParams>& gp,
                         Buffer<SPHParams>& sphp,

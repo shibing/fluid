@@ -29,6 +29,8 @@ inline void ForNeighbor(
     int num = sphp->num;
 
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
+    if(position_j.w < 0)
+        return;
     float4 r = (position_i - position_j); 
     r.w = 0.f;
     float rlen = length(r);
@@ -117,6 +119,8 @@ __kernel void force_update(
     if (index >= num) return;
 
     float4 position_i = pos[index] * sphp->simulation_scale;
+    if(position_i.w < 0)
+        return;
 
     clf[index] = (float4)(99,0,0,0);
 

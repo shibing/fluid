@@ -6,6 +6,7 @@ uniform float sphere_radius;
 
 in vec4 v_position_in_view;
 in vec3 v_position_in_world;
+in vec4 v_color;
 
 out vec4 color;
 
@@ -15,6 +16,8 @@ vec3 L = vec3(0.57, 0.57, 0.57);
 
 void main()
 {
+    if(v_color.w > 0.5)
+        discard;
     float far = gl_DepthRange.far;
     float near = gl_DepthRange.near;
 
@@ -30,6 +33,7 @@ void main()
     sphere_position_in_proj.z  /= sphere_position_in_proj.w;
 
     gl_FragDepth = ((far - near) * sphere_position_in_proj.z + far + near)/2.0;
-    color = max(0, dot(N, L)) * vec4((v_position_in_world + vec3(4, 2.5, 2)) / vec3(8, 5, 4), 1.0);
+    /* color = max(0, dot(N, L)) * vec4((v_position_in_world + vec3(4, 2.5, 2)) / vec3(8, 5, 4), 1.0); */
+    color = max(0, dot(N, L)) * v_color;
 
 }

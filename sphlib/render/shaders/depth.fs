@@ -5,11 +5,14 @@ uniform mat4 projection_mat;
 uniform float sphere_radius;
 
 in vec4 v_position_in_view;
+in vec4 v_color;
 
 out vec4 color;
 
 void main()
 {
+    if(v_color.w > 0.5)
+        discard;
     float far = gl_DepthRange.far;
     float near = gl_DepthRange.near;
 

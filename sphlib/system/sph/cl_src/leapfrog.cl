@@ -11,6 +11,8 @@ __kernel void leapfrog(
                       __global float4* veleval_u,
                       __global float4* force_s,
                       __global float4* xsph_s,
+                      __global float4* color_u,
+                      __global float4* color_s,
                       __constant struct GridParams* gp,
                       __constant struct SPHParams* sphp, 
                       float dt)
@@ -18,6 +20,13 @@ __kernel void leapfrog(
     unsigned int i = get_global_id(0);
     int num = sphp->num;
     if (i >= num) return;
+    if(pos_s[i].w < 0) {
+        pos_u[i] = pos_s[i];
+        vel_u[i] = vel_s[i];
+        veleval_u[i] = (float4)(0, 0, 0, 0);
+        color_u[i] = color_s[i];
+        return;
+    }
 
     float4 p = pos_s[i] * sphp->simulation_scale;
     float4 v = vel_s[i];
@@ -40,6 +49,7 @@ __kernel void leapfrog(
     vel_u[i] = vnext;
     veleval_u[i] = veval; 
     pos_u[i] = (float4)(p.xyz, 1.0f);  
+    color_u[i] = color_s[i];
 
     //碰撞检测与处理
 

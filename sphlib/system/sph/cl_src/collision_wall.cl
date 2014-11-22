@@ -14,6 +14,8 @@ __kernel void collision_wall(
     unsigned int i = get_global_id(0);
     int num = sphp->num;
     if (i >= num) return;
+    if(pos_s[i].w < 0)
+        return;
 
     float bound_dist = sphp->rest_distance * .5f;
 

@@ -27,6 +27,7 @@
             num = 0;
             max_num = n;
             grid = settings->grid;
+            integrator = LEAPFROG;
             resource_path = settings->GetSettingAs<string>("rtps_path");
 
             std::vector<SPHParams> vparams(0);
@@ -35,12 +36,9 @@
 
             calculate();
             updateSPHP();
-
             setupDomain();
-
-            integrator = LEAPFROG;
-
             prepareSorted();
+            initBoundary();
 
             ps->cli->addIncludeDir(sph_source_dir);
             ps->cli->addIncludeDir(common_source_dir);
@@ -69,6 +67,51 @@
             }
 
             string lt_file = settings->GetSettingAs<string>("lt_cl");
+    }
+    void SPH::initBoundary()
+    {
+        float4 min = grid->getBndMin();
+        float4 max = grid->getBndMax();
+        float spacing = settings->GetSettingAs<float>("Spacing");
+        vector<float4> position;
+        float4 vel(0, 0, 0, 0);
+        float4 color(0.5, 0.5, 0.5, 1.0);
+        //x-direction
+        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(min.x + spacing / 2, y, z, -1.0f);
+                position.push_back(pos);
+            }
+        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(max.x - spacing / 2, y, z, -1.0f);
+                position.push_back(pos);
+            }
+
+        //y-direction
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(x, min.y + spacing / 2, z, -1.0f);
+                position.push_back(pos);
+            }
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(x, max.y - spacing / 2, z, -1.0f);
+                position.push_back(pos);
+            }
+        //z-direction
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
+                float4 pos(x, y, min.z + spacing / 2, -1.0f);
+                position.push_back(pos);
+            }
+        
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
+                float4 pos(x, y, max.z - spacing / 2, -1.0f);
+                position.push_back(pos);
+            }
+        pushParticles(position, vel, color);
     }
 
     SPH::~SPH()
@@ -247,20 +290,10 @@
                 cl_GridParamsScaled,
                 clf_debug,
                 cli_debug);
-
-        collision_tri.execute(num,
-                settings->dt,
-                cl_position_s,
-                cl_velocity_s,
-                cl_force_s,
-                cl_sphp,
-                clf_debug,
-                cli_debug);
     }
 
     void SPH::integrate()
     {
-
         if (integrator == EULER)
         {
             euler.execute(num,
@@ -286,6 +319,8 @@
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
+                cl_color_u, 
+                cl_color_s,
                 cl_GridParamsScaled,
                 cl_sphp,
                 clf_debug,
@@ -429,11 +464,11 @@
         pushParticles(sphere, velo);
     }
 
-    int SPH::addBunny(float4 center)
+    int SPH::addBunny(const float4& center, const float4& color)
     {
         vector<float4> particles;
         rtps::addBunny(center, particles);
-        pushParticles(particles, float4(0, 0, 0, 0));
+        pushParticles(particles, float4(0, 0, 0, 0), color);
         return particles.size();
     }
 

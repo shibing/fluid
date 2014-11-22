@@ -53,7 +53,7 @@ namespace rtps
         virtual void addBall(int nn, float4 center, float radius, bool scaled, float4 color=float4(1., 0., 0., 1.)) { } 
 
         virtual int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { return 0; }
-        virtual int addBunny(float4 center) = 0;
+        virtual int addBunny(const float4& center, const float4& color = float4(0.1, 0.4, 0.9, 0.0)) = 0;
 
         virtual void updateHose(int index, float4 center, float4 velocity, float radius, float4 color=float4(1., 0., 0., 1.)) { }
         virtual void refillHose(int index, int refill) { }

@@ -55,7 +55,7 @@ namespace rtps
             SURFACE 
         };
     public:
-        Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* settings=0, RenderType type = POINT);
+        Render(QOpenGLBuffer pos_vbo, QOpenGLBuffer col_vbo, CL *cli, RTPSettings* settings=0, RenderType type = SPHERE);
         ~Render();
 
 
