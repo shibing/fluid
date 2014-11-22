@@ -25,6 +25,7 @@ namespace rtps
                     Buffer<float4>& pos_s,
                     Buffer<float>& dens_s,
                     Buffer<float4>& veleval_s,
+                    Buffer<float4>& normal_s,
                     Buffer<float4>& force_s,
                     Buffer<float4>& xsph_s,
                     Buffer<unsigned int>& ci_start,
@@ -40,6 +41,7 @@ namespace rtps
         k_force.setArg(iarg++, pos_s.getDevicePtr());
         k_force.setArg(iarg++, dens_s.getDevicePtr());
         k_force.setArg(iarg++, veleval_s.getDevicePtr());
+        k_force.setArg(iarg++, normal_s.getDevicePtr());
         k_force.setArg(iarg++, force_s.getDevicePtr());
         k_force.setArg(iarg++, xsph_s.getDevicePtr());
         k_force.setArg(iarg++, ci_start.getDevicePtr());

@@ -57,6 +57,7 @@ namespace rtps
         float wvisc_coef;
         float wvisc_d_coef;
         float wvisc_dd_coef;
+        float wspline_coef;
 
         //CL parameters
         int num;

@@ -24,10 +24,10 @@
 #include <sph/Collision_triangle.h>
 #include <sph/LeapFrog.h>
 #include <sph/Euler.h>
+#include <sph/Normal.h>
 #include <rtps_common.h>
 
 #include <Hose.h>
-#include <timer_eb.h>
 
 namespace rtps
 {
@@ -116,7 +116,9 @@ namespace rtps
 
         Buffer<float>       cl_density_s;
         Buffer<float4>      cl_force_s;
+        Buffer<float4>      cl_normal_s;
         Buffer<float4>      cl_xsph_s;
+
 
         Buffer<unsigned int>    cl_cell_indices_start;
         Buffer<unsigned int>    cl_cell_indices_end;
@@ -140,6 +142,7 @@ namespace rtps
         CellIndices cellindices;
         Permute permute;
         Density density;
+		Normal normal;
         Force force;
         CollisionWall collision_wall;
         CollisionTriangle collision_tri;

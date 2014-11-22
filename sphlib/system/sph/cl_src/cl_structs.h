@@ -48,6 +48,7 @@ typedef struct SPHParams
     float wvisc_coef;
     float wvisc_d_coef;
     float wvisc_dd_coef;
+    float wspline_coef;
 
     int num;
     int nb_vars; // for combined variables (vars_sorted, etc.)
@@ -64,8 +65,6 @@ typedef struct SPHParams
 // used to output multiple variables per point
 typedef struct PointData
 {
-    // density.x: density
-    // density.y: denominator: sum_i (m_j/rho_j W_j)
     float4 density;
     float4 color;  // x component
     float4 color_normal;
@@ -73,6 +72,9 @@ typedef struct PointData
     float4 force;
     float4 surf_tens;
     float4 xsph;
+    float4 normal;
+
+
     //	float4 center_of_mass;
     //	int num_neighbors;
 } PointData;

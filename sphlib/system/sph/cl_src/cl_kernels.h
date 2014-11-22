@@ -13,17 +13,10 @@ float Wpoly6(float4 r, float h, __constant struct SPHParams* params)
 
 }
 //----------------------------------------------------------------------
-float Wpoly6_dr(float4 r, float h, __constant struct SPHParams* params)
+float Wpoly6_dr(float r, float h, __constant struct SPHParams* params)
 {
-    // Derivative with respect to |r| divided by |r|
-    //   W_{|r|}/r = -2*(315/64*pi*h^9) 3 (h^2-r^2)^2 
-    float r2 = r.x*r.x + r.y*r.y + r.z*r.z;  // dist_squared(r);
-    float h9 = h*h;
-    float hr2 = (h9-r2); // h9 = h^2
-    h9 = h9*h;   //  h9 = h^3
-    float alpha = -945.f/(32.0f*params->PI*h9*h9*h9);
-    float Wij = alpha * hr2*hr2;
-    return Wij;
+    float x = (h * h - r * r);
+    return x * x;
 }
 //----------------------------------------------------------------------
 float Wpoly6_lapl(float4 r, float h, __constant struct SPHParams* params)
@@ -86,6 +79,16 @@ float Wvisc_lapl(float rlen, float h, __constant struct SPHParams* params)
     */
     return h - rlen;
 }
+
+float Wspline(float r, float h, __constant struct SPHParams* params)
+{
+    if(r > h / 2.0f && r <= h)
+        return (h - r) * (h - r) * (h - r) * r * r * r;
+    else if(r > 0 && r < h / 2.0f)
+        return 2 * (h - r) * (h - r) * (h - r) * r * r * r - (h * h * h * h * h * h) / 64.0f;
+    return 0;
+}
+
 //----------------------------------------------------------------------
 
 //_WPOLY6_CL_

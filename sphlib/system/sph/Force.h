@@ -18,6 +18,7 @@ namespace rtps
                     Buffer<float4>& pos_s, 
                     Buffer<float>& dens_s, 
                     Buffer<float4>& veleval_s, 
+                    Buffer<float4>& normal_s,
                     Buffer<float4>& force_s, 
                     Buffer<float4>& xsph_s, 
                     Buffer<unsigned int>& ci_start,

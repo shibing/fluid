@@ -4,8 +4,8 @@
 #define _NEIGHBORS_CL_
 
 
-#define ARGS __global float4* pos, __global float* density, __global float4* veleval, __global float4* force, __global float4* xsph
-#define ARGV pos, density, veleval, force, xsph
+#define ARGS __global float4* pos, __global float* density, __global float4* veleval, __global float4* normal_v, __global float4* force, __global float4* xsph
+#define ARGV pos, density, veleval, normal_v, force, xsph
 
 /*----------------------------------------------------------------------*/
 
@@ -33,9 +33,8 @@ inline void ForNeighbor(
     r.w = 0.f;
     float rlen = length(r);
 
-    if (rlen <= sphp->smoothing_distance)
+    if (rlen > 0.000001 && rlen <= sphp->smoothing_distance)
     {
-        int iej = index_i != index_j;
 
         rlen = max(rlen, sphp->EPSILON);
 
@@ -60,6 +59,9 @@ inline void ForNeighbor(
          Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
          Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
 
+         /* Pi =   sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); */
+         /* Pj =   sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); */ 
+
         /* Pi = max(0.0f, sphp->K*(di - rest_density)); */
         /* Pj = max(0.0f, sphp->K*(dj - rest_density)); */
 
@@ -75,16 +77,25 @@ inline void ForNeighbor(
         float dWijlapl = sphp->wvisc_dd_coef * Wvisc_lapl(rlen, sphp->smoothing_distance, sphp);
         float4 visc = vvisc * (velj-veli) * dWijlapl * idj * idi;
         force += visc;
-
         force *= sphp->mass;
-        float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
+        pt->force += force;
+
         //surface tension
-        /* force -=  100 * (di / sphp->mass) * r * Wijpol6; */
+        float gama = 0.01f;
+        float4 st_force;
+        st_force = -gama * sphp->mass  * sphp->wspline_coef * Wspline(rlen, sphp->smoothing_distance, sphp) / rlen * r;
+
+        float4 curvature_force = -gama * (normal_v[index_i] - normal_v[index_j]);
+
+        float K_ij = 2 * sphp->rest_density / (di + dj);
+
+        pt->force += K_ij * (1.5 * st_force + curvature_force);
+
+        float Wijpol6 = Wpoly6(r, sphp->smoothing_distance, sphp);
         float4 xsph = (2.f * sphp->mass * Wijpol6 * (velj-veli)/(di+dj));
-        pt->xsph += xsph * (float)iej;
+        pt->xsph += xsph;
         pt->xsph.w = 0.f;
 
-        pt->force += force * (float)iej;
     }
 }
 
@@ -113,7 +124,10 @@ __kernel void force_update(
     zeroPoint(&pt);
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
+    pt.force.y += sphp->gravity;
+    pt.force.w = 0;
     force[index] = pt.force; 
+
     clf[index].xyz = pt.force.xyz;
     xsph[index] = sphp->wpoly6_coef * pt.xsph;
 }

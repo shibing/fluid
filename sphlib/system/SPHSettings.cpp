@@ -47,13 +47,14 @@ namespace rtps
         settings->SetSetting("wvisc", 15./(2.*pi*h3) );
         settings->SetSetting("wvisc_d", 15./(2.*pi*h3) ); //doesn't seem right
         settings->SetSetting("wvisc_dd", 45./(pi*h6) );
+        settings->SetSetting("wspline_coef", 32.0f/(pi * h9));
 
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
         settings->SetSetting("Gas Constant", 1000.0f);
         settings->SetSetting("Viscosity", 0.01f);
-        settings->SetSetting("Acceleration Limit", 600.0f);
-        settings->SetSetting("XSPH Factor", .02f);
+        settings->SetSetting("Acceleration Limit", 700.0f);
+        settings->SetSetting("XSPH Factor", .01f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
         settings->SetSetting("Boundary Stiffness", 20000.0f);
@@ -113,6 +114,7 @@ namespace rtps
         sphp.wvisc_coef = settings->GetSettingAs<float>("wvisc");
         sphp.wvisc_d_coef = settings->GetSettingAs<float>("wvisc_d");
         sphp.wvisc_dd_coef = settings->GetSettingAs<float>("wvisc_dd");
+        sphp.wspline_coef  = settings->GetSettingAs<float>("wspline_coef");
 
         //CL parameters
         sphp.num = settings->GetSettingAs<int>("Number of Particles");
