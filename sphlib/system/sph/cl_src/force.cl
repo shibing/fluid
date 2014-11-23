@@ -81,11 +81,7 @@ inline void ForNeighbor(
         pt->force += force;
 
         //surface tension
-<<<<<<< HEAD
-        float gama = .0f;
-=======
         float gama = 1.f;
->>>>>>> st
         float4 st_force;
         st_force = -gama * sphp->mass  * sphp->wspline_coef * Wspline(rlen, sphp->smoothing_distance, sphp) / rlen * r;
 
