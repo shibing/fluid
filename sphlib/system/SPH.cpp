@@ -286,6 +286,8 @@
                 cl_veleval_u,
                 cl_force_s,
                 cl_xsph_s,
+                cl_color_u,
+                cl_color_s,
                 cl_GridParamsScaled,
                 cl_sphp,
                 clf_debug,
@@ -429,11 +431,11 @@
         pushParticles(sphere, velo);
     }
 
-    int SPH::addBunny(float4 center)
+    int SPH::addBunny(const float4& center, const float4& color)
     {
         vector<float4> particles;
         rtps::addBunny(center, particles);
-        pushParticles(particles, float4(0, 0, 0, 0));
+        pushParticles(particles, float4(0, 0, 0, 0), color);
         return particles.size();
     }
 

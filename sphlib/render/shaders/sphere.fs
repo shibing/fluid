@@ -6,7 +6,7 @@ uniform float sphere_radius;
 
 in vec4 v_position_in_view;
 in vec3 v_position_in_world;
-
+in vec4 v_color;
 out vec4 color;
 
 vec4 diffuse_color = vec4(1.0);
@@ -30,6 +30,8 @@ void main()
     sphere_position_in_proj.z  /= sphere_position_in_proj.w;
 
     gl_FragDepth = ((far - near) * sphere_position_in_proj.z + far + near)/2.0;
-    color = max(0, dot(N, L)) * vec4((v_position_in_world + vec3(4, 2.5, 2)) / vec3(8, 5, 4), 1.0);
+    /* color = max(0, dot(N, L)) * vec4((v_position_in_world + vec3(4, 2.5, 2)) / vec3(8, 5, 4), 1.0); */
+    color = max(0, dot(N, L)) * v_color;
+
 
 }

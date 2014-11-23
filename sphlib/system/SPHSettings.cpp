@@ -51,7 +51,7 @@ namespace rtps
 
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
-        settings->SetSetting("Gas Constant", 10.0f);
+        settings->SetSetting("Gas Constant", 1000.0f);
         settings->SetSetting("Viscosity", 0.01f);
         settings->SetSetting("Acceleration Limit", 700.0f);
         settings->SetSetting("XSPH Factor", .01f);

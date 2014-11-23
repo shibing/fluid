@@ -11,6 +11,8 @@ __kernel void leapfrog(
                       __global float4* veleval_u,
                       __global float4* force_s,
                       __global float4* xsph_s,
+                      __global float4* color_u,
+                      __global float4* color_s,
                       __constant struct GridParams* gp,
                       __constant struct SPHParams* sphp, 
                       float dt)
@@ -40,6 +42,7 @@ __kernel void leapfrog(
     vel_u[i] = vnext;
     veleval_u[i] = veval; 
     pos_u[i] = (float4)(p.xyz, 1.0f);  
+    color_u[i] = color_s[i];
 
     //碰撞检测与处理
 

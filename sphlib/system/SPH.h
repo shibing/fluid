@@ -43,7 +43,7 @@ namespace rtps
         void update();
         int addBox(int nn, float4 min, float4 max, bool scaled, float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f));
         void addBall(int nn, float4 center, float radius, bool scaled);
-        int addBunny(float4 center);
+        int addBunny(const float4& center, const float4& color);
 
         int addHose(int total_n, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
         void updateHose(int index, float4 center, float4 velocity, float radius, float4 color = float4(1.0, 0.0, 0.0, 1.0f));
