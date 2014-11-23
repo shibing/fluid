@@ -16,8 +16,8 @@ vec3 L = vec3(0.57, 0.57, 0.57);
 
 void main()
 {
-    /* if(v_color.w > 0.5) */
-    /*     discard; */
+    if(v_color.w > 0.5)
+        discard;
     float far = gl_DepthRange.far;
     float near = gl_DepthRange.near;
 

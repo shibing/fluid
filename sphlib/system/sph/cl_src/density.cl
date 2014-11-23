@@ -25,15 +25,17 @@ inline void ForNeighbor(ARGS,
 {
     int num = sphp->num;
 
-    float4 position_j = pos[index_j] * sphp->simulation_scale; 
+    float4 position_j = pos[index_j];  
+    float w = position_j.w;
+    position_j *= sphp->simulation_scale; 
     float4 r = (position_i - position_j); 
     r.w = 0.f; 
     float rlen = length(r);
     if (rlen <= sphp->smoothing_distance)
     {
         float Wij = Wpoly6(r, sphp->smoothing_distance, sphp);
-        if(position_j.w > 1) { //boundary particle
-            pt->density.x += sphp->rest_density * (1.0f / position_j.w) * Wij;
+        if(w > 10) { //boundary particle
+            pt->density.x += sphp->rest_density * (1.0f / w) * Wij;
         }
         else {
             pt->density.x += sphp->mass*Wij;
@@ -59,18 +61,16 @@ __kernel void density_update(
     int index = get_global_id(0);
     if (index >= num) return;
 
-    float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w > 1.0)
+    float4 position_i = pos[index];
+    if(position_i.w > 10.0)
         return;
-
-    clf[index] = (float4)(99,0,0,0);
+    position_i *= sphp->simulation_scale;
 
     PointData pt;
     zeroPoint(&pt);
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
     density[index] = sphp->wpoly6_coef * pt.density.x;
-    clf[index].w = density[index];
 }
 
 #endif

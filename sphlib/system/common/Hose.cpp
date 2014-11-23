@@ -69,7 +69,6 @@ std::vector<float4> Hose::spray()
     if(em_count >= em && n_count > 0) {
         float4 v = velocity * ps->settings->dt;
         particles = addDiscRandom(n_count, center, v, u, w, radius, spacing);
-        /* addCylinder(center, radius, spacing, particles); */
         n_count -= particles.size();
         em_count = 0;
     }

@@ -28,7 +28,9 @@ inline void ForNeighbor(
 {
     int num = sphp->num;
 
-    float4 position_j = pos[index_j] * sphp->simulation_scale; 
+    float4 position_j = pos[index_j]; 
+    float w = position_j.w;
+    position_j *= sphp->simulation_scale; 
     float4 r = (position_i - position_j); 
     r.w = 0.f;
     float rlen = length(r);
@@ -49,9 +51,10 @@ inline void ForNeighbor(
 
         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
         Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
+        /* Pi = max(0.0f, sphp->K*(di - rest_density)); */
 
-        if(position_j.w > 1) { // boundary particle
-            pt->force += -sphp->rest_density * (1 / position_j.w) * (Pi * idi * idi) * r * sphp->wspiky_d_coef;
+        if(w > 10) { // boundary particle
+            pt->force +=  -2 * sphp->rest_density  * (1 / w) * (Pi * idi * idi) * r * sphp->wspiky_d_coef * dWijdr;
             return;
         }
 
@@ -62,7 +65,7 @@ inline void ForNeighbor(
 
         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
 
-         Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
+         Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1));
 
         /* Pi = max(0.0f, sphp->K*(di - rest_density)); */
         /* Pj = max(0.0f, sphp->K*(dj - rest_density)); */
@@ -82,7 +85,7 @@ inline void ForNeighbor(
         pt->force += force;
 
         //surface tension
-        float gama = 0.01f;
+        float gama = .002f;
         float4 st_force;
         st_force = -gama * sphp->mass  * sphp->wspline_coef * Wspline(rlen, sphp->smoothing_distance, sphp) / rlen * r;
 
@@ -117,13 +120,12 @@ __kernel void force_update(
     int index = get_global_id(0);
     if (index >= num) return;
 
-    float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w > 1) {
+    float4 position_i = pos[index];
+    if(position_i.w > 10) {
         force[index] = (float4)(0, 0, 0, 0);
         return;
     }
-
-    clf[index] = (float4)(99,0,0,0);
+    position_i *= sphp->simulation_scale;
 
     PointData pt;
     zeroPoint(&pt);

@@ -60,12 +60,12 @@ namespace rtps
 
         void Cube::initCubeTexture()
         {
-            QImage xpos("./bin/textures/xpos.png");
-            QImage xneg("./bin/textures/xneg.png");
-            QImage ypos("./bin/textures/ypos.png");
-            QImage yneg("./bin/textures/yneg.png");
-            QImage zpos("./bin/textures/zpos.png");
-            QImage zneg("./bin/textures/zneg.png");
+            QImage xpos("./bin/textures/sport/xpos.png");
+            QImage xneg("./bin/textures/sport/xneg.png");
+            QImage ypos("./bin/textures/sport/ypos.png");
+            QImage yneg("./bin/textures/sport/yneg.png");
+            QImage zpos("./bin/textures/sport/zpos.png");
+            QImage zneg("./bin/textures/sport/zneg.png");
             int width = xpos.width();
             int height = xpos.height();
             glGenTextures(1, &m_texture);

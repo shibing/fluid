@@ -25,7 +25,7 @@ QOpenGLTexture *texture;
 
 BasicScene::BasicScene()
     : max_num(200000) 
-    , dt(0.0003)
+    , dt(0.0001)
     , show_help(true)
     , show_info(true)
 
@@ -42,13 +42,15 @@ void BasicScene::initialize()
     settings->setRadiusScale(0.4);
     settings->setBlurScale(1.0);
     settings->setUseGLSL(1);
-    settings->SetSetting("sub_intervals", 1);
+    settings->SetSetting("sub_intervals", 20);
     settings->SetSetting("window_width", m_window->getWidth());
     settings->SetSetting("window_height", m_window->getHeight());
     settings->SetSetting("min_density", 0.0f);
     settings->SetSetting("max_density", 0.0f);
     settings->SetSetting("min_force", 0.0f);
     settings->SetSetting("max_force", 0.0f);
+    settings->SetSetting("min_force_v", "(0.0, 0.0, 0.0)" );
+    settings->SetSetting("max_force_v", "(0.0, 0.0, 0.0)");
     ps = new RTPS(settings);
     ps->getSystem()->setOpenGLFunctions(m_window->getOpenGLFunctions());
 }
@@ -202,6 +204,8 @@ void BasicScene::renderOverlay()
         renderKeyValue("Max density", ps->settings->GetSettingAs<float>("max_density"), start_pos_x, start_pos_y - 0.27, color, text);
         renderKeyValue("Min force", ps->settings->GetSettingAs<float>("min_force"), start_pos_x, start_pos_y - 0.30, color, text);
         renderKeyValue("Max force", ps->settings->GetSettingAs<float>("max_force"), start_pos_x, start_pos_y - 0.33, color, text);
+        renderKeyValue("Min force", ps->settings->GetSettingAs("min_force_v" ,0), start_pos_x, start_pos_y - 0.36, color, text);
+        renderKeyValue("Max force", ps->settings->GetSettingAs("max_force_v", 0), start_pos_x, start_pos_y - 0.39, color, text);
     }
 
     //==================================================

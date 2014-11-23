@@ -52,7 +52,6 @@ __kernel void pre_density_update(
                        DEBUG_ARGS
                        )
 {
-    int nb_vars = sphp->nb_vars;
     int num = sphp->num;
 
     int index = get_global_id(0);

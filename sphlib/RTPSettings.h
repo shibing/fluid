@@ -55,7 +55,7 @@ namespace rtps
         void printSettings();
 
 	    template <typename RT>
-        RT GetSettingAs(std::string key, std::string defaultval = "0") 
+        RT GetSettingAs(const std::string& key, const std::string& defaultval = "0") 
         {
             if (settings.find(key) == settings.end()) 
             {
@@ -65,8 +65,18 @@ namespace rtps
             return ss_typecast<RT>(settings[key]);
         }
 
+        std::string GetSettingAs(const std::string& key, int arg)
+        {
+            if (settings.find(key) == settings.end()) 
+            {
+                return std::string();
+            }
+            return settings[key];
+        }
+
+
         template <typename RT>
-        void SetSetting(std::string key, RT value) {
+        void SetSetting(const std::string& key, const RT& value) {
             std::ostringstream oss; 
             oss << value; 
             settings[key] = oss.str(); 
@@ -89,9 +99,9 @@ namespace rtps
         RT ss_typecast( const std::basic_string< _CharT, _Traits, _Alloc >& the_string )
         {
             std::basic_istringstream< _CharT, _Traits, _Alloc > temp_ss(the_string);
-            RT num;
-            temp_ss >> num;
-            return num;
+            RT value;
+            temp_ss >> value;
+            return value;
         }
 
     public:

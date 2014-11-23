@@ -20,7 +20,7 @@ __kernel void leapfrog(
     unsigned int i = get_global_id(0);
     int num = sphp->num;
     if (i >= num) return;
-    if(pos_s[i].w > 1) {
+    if(pos_s[i].w > 10.0) {
         pos_u[i] = pos_s[i];
         vel_u[i] = vel_s[i];
         veleval_u[i] = (float4)(0, 0, 0, 0);
@@ -32,10 +32,10 @@ __kernel void leapfrog(
     float4 v = vel_s[i];
     float4 f = force_s[i];
 
-    float speed = length(f);
-    if (speed > sphp->velocity_limit) {
-        f *= sphp->velocity_limit/speed;
-    }
+    /* float speed = length(f); */
+    /* if (speed > sphp->velocity_limit) { */
+    /*     f *= sphp->velocity_limit/speed; */
+    /* } */
 
     float4 vnext = v + dt*f;
     vnext.w = 0;

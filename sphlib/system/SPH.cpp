@@ -77,17 +77,17 @@
         vector<float4> position;
         float4 vel(0, 0, 0, 0);
         float4 color(0.5, 0.5, 0.5, 1.0);
-        //x-direction
-        /* for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) */
-        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
-        /*         float4 pos(min.x + spacing / 2, y, z, -1.0f); */
-        /*         position.push_back(pos); */
-        /*     } */
-        /* for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) */
-        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
-        /*         float4 pos(max.x - spacing / 2, y, z, -1.0f); */
-        /*         position.push_back(pos); */
-        /*     } */
+        /* //x-direction */
+        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(min.x + spacing / 2, y, z, -1.0f);
+                position.push_back(pos);
+            }
+        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(max.x - spacing / 2, y, z, -1.0f);
+                position.push_back(pos);
+            }
 
         //y-direction
         for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
@@ -95,23 +95,23 @@
                 float4 pos(x, min.y + spacing / 2, z, -1.0f);
                 position.push_back(pos);
             }
-        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
-        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
-        /*         float4 pos(x, max.y - spacing / 2, z, -1.0f); */
-        /*         position.push_back(pos); */
-        /*     } */
-        /* //z-direction */
-        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
-        /*     for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) { */
-        /*         float4 pos(x, y, min.z + spacing / 2, -1.0f); */
-        /*         position.push_back(pos); */
-        /*     } */
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
+                float4 pos(x, max.y - spacing / 2, z, -1.0f);
+                position.push_back(pos);
+            }
+        //z-direction
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
+                float4 pos(x, y, min.z + spacing / 2, -1.0f);
+                position.push_back(pos);
+            }
         
-        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
-        /*     for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) { */
-        /*         float4 pos(x, y, max.z - spacing / 2, -1.0f); */
-        /*         position.push_back(pos); */
-        /*    } */
+        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
+            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
+                float4 pos(x, y, max.z - spacing / 2, -1.0f);
+                position.push_back(pos);
+           }
         pushParticles(position, vel, color);
     }
 
@@ -163,18 +163,18 @@
             clf_debug,
             cli_debug);
 
-            std::vector<float4> density_h(num);
-            cl_position_u.copyToHost(density_h);
-            float max_density, min_density;
-            max_density = min_density = density_h[0].w;
-            for(int i = 1; i < density_h.size(); ++i) {
-                if(density_h[i].w > max_density)
-                    max_density = density_h[i].w;
-                else if(density_h[i].w < min_density)
-                    min_density = density_h[i].w;
-            }
-            std::cout << "min_density: " <<  min_density * settings->GetSettingAs<float>("Mass") << std::endl;
-            std::cout << "max_density: "<<  max_density * settings->GetSettingAs<float>("Mass") << std::endl;
+            /* std::vector<float4> density_h(num); */
+            /* cl_position_u.copyToHost(density_h); */
+            /* float max_density, min_density; */
+            /* max_density = min_density = density_h[0].w; */
+            /* for(int i = 1; i < density_h.size(); ++i) { */
+            /*     if(density_h[i].w > max_density) */
+            /*         max_density = density_h[i].w; */
+            /*     else if(density_h[i].w < min_density) */
+            /*         min_density = density_h[i].w; */
+            /* } */
+            /* std::cout << "min_density: " <<  min_density * settings->GetSettingAs<float>("Mass") << std::endl; */
+            /* std::cout << "max_density: "<<  max_density * settings->GetSettingAs<float>("Mass") << std::endl; */
     }
 
     void SPH::update()
@@ -182,8 +182,8 @@
         if(m_paused)
             return;
         glFinish();
-        if (settings->has_changed()) updateSPHP();
 
+        if (settings->has_changed()) updateSPHP();
         cl_position_u.acquire();
         cl_color_u.acquire();
         static bool first = true;
@@ -191,14 +191,16 @@
             precomputeBoundary();
             first = false;
         }
+        cl_position_u.release();
+        cl_color_u.release();
 
         int sub_intervals =  settings->GetSettingAs<float>("sub_intervals");
 
-        //NOTE: release and acquire opencl buffer
         for (int i=0; i < sub_intervals; i++)
             sprayHoses();
 
-
+        cl_position_u.acquire();
+        cl_color_u.acquire();
         for (int i=0; i < sub_intervals; i++)
         {
             hashAndSort();
@@ -225,7 +227,6 @@
                 cl_GridParams,
                 clf_debug,
                 cli_debug);
-
             //some partilces out of boundary
             if (nc <= num && nc >= 0)
             {
@@ -267,7 +268,10 @@
                 cl_density_s.copyToHost(density_h);
                 float max_density, min_density;
                 max_density = min_density = density_h[0];
+                min_density = 50000;
                 for(int i = 1; i < density_h.size(); ++i) {
+                    if(fabs(density_h[i]- 0 - 0.0) < 0.00000001)
+                        continue;
                     if(density_h[i] > max_density)
                         max_density = density_h[i];
                     else if(density_h[i] < min_density)
@@ -307,19 +311,33 @@
 
         #ifdef SHOW_FORCE            
             if(num > 0 ) {
-            std::vector<float4> force_h(num);
-            cl_force_s.copyToHost(force_h);
-            float max_force, min_force;
-            max_force = min_force = magnitude(force_h[0]);
-            for(int i = 1; i < force_h.size(); ++i) {
-                float force_mag = magnitude(force_h[i]);
-                if(force_mag > max_force)
-                    max_force = force_mag;
-                else if(force_mag < min_force)
-                    min_force = force_mag;
-            }
+                std::vector<float4> force_h(num);
+                cl_force_s.copyToHost(force_h);
+                float max_force, min_force;
+                float4 max_force_v, min_force_v;
+                max_force = min_force = magnitude(force_h[0]);
+                min_force = 10;
+                for(int i = 1; i < force_h.size(); ++i) {
+                    float force_mag = magnitude(force_h[i]);
+                    if(fabs(force_mag - 0.0) < 0.0000001)
+                        continue;
+                    if(force_mag > max_force) {
+                        max_force = force_mag;
+                        max_force_v = force_h[i];
+                    }
+                    else if(force_mag < min_force) {
+                        min_force = force_mag;
+                        min_force_v = force_h[i];
+                    }
+                }
+                stringstream ss;
+                ss << "(" << min_force_v.x << ", " << min_force_v.y << ", " << min_force_v.z << ")";
+                ps->settings->SetSetting("min_force_v", ss.str());
+                ps->settings->SetSetting("min_force", min_force);
+                ss.str("");
+                ss << "(" << max_force_v.x << ", " << max_force_v.y << ", " << max_force_v.z << ")";
+                ps->settings->SetSetting("max_force_v", ss.str());
                 ps->settings->SetSetting("max_force", max_force);
-                ps->settings->SetSetting("min_froce", min_force);
             }
         #endif
             /* collision(); */
@@ -443,7 +461,6 @@
         cl_color_u = Buffer<float4>(ps->cli, m_col_vbo.bufferId());
         cl_color_s = Buffer<float4>(ps->cli, colors);
 
-        //pure opencl buffers: these are deprecated
         cl_velocity_u = Buffer<float4>(ps->cli, velocities);
         cl_velocity_s = Buffer<float4>(ps->cli, velocities);
         cl_veleval_u = Buffer<float4>(ps->cli, veleval);
