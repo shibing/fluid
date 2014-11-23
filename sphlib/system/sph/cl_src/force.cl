@@ -62,8 +62,8 @@ inline void ForNeighbor(
          /* Pi =   sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); */
          /* Pj =   sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); */ 
 
-        Pi = max(0.0f, sphp->K*(di - rest_density));
-        Pj = max(0.0f, sphp->K*(dj - rest_density));
+/*         Pi = max(0.0f, sphp->K*(di - rest_density)); */
+/*         Pj = max(0.0f, sphp->K*(dj - rest_density)); */
 
        // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
         float mag = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
@@ -81,7 +81,11 @@ inline void ForNeighbor(
         pt->force += force;
 
         //surface tension
+<<<<<<< HEAD
         float gama = .0f;
+=======
+        float gama = 1.f;
+>>>>>>> st
         float4 st_force;
         st_force = -gama * sphp->mass  * sphp->wspline_coef * Wspline(rlen, sphp->smoothing_distance, sphp) / rlen * r;
 
