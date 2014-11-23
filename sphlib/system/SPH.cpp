@@ -38,7 +38,6 @@
             updateSPHP();
             setupDomain();
             prepareSorted();
-            initBoundary();
 
             ps->cli->addIncludeDir(sph_source_dir);
             ps->cli->addIncludeDir(common_source_dir);
@@ -52,6 +51,7 @@
             permute = Permute( common_source_dir, ps->cli);
 
             density = Density(sph_source_dir, ps->cli);
+            pre_density = PreDensity(sph_source_dir, ps->cli);
 			normal = Normal(sph_source_dir, ps->cli);
             force = Force(sph_source_dir, ps->cli);
             collision_wall = CollisionWall(sph_source_dir, ps->cli);
@@ -67,6 +67,7 @@
             }
 
             string lt_file = settings->GetSettingAs<string>("lt_cl");
+            initBoundary();
     }
     void SPH::initBoundary()
     {
@@ -110,7 +111,7 @@
             for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
                 float4 pos(x, y, max.z - spacing / 2, -1.0f);
                 position.push_back(pos);
-            }
+           }
         pushParticles(position, vel, color);
     }
 
@@ -125,6 +126,57 @@
         }
     }
 
+    void SPH::precomputeBoundary()
+    {
+        hashAndSort();
+        int nc = cellindices.execute(num,
+            cl_sort_hashes,
+            cl_cell_indices_start,
+            cl_cell_indices_end,
+            cl_GridParams,
+            grid_params.nb_cells,
+            clf_debug,
+            cli_debug);
+        
+        permute.execute(num,
+            cl_position_u,
+            cl_position_s,
+            cl_velocity_u,
+            cl_velocity_s,
+            cl_veleval_u,
+            cl_veleval_s,
+            cl_color_u,
+            cl_color_s,
+            cl_sort_indices,
+            cl_GridParams,
+            clf_debug,
+            cli_debug);
+
+       pre_density.execute(num,
+            cl_position_u,
+            cl_position_s,
+            cl_density_s,
+            cl_cell_indices_start,
+            cl_cell_indices_end,
+            cl_sphp,
+            cl_GridParamsScaled, // Might have to fix this. Do not know. 
+            clf_debug,
+            cli_debug);
+
+            std::vector<float4> density_h(num);
+            cl_position_u.copyToHost(density_h);
+            float max_density, min_density;
+            max_density = min_density = density_h[0].w;
+            for(int i = 1; i < density_h.size(); ++i) {
+                if(density_h[i].w > max_density)
+                    max_density = density_h[i].w;
+                else if(density_h[i].w < min_density)
+                    min_density = density_h[i].w;
+            }
+            std::cout << "min_density: " <<  min_density * settings->GetSettingAs<float>("Mass") << std::endl;
+            std::cout << "max_density: "<<  max_density * settings->GetSettingAs<float>("Mass") << std::endl;
+    }
+
     void SPH::update()
     {
         if(m_paused)
@@ -132,14 +184,20 @@
         glFinish();
         if (settings->has_changed()) updateSPHP();
 
+        cl_position_u.acquire();
+        cl_color_u.acquire();
+        static bool first = true;
+        if(first) {
+            precomputeBoundary();
+            first = false;
+        }
+
         int sub_intervals =  settings->GetSettingAs<float>("sub_intervals");
 
         //NOTE: release and acquire opencl buffer
         for (int i=0; i < sub_intervals; i++)
             sprayHoses();
 
-        cl_position_u.acquire();
-        cl_color_u.acquire();
 
         for (int i=0; i < sub_intervals; i++)
         {
@@ -205,21 +263,34 @@
 
         #ifdef SHOW_DENSITY            
             if(num > 0 ) {
-            std::vector<float> density_h(num);
-            cl_density_s.copyToHost(density_h);
-            float max_density, min_density;
-            max_density = min_density = density_h[0];
-            for(int i = 1; i < density_h.size(); ++i) {
-                if(density_h[i] > max_density)
-                    max_density = density_h[i];
-                else if(density_h[i] < min_density)
-                    min_density = density_h[i];
-            }
+                std::vector<float> density_h(num);
+                cl_density_s.copyToHost(density_h);
+                float max_density, min_density;
+                max_density = min_density = density_h[0];
+                for(int i = 1; i < density_h.size(); ++i) {
+                    if(density_h[i] > max_density)
+                        max_density = density_h[i];
+                    else if(density_h[i] < min_density)
+                        min_density = density_h[i];
+                }
                 ps->settings->SetSetting("max_density", max_density);
                 ps->settings->SetSetting("min_density", min_density);
             }
         #endif
-
+            if(true) {
+                std::vector<float4> density_h(num);
+                cl_position_u.copyToHost(density_h);
+                float max_density, min_density;
+                max_density = min_density = density_h[0].w;
+                for(int i = 1; i < density_h.size(); ++i) {
+                    if(density_h[i].w > max_density)
+                        max_density = density_h[i].w;
+                    else if(density_h[i].w < min_density)
+                        min_density = density_h[i].w;
+                }
+                /* std::cout << "min_density: " <<  min_density << std::endl; */
+                /* std::cout << "max_density: "<<  max_density * settings->GetSettingAs<float>("Mass") << std::endl; */
+            }
             force.execute(num,
                 cl_position_s,
                 cl_density_s,
@@ -251,7 +322,7 @@
                 ps->settings->SetSetting("min_froce", min_force);
             }
         #endif
-            collision();
+            /* collision(); */
             integrate(); 
         }
 

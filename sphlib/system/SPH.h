@@ -19,6 +19,7 @@
 #include <CellIndices.h>
 #include <Permute.h> 
 #include <sph/Density.h>
+#include <sph/PreDensity.h>
 #include <sph/Force.h>
 #include <sph/Collision_wall.h>
 #include <sph/Collision_triangle.h>
@@ -64,6 +65,7 @@ namespace rtps
         void setPaused() { m_paused = !m_paused; } 
 
         void initBoundary();
+        void precomputeBoundary(); //pre compute boudary particle volum
 
     private:
         void calculateSPHSettings();
@@ -144,6 +146,7 @@ namespace rtps
         CellIndices cellindices;
         Permute permute;
         Density density;
+        PreDensity pre_density;
 		Normal normal;
         Force force;
         CollisionWall collision_wall;

@@ -29,45 +29,44 @@ inline void ForNeighbor(
     int num = sphp->num;
 
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
-    if(position_j.w < 0)
-        return;
     float4 r = (position_i - position_j); 
     r.w = 0.f;
     float rlen = length(r);
 
-    if (rlen > 0.000001 && rlen <= sphp->smoothing_distance)
+    if (rlen > 0.0000001 && rlen <= sphp->smoothing_distance)
     {
 
         rlen = max(rlen, sphp->EPSILON);
 
         float dWijdr = Wspiky_dr(rlen, sphp->smoothing_distance, sphp);
 
-        float di = density[index_i];  
-        float dj = density[index_j];
-        float idi = 1.0/di;
-        float idj = 1.0/dj;
-
-
         float rest_density = sphp->rest_density;
+        float di = density[index_i];  
 		float Pi;
 		float Pj;
-		
+        float idi = 1.0/di;
 		float rhoi_rho0 = di / rest_density; 
-        float rhoj_rho0 = dj / rest_density; 
 
         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
+        Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
+
+        if(position_j.w > 1) { // boundary particle
+            pt->force += -sphp->rest_density * (1 / position_j.w) * (Pi * idi * idi) * r * sphp->wspiky_d_coef;
+            return;
+        }
+
+        float dj = density[index_j];
+        float idj = 1.0/dj;
+
+        float rhoj_rho0 = dj / rest_density; 
+
         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
 
-         Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
          Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
-
-         /* Pi =   sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); */
-         /* Pj =   sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); */ 
 
         /* Pi = max(0.0f, sphp->K*(di - rest_density)); */
         /* Pj = max(0.0f, sphp->K*(dj - rest_density)); */
 
-       // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
         float mag = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
         float4 force = (mag + 0) * r; 
 
@@ -119,7 +118,7 @@ __kernel void force_update(
     if (index >= num) return;
 
     float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w < 0)
+    if(position_i.w > 1)
         return;
 
     clf[index] = (float4)(99,0,0,0);

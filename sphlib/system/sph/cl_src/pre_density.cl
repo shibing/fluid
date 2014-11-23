@@ -3,10 +3,8 @@
 #define _NEIGHBORS_CL_
 
 
-#define ARGS __global float4* pos, __global float* density, __global float4 * normal_v
-#define ARGV pos, density, normal_v
-
-
+#define ARGS __global float4* pos, __global float* density
+#define ARGV pos, density 
 /*----------------------------------------------------------------------*/
 
 #include "cl_macros.h"
@@ -28,29 +26,25 @@ inline void ForNeighbor(ARGS,
     int num = sphp->num;
 
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
-    if(position_j.w > 1)
-        return;
     float4 r = (position_i - position_j); 
     r.w = 0.f; 
     float rlen = length(r);
-    float beta = .06;
 
-    if (rlen <= sphp->smoothing_distance) {
-        
-        float dWijdr = Wpoly6_dr(rlen, sphp->smoothing_distance, sphp);
-        //dWijdr = Wspiky_dr(rlen, sphp->smoothing_distance, sphp);
-        float mag = dWijdr * sphp->wpoly6_d_coef;
+    if (rlen <= sphp->smoothing_distance)
+    {
+        float Wij = Wpoly6(r, sphp->smoothing_distance, sphp);
 
-        float4 normal = sphp->mass / density[index_j] * mag * r; 
-        pt->normal += beta * normal;
+        pt->density.x += Wij;
     }
 }
 
 #include "cl_neighbors.h"
 
 
-__kernel void compute_normal(
-                       ARGS,
+__kernel void pre_density_update(
+                      __global float4* pos_u, 
+					  __global float4* pos, //sorted
+					  __global float* density,
                        __global int*    cell_indexes_start,
                        __global int*    cell_indexes_end,
                        __constant struct GridParams* gp,
@@ -65,17 +59,15 @@ __kernel void compute_normal(
     if (index >= num) return;
 
     float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w > 1)
-        return;
-
-    clf[index] = (float4)(99,0,0,0);
 
     PointData pt;
     zeroPoint(&pt);
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
-    normal_v[index] = pt.normal;
-    clf[index].xyz = pt.normal.xyz;
+   
+	pos_u[index] = pos[index];
+	pos_u[index].w = sphp->wpoly6_coef * pt.density.x;
+    clf[index] = pos[index];
 }
 
 #endif

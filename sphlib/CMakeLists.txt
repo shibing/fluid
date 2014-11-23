@@ -82,6 +82,7 @@ set (sphlib_SOURCES
     ${sphlib_SOURCE_DIR}/system/sph/Euler
     ${sphlib_SOURCE_DIR}/system/sph/LeapFrog
     ${sphlib_SOURCE_DIR}/system/sph/Density
+    ${sphlib_SOURCE_DIR}/system/sph/PreDensity
     ${sphlib_SOURCE_DIR}/system/sph/Force
     ${sphlib_SOURCE_DIR}/system/sph/Normal
     ${sphlib_SOURCE_DIR}/system/sph/Collision_wall

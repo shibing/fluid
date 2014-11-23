@@ -26,17 +26,18 @@ inline void ForNeighbor(ARGS,
     int num = sphp->num;
 
     float4 position_j = pos[index_j] * sphp->simulation_scale; 
-    if(position_j.w < 0)
-        return;
     float4 r = (position_i - position_j); 
     r.w = 0.f; 
     float rlen = length(r);
-
     if (rlen <= sphp->smoothing_distance)
     {
         float Wij = Wpoly6(r, sphp->smoothing_distance, sphp);
-
-        pt->density.x += sphp->mass*Wij;
+        if(position_j.w > 1) { //boundary particle
+            pt->density.x += sphp->rest_density * (1.0f / position_j.w) * Wij;
+        }
+        else {
+            pt->density.x += sphp->mass*Wij;
+        }
     }
 }
 
@@ -59,7 +60,7 @@ __kernel void density_update(
     if (index >= num) return;
 
     float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w < 0)
+    if(position_i.w > 1.0)
         return;
 
     clf[index] = (float4)(99,0,0,0);

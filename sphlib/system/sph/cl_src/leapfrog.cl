@@ -20,7 +20,7 @@ __kernel void leapfrog(
     unsigned int i = get_global_id(0);
     int num = sphp->num;
     if (i >= num) return;
-    if(pos_s[i].w < 0) {
+    if(pos_s[i].w > 1) {
         pos_u[i] = pos_s[i];
         vel_u[i] = vel_s[i];
         veleval_u[i] = (float4)(0, 0, 0, 0);
