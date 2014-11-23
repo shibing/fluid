@@ -118,8 +118,10 @@ __kernel void force_update(
     if (index >= num) return;
 
     float4 position_i = pos[index] * sphp->simulation_scale;
-    if(position_i.w > 1)
+    if(position_i.w > 1) {
+        force[index] = (float4)(0, 0, 0, 0);
         return;
+    }
 
     clf[index] = (float4)(99,0,0,0);
 

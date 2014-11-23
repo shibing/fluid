@@ -78,16 +78,16 @@
         float4 vel(0, 0, 0, 0);
         float4 color(0.5, 0.5, 0.5, 1.0);
         //x-direction
-        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
-            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
-                float4 pos(min.x + spacing / 2, y, z, -1.0f);
-                position.push_back(pos);
-            }
-        for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing)
-            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
-                float4 pos(max.x - spacing / 2, y, z, -1.0f);
-                position.push_back(pos);
-            }
+        /* for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) */
+        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
+        /*         float4 pos(min.x + spacing / 2, y, z, -1.0f); */
+        /*         position.push_back(pos); */
+        /*     } */
+        /* for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) */
+        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
+        /*         float4 pos(max.x - spacing / 2, y, z, -1.0f); */
+        /*         position.push_back(pos); */
+        /*     } */
 
         //y-direction
         for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
@@ -95,23 +95,23 @@
                 float4 pos(x, min.y + spacing / 2, z, -1.0f);
                 position.push_back(pos);
             }
-        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
-            for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) {
-                float4 pos(x, max.y - spacing / 2, z, -1.0f);
-                position.push_back(pos);
-            }
-        //z-direction
-        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
-            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
-                float4 pos(x, y, min.z + spacing / 2, -1.0f);
-                position.push_back(pos);
-            }
+        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
+        /*     for(float z = min.z + spacing / 2; z <= max.z - spacing / 2; z += spacing) { */
+        /*         float4 pos(x, max.y - spacing / 2, z, -1.0f); */
+        /*         position.push_back(pos); */
+        /*     } */
+        /* //z-direction */
+        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
+        /*     for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) { */
+        /*         float4 pos(x, y, min.z + spacing / 2, -1.0f); */
+        /*         position.push_back(pos); */
+        /*     } */
         
-        for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing)
-            for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) {
-                float4 pos(x, y, max.z - spacing / 2, -1.0f);
-                position.push_back(pos);
-           }
+        /* for(float x = min.x + spacing / 2; x <= max.x - spacing / 2; x += spacing) */
+        /*     for(float y = min.y + spacing / 2; y <= max.y - spacing / 2; y += spacing) { */
+        /*         float4 pos(x, y, max.z - spacing / 2, -1.0f); */
+        /*         position.push_back(pos); */
+        /*    } */
         pushParticles(position, vel, color);
     }
 
