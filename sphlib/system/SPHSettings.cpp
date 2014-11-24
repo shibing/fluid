@@ -17,6 +17,7 @@ namespace rtps
         float domain_vol = (dmax.x - dmin.x) * (dmax.y - dmin.y) * (dmax.z - dmin.z);
 
         float simulation_scale = pow(0.5 * VP * 131072 / (5 * 5 * 5), 1.f/3.f); 
+        std::cout << simulation_scale << std::endl;
 
         settings->SetSetting("Maximum Number of Particles", max_num);
         settings->SetSetting("Mass", mass);
@@ -52,12 +53,12 @@ namespace rtps
         //dynamic params
         settings->SetSetting("Gravity", -9.8f); // -9.8 m/sec^2
         settings->SetSetting("Gas Constant", 1000.0f);
-        settings->SetSetting("Viscosity", 0.01f);
-        settings->SetSetting("Acceleration Limit", 700.0f);
-        settings->SetSetting("XSPH Factor", .01f);
+        settings->SetSetting("Viscosity", .1f);
+        settings->SetSetting("Acceleration Limit", 600.0f);
+        settings->SetSetting("XSPH Factor", .0f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
-        settings->SetSetting("Boundary Stiffness", 20000.0f);
+        settings->SetSetting("Boundary Stiffness", 60000.0f);
         settings->SetSetting("Boundary Dampening", 256.0f);
 
         //next 4 not used at the moment

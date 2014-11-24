@@ -65,6 +65,7 @@ typedef struct SPHParams
 // used to output multiple variables per point
 typedef struct PointData
 {
+    float V;
     float4 density;
     float4 color;  // x component
     float4 color_normal;
@@ -73,8 +74,6 @@ typedef struct PointData
     float4 surf_tens;
     float4 xsph;
     float4 normal;
-
-
     //	float4 center_of_mass;
     //	int num_neighbors;
 } PointData;

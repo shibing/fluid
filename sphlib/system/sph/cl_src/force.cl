@@ -45,7 +45,6 @@ inline void ForNeighbor(
         float idi = 1.0/di;
         float idj = 1.0/dj;
 
-
         float rest_density = sphp->rest_density;
 		float Pi;
 		float Pj;
@@ -56,29 +55,23 @@ inline void ForNeighbor(
         rhoi_rho0 = rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 * rhoi_rho0 ; 
         rhoj_rho0 = rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 * rhoj_rho0 ; 
 
-         Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1));
-         Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); 
+         /* Pi =  max(0.0, sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1)); */
+         /* Pj =  max(0.0, sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1)); */ 
 
-         /* Pi =   sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1); */
-         /* Pj =   sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); */ 
+         Pi =   sphp->K * rest_density / 7.0 * (rhoi_rho0 - 1);
+         Pj =   sphp->K * rest_density/ 7.0 * (rhoj_rho0 - 1); 
 
-/*         Pi = max(0.0f, sphp->K*(di - rest_density)); */
-/*         Pj = max(0.0f, sphp->K*(dj - rest_density)); */
 
-       // float kern = -.5 * dWijdr * (Pi + Pj) * sphp->wspiky_d_coef * idi * idj;
-        float mag = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef;
-        float4 force = (mag + 0) * r; 
+        float4 pressure_force = -1.0f * dWijdr * (Pi * idi * idi + Pj * idj * idj) * sphp->wspiky_d_coef * r;
 
         float4 veli = veleval[index_i]; 
         float4 velj = veleval[index_j];
 
-        // Add viscous forces
-        float vvisc = sphp->viscosity;
-        float dWijlapl = sphp->wvisc_dd_coef * Wvisc_lapl(rlen, sphp->smoothing_distance, sphp);
-        float4 visc = vvisc * (velj-veli) * dWijlapl * idj * idi;
-        force += visc;
-        force *= sphp->mass;
-        pt->force += force;
+        float cs = 26.0;
+        float4 visc_force = sphp->viscosity * 2 * sphp->smoothing_distance * cs / (dj + di) * (min(dot((veli - velj), r), 0.0) / (dot(r, r) + 0.01 * sphp->smoothing_distance * sphp->smoothing_distance)) *
+                                sphp->wspiky_d_coef * dWijdr * r;
+
+        pt->force += (visc_force + pressure_force) * sphp->mass;
 
         //surface tension
         float gama = 1.f;

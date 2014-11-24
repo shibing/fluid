@@ -131,9 +131,9 @@ void main()
 
         vec3 N = computeNormal(tex_coord0);
 
-        const float k_r = 5.0;
-        const float k_g = 1.0;
-        const float k_b = 0.1;
+        const float k_r = 10;
+        const float k_g = 6;
+        const float k_b = 0.8;
 
         vec4 c_beer = vec4(exp(-k_r * thickness),
                           exp(-k_g * thickness),

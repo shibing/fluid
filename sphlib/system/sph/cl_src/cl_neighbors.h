@@ -16,6 +16,7 @@ void zeroPoint(PointData* pt)
     pt->color_lapl = 0.;
     pt->xsph = (float4)(0.,0.,0.,0.);
     pt->normal = (float4)(0, 0, 0, 0);
+    pt->V = 0.0;
 }
 
 void IterateParticlesInCell(

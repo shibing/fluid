@@ -37,6 +37,7 @@ inline void ForNeighbor(ARGS,
         float Wij = Wpoly6(r, sphp->smoothing_distance, sphp);
 
         pt->density.x += sphp->mass*Wij;
+        pt->V += sphp->mass / 1000.0 * Wij;
     }
 }
 
@@ -67,6 +68,8 @@ __kernel void density_update(
 
     IterateParticlesInNearbyCells(ARGV, &pt, num, index, position_i, cell_indexes_start, cell_indexes_end, gp, sphp DEBUG_ARGV);
     density[index] = sphp->wpoly6_coef * pt.density.x;
+    if(density[index] < sphp->rest_density)
+        density[index] /= (sphp->wpoly6_coef) * pt.V;
     clf[index].w = density[index];
 }
 

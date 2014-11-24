@@ -192,7 +192,7 @@ void BasicScene::renderOverlay()
         //text.draw("FPS", start_pos_x, start_pos_y, w, h, color);
         renderKeyValue("Maximum Number of Particles", ps->settings->GetSettingAs<int>("Maximum Number of Particles"), start_pos_x, start_pos_y, color, text);
         renderKeyValue("Number of Particles", ps->settings->GetSettingAs<int>("Number of Particles"), start_pos_x, start_pos_y - 0.03, color, text);
-        renderKeyValue("Mass", ps->settings->GetSettingAs<int>("Mass"), start_pos_x, start_pos_y - 0.06, color, text);
+        renderKeyValue("Mass", ps->settings->GetSettingAs<float>("Mass"), start_pos_x, start_pos_y - 0.06, color, text);
         renderKeyValue("Smoothing Distance (h)", ps->settings->GetSettingAs<float>("Smoothing Distance"), start_pos_x, start_pos_y - 0.09, color, text);
         renderKeyValue("Gas Constant (K)", ps->settings->GetSettingAs<float>("Gas Constant"), start_pos_x, start_pos_y - 0.12, color, text);
         renderKeyValue("Gravity", ps->settings->GetSettingAs<float>("Gravity"), start_pos_x, start_pos_y - 0.15, color, text);
