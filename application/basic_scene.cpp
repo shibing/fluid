@@ -104,11 +104,11 @@ bool BasicScene::keyPress(QKeyEvent *event)
         case Qt::Key_9:
             center = float4(-7.0, 1.5, 0, 1.0);
             velocity = float4(1.2, 0.0, 0.0, 0);
-            ps->system->addHose(System::OIL, 50000, center, velocity, 6, float4(0.0, 1.0, 0.0, 1.0));
+            ps->system->addHose(System::OIL, 20000, center, velocity, 6, float4(0.0, 1.0, 0.0, 1.0));
 
             center =  float4(7.0, 1.5, 0, 1.0);
             velocity = float4(-1.2, 0.0, 0.0, 0);
-            ps->system->addHose(System::WATER, 50000, center, velocity, 6, float4(1.0, 0.0, 0.0, 1.0));
+            ps->system->addHose(System::WATER, 20000, center, velocity, 6, float4(1.0, 0.0, 0.0, 1.0));
             return true;
         case Qt::Key_E:
             n = 163840;

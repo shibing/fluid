@@ -69,8 +69,6 @@ inline void ForNeighbor(
 
         Pi = max(0.0f, sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1));
         Pj = max(0.0f, sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1));
-        Pi =  sphp->K * rest_density_i / 7.0 * (rhoi_rho0 - 1);
-        Pj =  sphp->K * rest_density_j / 7.0 * (rhoj_rho0 - 1);
 
         float kern = -1.0f * (Pi * inv_delta_i * inv_delta_i + Pj * inv_delta_j * inv_delta_j) * sphp->wspiky_d_coef * dWijdr;
         float4 p_force = kern * r;
@@ -122,8 +120,8 @@ __kernel void force_update(
     force[index] = pt.force; 
     float rest_density_i = rest_density[index];
     /* if(rest_density_i < 1000) { */
-    /*     if(fabs(pt.w_density / pt.count - 100) > 450) */
-    /*         force[index].y += -10 * (-9.8); */
+    /*     if(pt.w_density / pt.count - 100 > 450) */
+    /*         force[index].y += ((pt.w_density / pt.count - 100) / rest_density_i + 3) * 9.8; */
     /* } */
 
     clf[index].xyz = pt.force.xyz;
