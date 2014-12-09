@@ -160,6 +160,6 @@ void main()
         vec4 refl_color = texture(cube_map_tex, viewer_reflect);
 
         frag_color = (1 - fres_refl) * self_color +  fres_refl * refl_color + specular * vec4(1.0);
-        frag_color = texture(color_tex, tex_coord0) * diffuse;
+        frag_color = texture(color_tex, tex_coord0) * diffuse + specular * vec4(1.0);
  }
 

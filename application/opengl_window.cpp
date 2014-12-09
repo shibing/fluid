@@ -8,6 +8,10 @@
 #include <QMouseEvent>
 
 QOpenGLContext *context;
+extern int  win_width;
+extern int  win_height;
+int * buffer = new int[win_width * win_height];
+extern FILE* ffmpeg;
 
 OpenGLWindow::OpenGLWindow(AbstractScene *scene, int width, int height, QScreen *screen):
     QWindow(screen),
@@ -88,6 +92,9 @@ void OpenGLWindow::paintGL()
     m_context->makeCurrent(this);
     m_scene->render();
     m_context->swapBuffers(this);
+    m_opengl_funcs->glReadPixels(0, 0, win_width, win_height , GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    fwrite(buffer, sizeof(int) * win_width * win_height, 1, ffmpeg);
+
 }
 
 void OpenGLWindow::resizeGL()

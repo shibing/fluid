@@ -23,6 +23,7 @@ using namespace rtps;
 
 QOpenGLTexture *texture;
 
+
 BasicScene::BasicScene()
     : max_num(200000) 
     , dt(0.0002)
@@ -64,7 +65,7 @@ void BasicScene::render()
     glViewport(0, 0, m_window->width(), m_window->height());
     ps->render();
 
-    renderOverlay();
+    //renderOverlay();
 }
 
 void BasicScene::resize(int width, int height)

@@ -64,7 +64,7 @@ namespace rtps
         settings->SetSetting("XSPH Factor", .05f);
         settings->SetSetting("Friction Kinetic", 0.0f);
         settings->SetSetting("Friction Static", 0.0f);
-        settings->SetSetting("Boundary Stiffness", 50000.0f);
+        settings->SetSetting("Boundary Stiffness", 60000.0f);
         settings->SetSetting("Boundary Dampening", 256.0f);
 
         //next 4 not used at the moment
